@@ -36,7 +36,7 @@
     Browser     = @(
         @{
             Name   = "Zen Browser"
-            Id     = "Zen-Team.ZenBrowser"
+            Id     = "Zen-Team.Zen-Browser"
             Source = "winget"
             Update = $true
         }
