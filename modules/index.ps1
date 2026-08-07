@@ -2,6 +2,7 @@ $moduleRoot = $PSScriptRoot
 
 $modules = @(
     "Browser.ps1"
+    "Development.ps1"
     "Drivers.ps1"
     "Git.ps1"
     "Helpers.ps1"

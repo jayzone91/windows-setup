@@ -17,7 +17,7 @@ Write-Host ""
 # Module
 # ------------------------------------------------------------
 
-. "$ROOT\modules\index.ps1"
+. "$Root\modules\index.ps1"
 
 # ------------------------------------------------------------
 # Cleanup
@@ -101,6 +101,8 @@ Set-PowerShellPreferences
 Set-NushellPreferences
 
 Set-LanguageEnvironment
+
+Install-CodexCli
 
 # ------------------------------------------------------------
 # Abschließende Tests
