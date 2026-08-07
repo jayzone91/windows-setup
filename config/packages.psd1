@@ -43,7 +43,7 @@
 
         @{
             Name   = "Google Chrome Dev"
-            Id     = "Google.Chrome.Dev"
+            Id     = "Google.Chrome.Beta"
             Source = "winget"
             Update = $true
         }

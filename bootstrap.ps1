@@ -37,16 +37,7 @@ $VSCode = Import-PowerShellDataFile "$Root\config\vscode.psd1"
 # Software
 # ------------------------------------------------------------
 
-Install-PackageGroup `
-    -Packages $Packages.Drivers `
-    -GroupName "Treiber-Tools"
-
 Install-PackageGroup -Packages $Packages.Base -GroupName "Basissoftware"
-
-Install-VSCodeExtensions -Extensions $VSCode.Extensions
-
-Set-VSCodeSettings `
-    -Source "$Root\dotfiles\vscode\settings.json"
 
 Install-PackageGroup -Packages $Packages.Tools -GroupName "System-Tools"
 
@@ -54,6 +45,9 @@ Install-PackageGroup -Packages $Packages.Development -GroupName "Dev-Tools"
 
 Install-PackageGroup -Packages $Packages.Browser -GroupName "Browser"
 
+Install-PackageGroup `
+    -Packages $Packages.Drivers `
+    -GroupName "Treiber-Tools"
 
 # Pfade neu einlesen
 Update-SessionPath
@@ -88,8 +82,6 @@ Set-WindowsPowerPreferences
 Set-WindowsHDR
 Set-WindowsWallpaperSlideshow
 
-Restart-WindowsExplorer
-
 # ------------------------------------------------------------
 # Entwicklung
 # ------------------------------------------------------------
@@ -105,16 +97,27 @@ Set-LanguageEnvironment
 Install-CodexCli
 
 # ------------------------------------------------------------
-# Abschließende Tests
+# VS Code
 # ------------------------------------------------------------
 
-Test-ApplePasswordRequirements
+Install-VSCodeExtensions -Extensions $VSCode.Extensions
+
+Set-VSCodeSettings `
+    -Source "$Root\dotfiles\vscode\settings.json"
 
 # ------------------------------------------------------------
 # Browser Config
 # ------------------------------------------------------------
 
 Set-BrowserConfiguration
+
+Restart-WindowsExplorer
+
+# ------------------------------------------------------------
+# Abschließende Tests
+# ------------------------------------------------------------
+
+Test-ApplePasswordRequirements
 
 # ------------------------------------------------------------
 # Fertig
