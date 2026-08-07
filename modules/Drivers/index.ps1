@@ -5,7 +5,7 @@ $driverModules = @(
     "DriverInventory.ps1"
     "WindowsDriverUpdates.ps1"
     "IntelDrivers.ps1"
-    "AsusDrivers.ps1"
+    "Asus\index.ps1"
     "Drivers.ps1"
 )
 

@@ -13,7 +13,7 @@ $modules = @(
     "Security.ps1"
     "Terminal.ps1"
     "VSCode.ps1"
-    "Windows.ps1"
+    "Windows\index.ps1"
 )
 
 foreach ($module in $modules) {
