@@ -16,9 +16,12 @@ function Test-ApplePasswordRequirements {
     $user = Get-LocalUser -Name $env:USERNAME
 
 
-    if ($user.PasswordRequired) {
+    if ($user.PasswordLastSet) {
 
-        Write-Host "[OK] Benutzerpasswort aktiviert."
+        Write-Host (
+            "[OK] Benutzerpasswort gesetzt. " +
+            "Zuletzt geändert: $($user.PasswordLastSet)"
+        )
 
     }
     else {
@@ -38,20 +41,45 @@ function Test-ApplePasswordRequirements {
 
     $helloStatus = dsregcmd /status
 
+    $azureAdJoined = $helloStatus |
+    Select-String "AzureAdJoined"
 
-    $ngcSet = $helloStatus |
-    Select-String "NgcSet"
+    $domainJoined = $helloStatus |
+    Select-String "DomainJoined"
 
+    $isJoinedAccount = (
+        $azureAdJoined -match "YES" -or
+        $domainJoined -match "YES"
+    )
 
-    if ($ngcSet -match "YES") {
+    if (-not $isJoinedAccount) {
 
-        Write-Host "[OK] Windows Hello ist eingerichtet."
+        Write-Host (
+            "[OK] Lokales Windows-Konto erkannt. " +
+            "Windows Hello wird nicht über dsregcmd bewertet."
+        )
 
+        Write-Host (
+            "[INFO] Die Windows-Hello-Einrichtung kann für lokale Konten " +
+            "nicht zuverlässig nicht-interaktiv geprüft werden."
+        )
     }
     else {
 
-        Write-Warning `
-            "Windows Hello ist nicht eingerichtet."
+        $ngcSet = $helloStatus |
+        Select-String "NgcSet"
+
+        if ($ngcSet -match "YES") {
+
+            Write-Host "[OK] Windows Hello ist eingerichtet."
+
+        }
+        else {
+
+            Write-Warning `
+                "Windows Hello ist nicht eingerichtet."
+
+        }
 
     }
 

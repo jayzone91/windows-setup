@@ -29,6 +29,16 @@ function Set-LanguageEnvironment {
 
         Write-Host "[OK] Node LTS konfiguriert."
 
+        Write-Host "[UPDATE] npm"
+
+        npm install --global npm@latest
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "npm konnte nicht aktualisiert werden."
+        }
+
+        Write-Host "[OK] npm $(& npm --version)"
+
     }
     else {
 

@@ -27,9 +27,9 @@ function Install-CodexCli {
 
     npm install -g @openai/codex
 
-
-    Update-SessionPath
-
+    if ($LASTEXITCODE -ne 0) {
+        throw "Codex CLI konnte nicht installiert werden."
+    }
 
     if (Get-Command codex -ErrorAction SilentlyContinue) {
 
