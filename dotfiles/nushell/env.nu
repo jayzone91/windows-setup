@@ -1,0 +1,1 @@
+C:/Users/jay/windows-setup/dotfiles/nushell/env.nu
