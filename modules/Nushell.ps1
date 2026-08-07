@@ -28,21 +28,17 @@ function Set-NushellPreferences {
         throw "Nushell env.nu nicht gefunden: $envSource"
     }
 
-    # Nushell selbst fragen, wo die Config liegt
-    $configDestination = (& nu -c '$nu.config-path').Trim()
-    $envDestination = (& nu -c '$nu.env-path').Trim()
+    $configDirectory = Join-Path `
+        $env:APPDATA `
+        "nushell"
 
-    if (-not $configDestination) {
-        throw "Nushell config-path konnte nicht ermittelt werden."
-    }
+    $configDestination = Join-Path `
+        $configDirectory `
+        "config.nu"
 
-    if (-not $envDestination) {
-        throw "Nushell env-path konnte nicht ermittelt werden."
-    }
-
-    $configDirectory = Split-Path `
-        $configDestination `
-        -Parent
+    $envDestination = Join-Path `
+        $configDirectory `
+        "env.nu"
 
     if (-not (Test-Path $configDirectory)) {
         New-Item `
@@ -55,9 +51,9 @@ function Set-NushellPreferences {
     # config.nu
     # ------------------------------------------------------------
 
-    if (Test-Path $configDestination) {
+    if (Get-Item -LiteralPath $configDestination -Force -ErrorAction SilentlyContinue) {
         Remove-Item `
-            -Path $configDestination `
+            -LiteralPath $configDestination `
             -Force
     }
 
@@ -73,9 +69,9 @@ function Set-NushellPreferences {
     # env.nu
     # ------------------------------------------------------------
 
-    if (Test-Path $envDestination) {
+    if (Get-Item -LiteralPath $envDestination -Force -ErrorAction SilentlyContinue) {
         Remove-Item `
-            -Path $envDestination `
+            -LiteralPath $envDestination `
             -Force
     }
 

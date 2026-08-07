@@ -26,7 +26,11 @@ Set-PSReadLineKeyHandler `
     -Key DownArrow `
     -Function HistorySearchForward
 
-fnm env --use-on-cd | Out-String | Invoke-Expression
+if (Get-Command fnm -ErrorAction SilentlyContinue) {
+    fnm env --use-on-cd --shell powershell |
+    Out-String |
+    Invoke-Expression
+}
 
 # Starship
 if (Get-Command starship -ErrorAction SilentlyContinue) {

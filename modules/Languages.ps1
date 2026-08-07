@@ -18,6 +18,15 @@ function Set-LanguageEnvironment {
         fnm install --lts
         fnm default lts-latest
 
+        $fnmEnvironment = fnm env --shell powershell |
+        Out-String
+
+        Invoke-Expression $fnmEnvironment
+
+        if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
+            throw "npm ist nach der fnm-Konfiguration nicht verfügbar."
+        }
+
         Write-Host "[OK] Node LTS konfiguriert."
 
     }
