@@ -1,6 +1,7 @@
 $moduleRoot = $PSScriptRoot
 
 $modules = @(
+    "Browser.ps1"
     "Drivers.ps1"
     "Git.ps1"
     "Helpers.ps1"
@@ -8,6 +9,7 @@ $modules = @(
     "Nushell.ps1"
     "Packages.ps1"
     "PowerShell.ps1"
+    "Security.ps1"
     "Terminal.ps1"
     "VSCode.ps1"
     "Windows.ps1"

@@ -33,6 +33,22 @@
         }
     )
 
+    Browser     = @(
+        @{
+            Name   = "Zen Browser"
+            Id     = "Zen-Team.ZenBrowser"
+            Source = "winget"
+            Update = $true
+        }
+
+        @{
+            Name   = "Google Chrome Dev"
+            Id     = "Google.Chrome.Dev"
+            Source = "winget"
+            Update = $true
+        }
+    )
+
     Development = @(
         @{
             Name   = "fnm"

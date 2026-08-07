@@ -52,6 +52,8 @@ Install-PackageGroup -Packages $Packages.Tools -GroupName "System-Tools"
 
 Install-PackageGroup -Packages $Packages.Development -GroupName "Dev-Tools"
 
+Install-PackageGroup -Packages $Packages.Browser -GroupName "Browser"
+
 
 # Pfade neu einlesen
 Update-SessionPath
@@ -99,6 +101,18 @@ Set-PowerShellPreferences
 Set-NushellPreferences
 
 Set-LanguageEnvironment
+
+# ------------------------------------------------------------
+# Abschließende Tests
+# ------------------------------------------------------------
+
+Test-ApplePasswordRequirements
+
+# ------------------------------------------------------------
+# Browser Config
+# ------------------------------------------------------------
+
+Set-BrowserConfiguration
 
 # ------------------------------------------------------------
 # Fertig
