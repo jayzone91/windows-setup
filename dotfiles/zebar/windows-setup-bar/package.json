@@ -1,0 +1,22 @@
+{
+  "devDependencies": {
+    "zebar": "^3.3.1"
+  },
+  "name": "windows-setup",
+  "version": "1.0.0",
+  "description": "Automatisiertes, reproduzierbares und weitgehend idempotentes Setup für\r meine Windows-Arbeitsumgebung.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jayzone91/windows-setup.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jayzone91/windows-setup/issues"
+  },
+  "homepage": "https://github.com/jayzone91/windows-setup#readme"
+}

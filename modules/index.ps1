@@ -21,6 +21,7 @@ $modules = @(
     "Terminal.ps1"
     "VSCode.ps1"
     "WindowsUpdate.ps1"
+    "Zebar.ps1"
 )
 
 foreach ($module in $modules) {

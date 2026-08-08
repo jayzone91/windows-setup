@@ -121,7 +121,7 @@ function Register-KomorebiStartupTask {
         -Execute $pwsh `
         -Argument (
         '-NoProfile -WindowStyle Hidden ' +
-        '-Command "komorebic start --whkd --bar"'
+        '-Command "komorebic start --whkd"'
     )
 
 

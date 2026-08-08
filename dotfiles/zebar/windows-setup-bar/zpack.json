@@ -5,6 +5,20 @@
     "description": "Catppuccin Mocha status bar for komorebi",
     "widgets": [
         {
+            "privileges": {
+                "shellCommands": [
+                    {
+                        "program": "pwsh",
+                        "argsRegex": ".*Get-AppIcon\\.ps1.*"
+                    }
+                ]
+            },
+            "includeFiles": [
+                "index.html",
+                "styles.css",
+                "script.js",
+                "Get-AppIcon.ps1"
+            ],
             "name": "bar",
             "htmlPath": "index.html",
             "zOrder": "top_most",
