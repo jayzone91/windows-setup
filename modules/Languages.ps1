@@ -53,6 +53,39 @@ function Set-LanguageEnvironment {
 
         Write-Host "[OK] npm $(& npm --version)"
 
+        Write-Host "[UPDATE] pnpm"
+
+        npm install `
+            --global `
+            pnpm@latest
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "pnpm konnte nicht installiert oder aktualisiert werden."
+        }
+
+        Write-Host (
+            "[OK] pnpm {0}" `
+                -f (& pnpm --version)
+        ) `
+            -ForegroundColor Green
+
+
+        Write-Host "[UPDATE] Yarn"
+
+        npm install `
+            --global `
+            yarn@latest
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Yarn konnte nicht installiert oder aktualisiert werden."
+        }
+
+        Write-Host (
+            "[OK] Yarn {0}" `
+                -f (& yarn --version)
+        ) `
+            -ForegroundColor Green
+
     }
     else {
 
