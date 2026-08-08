@@ -214,6 +214,9 @@ Aktuell entfernt/deprovisioniert werden unter anderem:
 - [x] Version-Pinning in generischer Paketlogik
 - [x] Update deaktiviert
 - [x] Installation erfolgreich getestet
+- [ ] VPN-Profile automatisiert bereitstellen
+- [ ] Firmen-/Privatprofile sauber trennen
+- [ ] optional Zertifikate automatisiert importieren
 
 ---
 
@@ -366,7 +369,6 @@ Zielzustand:
 - [x] Einstellungen automatisiert anwenden
 - [x] Windows-Terminal-Konfiguration im Setup
 - [ ] Feinschliff der Profile bei Bedarf
-- [ ] weitere Aliases/Komfortfunktionen bei Bedarf
 
 ## Nushell
 
@@ -423,6 +425,7 @@ Zielzustand:
 - [x] Marionette-Konfigurationsmodus automatisch verlassen
 - [x] Zen danach normal neu starten
 - [x] Mod-Installation idempotent
+- [ ] optionale weitere Zen-Mods
 - [ ] optional Browser-UI weiter an Catppuccin anpassen
 
 ---
@@ -435,7 +438,9 @@ Zielzustand:
 - [x] automatische Updates
 - [x] iCloud Passwords Browser-Erweiterung
 - [x] Voraussetzungen für Apple Passwords/Windows Hello prüfen
-
+- [ ] iCloud Drive vollständig testen
+- [ ] Synchronisation nach Neuinstallation verifizieren
+- [ ] Kontakte/Kalender nur aufnehmen, falls für den Windows-Workflow benötigt
 
 ---
 
@@ -552,50 +557,206 @@ Samsung Odyssey G93SD:
 Noch offen beziehungsweise nur teilweise außerhalb des Repositories vorhanden:
 
 - [ ] Remote Desktop Manager installieren
+- [ ] RDM-Konfiguration sichern/wiederherstellen
 - [ ] FileZilla installieren
+- [ ] FileZilla-Konfiguration sichern, falls sinnvoll
 - [ ] PCVisit Supporter Modul installieren
-
+- [ ] VPN-Abhängigkeiten dokumentieren
+- [ ] benötigte Zertifikate automatisiert importieren
+- [ ] Firmen-RDP-/VPN-Workflow testen
 
 ---
 
 # Phase 19 – Linux-ähnlicher Workflow unter Windows
 
-## Tiling Window Manager
+## Window Manager – komorebi
 
-Evaluieren und anschließend festlegen:
+GlazeWM wurde zunächst installiert und getestet. Die grundlegende Fensterverwaltung, Workspaces, `Win`-Hotkeys und die Konfigurationsanbindung funktionierten. Da GlazeWM jedoch kein natives BSP-/Dwindle-Layout bietet und dieses Verhalten ein wichtiges Kriterium für den Desktop-Workflow ist, wurde GlazeWM wieder vollständig entfernt.
 
-- [ ] GlazeWM
-- [ ] komorebi
-- [ ] weitere sinnvolle Alternative nur bei Bedarf
+komorebi wurde anschließend mit Version `0.1.41` getestet. Das native `BSP`-Layout entspricht deutlich besser dem gewünschten Hyprland-Dwindle-Verhalten und wird deshalb als Window Manager weiterverfolgt.
 
-Ziele:
+### Evaluation & Installation
 
-- [ ] automatisches Tiling
-- [ ] Floating-Ausnahmen
-- [ ] Workspaces
-- [ ] Tastatursteuerung
-- [ ] Catppuccin-Mocha-Design
-- [ ] reproduzierbare Konfiguration im Repository
+- [x] GlazeWM 3.10.1 installiert und getestet
+- [x] GlazeWM-Konfiguration und `Win`-Hotkeys getestet
+- [x] fehlendes natives BSP-/Dwindle-Layout als Ausschlusskriterium identifiziert
+- [x] GlazeWM und Zebar wieder vollständig vom System entfernt
+- [x] GlazeWM aus der aktiven Paketkonfiguration entfernt
+- [x] komorebi `0.1.41` installiert
+- [x] `whkd` installiert
+- [x] `komorebic quickstart` ausgeführt
+- [x] komorebi erfolgreich mit `whkd` und `komorebi-bar` gestartet
+- [x] natives `BSP`-Layout erfolgreich getestet
+- [x] bestätigt, dass neu geöffnete Fenster automatisch verwaltet werden
+- [ ] `LGUG2Z.komorebi` in `packages.psd1` aufnehmen
+- [ ] `LGUG2Z.whkd` in `packages.psd1` aufnehmen
+- [ ] komorebi und whkd über den Bootstrap automatisch aktualisieren
 
-## Waybar-ähnliche Leiste
+### Workspaces & Layout
 
-- [ ] Workspaces
-- [ ] aktiver Workspace
-- [ ] CPU
-- [ ] RAM
-- [ ] VPN
-- [ ] Uhr/Datum
-- [ ] Lautstärke
-- [ ] Netzwerk
-- [ ] Akku-/Gerätestatus, soweit sinnvoll
+Ziel ist ein möglichst Hyprland-ähnlicher Workflow mit automatischem BSP-/Dwindle-artigem Tiling.
+
+- [ ] genau 5 Workspaces
+- [ ] Workspace-Namen `1` bis `5`
+- [ ] alle Workspaces standardmäßig mit `BSP`
+- [ ] Außenabstand deutlich gegenüber dem 20-px-Default reduzieren
+- [ ] Fensterabstand deutlich gegenüber dem 20-px-Default reduzieren
+- [ ] mit etwa 6 px Workspace-/Container-Padding starten und praktisch optimieren
+- [ ] Border von aktuell 8 px auf etwa 2–3 px reduzieren
+- [ ] Catppuccin-Mocha-Borderfarben
+- [ ] Verhalten auf dem Samsung Odyssey G93SD Ultrawide optimieren
+- [ ] optional `UltrawideVerticalStack` als alternatives Layout per Hotkey verfügbar machen
+- [ ] sinnvolles Verhalten für Monocle/Fullscreen
+- [ ] Floating-Fenster sinnvoll behandeln
+
+### Tastatursteuerung
+
+Die von `quickstart` erzeugten Standard-`Alt`-Keybindings von `whkd` sollen vollständig durch ein eigenes konsistentes Schema ersetzt werden.
+
+- [ ] Fokussteuerung mit `Win`-Hotkeys
+- [ ] Fenster mit `Win + Shift` verschieben
+- [ ] `Win + 1–5` für Workspace-Wechsel
+- [ ] `Win + Shift + 1–5` zum Verschieben von Fenstern auf Workspaces
+- [ ] Floating per Hotkey umschalten
+- [ ] Monocle/Fullscreen per Hotkey
+- [ ] Fenster schließen
+- [ ] Terminal starten
+- [ ] komorebi-Konfiguration neu laden
+- [ ] Retile-Hotkey
+- [ ] Pause-/Resume-Hotkey
+- [ ] Layout bei Bedarf wechseln/spiegeln
+- [ ] bestehende Windows-/PowerToys-Hotkeys auf Konflikte prüfen
+- [ ] finale Keybindings dokumentieren
+
+### Window Rules / Anwendungen
+
+Die von komorebi erzeugte `applications.json` wird als Basis verwendet und nur gezielt erweitert.
+
+- [ ] vorhandene Community-/Default-Regeln prüfen
+- [ ] Windows-Dialoge sinnvoll ignorieren oder floating behandeln
+- [ ] Logitech G HUB korrekt behandeln
+- [ ] Browser-Popups und Picture-in-Picture sinnvoll behandeln
+- [ ] Installer und Updater sinnvoll behandeln
+- [ ] PowerToys Command Palette als Overlay behandeln
+- [ ] Spiele und Fullscreen-Anwendungen testen
+- [ ] GitHub Desktop testen
+- [ ] VS Code testen
+- [ ] Zen Browser testen
+- [ ] Edge testen
+- [ ] Windows Terminal testen
+- [ ] Everything später berücksichtigen
+
+## komorebi-bar
+
+Die mit komorebi gelieferte Bar wird zunächst anstelle von Zebar verwendet. Die Default-Bar funktioniert bereits und wird vollständig an den gewünschten Desktop angepasst.
+
+- [x] komorebi-bar erfolgreich gestartet
+- [x] Workspaces werden grundsätzlich unterstützt
+- [x] aktuelles Layout wird unterstützt
+- [x] fokussiertes Fenster wird unterstützt
+- [x] Datum und Uhrzeit werden unterstützt
+- [x] Memory-/Network-Widgets sind vorhanden, aktuell aber deaktiviert
+- [ ] JetBrainsMono Nerd Font verwenden
 - [ ] Catppuccin Mocha
+- [ ] 5 Workspace-Indikatoren
+- [ ] aktiven Workspace deutlich hervorheben
+- [ ] aktuelles Layout sinnvoll anzeigen
+- [ ] fokussiertes Fenster inklusive Icon
+- [ ] CPU-Anzeige prüfen/ergänzen
+- [ ] RAM aktivieren
+- [ ] Netzwerk aktivieren
+- [ ] VPN-Status integrieren
+- [ ] Audio/Lautstärke integrieren
+- [ ] Datum konfigurieren
+- [ ] 24-Stunden-Uhr konfigurieren
+- [ ] Systray-Unterstützung prüfen
+- [ ] Akku-/Gerätestatus soweit zuverlässig verfügbar
+- [ ] Update-Widget sinnvoll konfigurieren
+- [ ] Höhe und Abstände für den Ultrawide optimieren
 
-## Launcher
+## Konfiguration im Repository
 
-- [ ] Programmstarter auswählen
-- [ ] globale Suche
-- [ ] Tastenkürzel
-- [ ] Theme anpassen
+Die von `komorebic quickstart` erzeugten Dateien dienen als Ausgangspunkt:
+
+```text
+%USERPROFILE%\komorebi.json
+%USERPROFILE%\komorebi.bar.json
+%USERPROFILE%\applications.json
+%USERPROFILE%\.config\whkdrc
+```
+
+Zielstruktur im Repository:
+
+```text
+dotfiles/
+└── komorebi/
+    ├── komorebi.json
+    ├── komorebi.bar.json
+    ├── applications.json
+    └── whkdrc
+```
+
+- [ ] `komorebi.json` ins Repository übernehmen
+- [ ] `komorebi.bar.json` ins Repository übernehmen
+- [ ] `applications.json` ins Repository übernehmen
+- [ ] `whkdrc` ins Repository übernehmen
+- [ ] eigenes komorebi-PowerShell-Modul erstellen
+- [ ] `komorebi.json` per Symlink anbinden
+- [ ] `komorebi.bar.json` per Symlink anbinden
+- [ ] `applications.json` per Symlink anbinden
+- [ ] `whkdrc` per Symlink anbinden
+- [ ] vorhandene Dateien beim ersten Bootstrap sicher behandeln
+- [ ] korrekte Symlink-Ziele idempotent erkennen
+- [ ] fehlerhafte/veraltete Links sauber ersetzen
+- [ ] Konfiguration über `modules/index.ps1` laden
+- [ ] Konfiguration im Bootstrap anwenden
+- [ ] komorebi beim Benutzer-Login automatisch starten
+- [ ] sicherstellen, dass kein zweiter WM parallel gestartet wird
+
+## Lizenzhinweis
+
+komorebi weist beim Start darauf hin, dass für die Nutzung am Arbeitsplatz eine Commercial-Use-Lizenz erforderlich ist. Der Bootstrap soll diese Entscheidung weder umgehen noch automatisch treffen, sondern transparent informieren und die technische Registrierung einer vorhandenen Lizenz dokumentieren.
+
+- [ ] beim Setup einen klaren Lizenzhinweis ausgeben
+- [ ] offiziellen Link zu den komorebi-Lizenzinformationen anzeigen
+- [ ] darauf hinweisen, dass kommerzielle Nutzung bzw. Nutzung am Arbeitsplatz eine Lizenz erfordern kann
+- [ ] dokumentieren, wie eine vorhandene Lizenz registriert wird
+- [ ] keine automatische Lizenzentscheidung treffen
+- [ ] keine Lizenzprüfung umgehen
+
+## Windows Desktop & Taskleiste
+
+Der native Windows-Desktop soll optisch und funktional hinter komorebi und der Topbar zurücktreten.
+
+- [ ] Desktop-Icons vollständig ausblenden
+- [ ] Windows-Taskleiste automatisch ausblenden
+- [ ] native Taskleiste als Fallback weiterhin erreichbar lassen
+- [ ] Einstellungen idempotent über den Bootstrap anwenden
+- [ ] Verhalten nach Explorer-Neustart testen
+- [ ] Spiele/Fullscreen-Anwendungen auf Nebenwirkungen testen
+
+## Launcher / Startmenü-Ersatz
+
+Das native Startmenü soll im täglichen Workflow nicht mehr der primäre Launcher sein, da es unten mittig erscheint und nicht zum Topbar-Konzept passt.
+
+PowerToys Command Palette ist als primärer Launcher vorgesehen. Die Command Palette bietet eine Everything-Integration und passt damit sehr gut zum geplanten Linux-ähnlichen Workflow.
+
+- [ ] PowerToys über die Paketverwaltung installieren
+- [ ] PowerToys automatisch aktualisieren
+- [ ] Everything über die Paketverwaltung installieren
+- [ ] Everything automatisch aktualisieren
+- [ ] PowerToys Command Palette aktivieren
+- [ ] Everything-Integration aktivieren und testen
+- [ ] Apps schnell starten
+- [ ] globale Datei-/Ordnersuche über Everything
+- [ ] Launcher-Hotkey festlegen
+- [ ] prüfen, ob die einzelne `Win`-Taste sinnvoll verwendet werden kann
+- [ ] andernfalls konfliktfreien Hotkey festlegen
+- [ ] Command Palette im Dark-/Catppuccin-orientierten Design konfigurieren
+- [ ] Position und Verhalten passend zur Topbar konfigurieren
+- [ ] native Startmenü-Nutzung im täglichen Workflow weitgehend ersetzen
+- [ ] PowerToys-/Command-Palette-Konfiguration soweit möglich im Repository sichern
+- [ ] Everything-Konfiguration soweit sinnvoll reproduzierbar machen
 
 ---
 
@@ -608,9 +769,9 @@ Bereits umgesetzt beziehungsweise begonnen:
 - [x] VS Code
 - [x] G502-X-Plus-RGB
 - [x] Windows Dark Theme
-- [ ] Tiling-WM
-- [ ] Statusleiste
-- [ ] Launcher
+- [ ] komorebi
+- [ ] komorebi-bar
+- [ ] PowerToys Command Palette
 - [ ] Browser optional weiter angleichen
 - [ ] weitere Anwendungen nur dort themen, wo es stabil und wartbar ist
 
@@ -631,6 +792,8 @@ Bereits umgesetzt beziehungsweise begonnen:
 - [x] G-HUB-Konfiguration
 - [x] Windows-Konfiguration
 - [x] Dev-Drive-Konfiguration
+- [ ] komorebi-/whkd-Konfiguration
+- [ ] komorebi-bar-Konfiguration
 
 ## Noch offen
 
@@ -672,13 +835,15 @@ Bereits umgesetzt beziehungsweise begonnen:
 
 Priorität für die nächsten Arbeiten:
 
-1. [ ] **Linux-ähnlichen Windows-Workflow** – Tiling WM auswählen und einrichten
-2. [ ] **Waybar-ähnliche Statusleiste** – Workspaces, Systemstatus, VPN, Audio und Netzwerk
-3. [ ] **Launcher** – schneller programm-/suchbasierter Workflow
-4. [ ] **Gaming-Pakete und Launcher** – Steam/Epic/GOG/EA/Ubisoft reproduzierbar installieren
-5. [ ] **Firmen-Tools** – RDM, FileZilla, PCVisit und Zertifikate
-6. [ ] **Logging/Fehler-Toast** – automatische Wochenwartung noch besser nachvollziehbar machen
-7. [ ] **vollständiger Restore-Test** auf einer frischen Windows-Installation
+1. [ ] **komorebi produktiv konfigurieren** – 5 BSP-Workspaces, kleine Gaps, dünne Borders und eigene Keybindings
+2. [ ] **komorebi + whkd in den Bootstrap integrieren** – Pakete, automatische Updates, Symlinks, Autostart und Lizenzhinweis
+3. [ ] **komorebi-bar gestalten** – Catppuccin Mocha, Workspaces und Systeminformationen
+4. [ ] **Desktop/Taskleiste integrieren** – Desktop-Icons ausblenden und Windows-Taskleiste auf Auto-Hide
+5. [ ] **Command Palette + Everything** – Startmenü im täglichen Workflow durch Launcher und schnelle Dateisuche ersetzen
+6. [ ] **Gaming-Pakete und Launcher** – Steam/Epic/GOG/EA/Ubisoft reproduzierbar installieren
+7. [ ] **Firmen-Tools** – RDM, FileZilla, PCVisit und Zertifikate
+8. [ ] **Logging/Fehler-Toast** – automatische Wochenwartung noch besser nachvollziehbar machen
+9. [ ] **vollständiger Restore-Test** auf einer frischen Windows-Installation
 
 ---
 
@@ -704,4 +869,4 @@ Der Kern des Projekts ist inzwischen funktionsfähig:
 - [x] der komplette Bootstrap läuft wöchentlich automatisch
 - [x] PSScriptAnalyzer meldet keine Probleme
 
-Das Projekt ist damit nicht mehr nur ein Installationsskript, sondern bereits ein reproduzierbares Setup- und Wartungssystem. Die größten offenen Blöcke sind derzeit der Linux-ähnliche Desktop-Workflow unter Windows, Gaming-Launcher, Firmen-Tools sowie zusätzliche Restore-/Logging-Qualität.
+Das Projekt ist damit nicht mehr nur ein Installationsskript, sondern bereits ein reproduzierbares Setup- und Wartungssystem. Für den Linux-ähnlichen Desktop-Workflow wurde komorebi mit nativem BSP-Layout als Nachfolger des getesteten und wieder entfernten GlazeWM ausgewählt. Die größten offenen Blöcke sind derzeit die produktive komorebi-/Bar-/Launcher-Integration, Gaming-Launcher, Firmen-Tools sowie zusätzliche Restore-/Logging-Qualität.
