@@ -45,6 +45,20 @@
             Id     = "Logitech.GHUB"
             Source = "winget"
             Update = $true
+        },
+
+        @{
+            Name   = "Komorebi"
+            Id     = "LGUG2Z.komorebi"
+            Source = "winget"
+            Update = $true
+        },
+
+        @{
+            Name   = "whkd"
+            Id     = "LGUG2Z.whkd"
+            Source = "winget"
+            Update = $true
         }
     )
 
