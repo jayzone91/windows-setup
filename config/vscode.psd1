@@ -7,5 +7,6 @@
         "tamasfe.even-better-toml"
         "TheNuProjectContributors.vscode-nushell-lang"
         "openai.chatgpt"
+        "esbenp.prettier-vscode"
     )
 }

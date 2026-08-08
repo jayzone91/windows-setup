@@ -3,10 +3,11 @@
     "workbench.iconTheme": "catppuccin-mocha",
     "window.autoDetectColorScheme": false,
     "editor.fontLigatures": true,
-    "editor.minimap.enabled": false,
     "editor.renderWhitespace": "selection",
     "editor.guides.bracketPairs": true,
     "editor.formatOnSave": true,
+    "editor.minimap.enabled": true,
+    "editor.minimap.autohide": "none",
     "files.trimTrailingWhitespace": true,
     "files.insertFinalNewline": true,
     "terminal.integrated.defaultProfile.windows": "PowerShell",
@@ -22,5 +23,11 @@
         "https://www.schemastore.org/": true
     },
     "chatgpt.localeOverride": "de-DE",
-    "git.confirmSync": false
+    "git.confirmSync": false,
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[css]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
 }
