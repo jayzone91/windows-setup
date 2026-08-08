@@ -811,3 +811,5 @@ Die aktuelle Priorität liegt bewusst auf der Fertigstellung des Desktop-Erlebni
 11. Dokumentations-Feinschliff
 
 Damit ist der Grundaufbau nicht mehr das Hauptproblem. Der Fokus verschiebt sich jetzt auf einen vollständig bedienbaren, konsistenten und reproduzierbaren Windows-Desktop, der sich funktional und optisch an der Arch-/Hyprland-Umgebung orientiert.
+
+TODO: masir für focus follows mouse

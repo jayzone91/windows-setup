@@ -10,6 +10,10 @@
           {
             "program": "pwsh",
             "argsRegex": ".*Get-AppIcon\\.ps1.*"
+          },
+          {
+            "program": "komorebic",
+            "argsRegex": "focus-workspace [0-9]+"
           }
         ]
       },
