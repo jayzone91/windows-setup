@@ -46,6 +46,13 @@
             Source = "winget"
             Update = $true
         }
+
+        @{
+            Name   = "GlazeWM"
+            Id     = "glzr-io.glazewm"
+            Source = "winget"
+            Update = $true
+        }
     )
 
     Browser     = @(
