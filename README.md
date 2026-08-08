@@ -1,192 +1,390 @@
 # Windows Setup
 
-Automatisiertes, reproduzierbares und weitgehend idempotentes Setup für
-meine Windows-Arbeitsumgebung.
+Automatisiertes, reproduzierbares und weitgehend idempotentes Setup für meine Windows-11-Arbeitsumgebung.
 
-Das Repository dient sowohl zur Einrichtung eines frisch installierten
-Windows-Systems als auch zur regelmäßigen Wartung eines bereits
-eingerichteten Rechners. Derselbe `bootstrap.ps1` wird für beide Fälle
-verwendet. Bereits erledigte oder vorhandene Konfigurationen werden --
-soweit vorgesehen -- erkannt und übersprungen beziehungsweise
-aktualisiert.
+Das Repository dient sowohl zur Einrichtung eines frisch installierten Windows-Systems als auch zur regelmäßigen Wartung eines bereits eingerichteten Rechners. Derselbe `bootstrap.ps1` wird für Neuinstallation, manuelle Setup-Durchläufe und automatische Wartung verwendet.
 
-## Funktionsumfang
+Ein zweites wichtiges Ziel ist eine Windows-Desktop-Umgebung, die sich funktional und optisch an meiner Arch-/Hyprland-Workstation orientiert. Dafür werden komorebi, whkd, masir und Zebar kombiniert und mit Catppuccin Mocha gestaltet.
 
-Das Setup installiert, aktualisiert und konfiguriert unter anderem:
+## Aktueller Stand
 
--   Basissoftware und System-Tools über `winget` und den Microsoft Store
--   Entwicklungswerkzeuge
--   PowerShell 7, Nushell und Windows Terminal
--   Git, GitHub CLI und GitHub Desktop
--   Visual Studio Code inklusive Erweiterungen und Settings
--   Node.js-Umgebung über `fnm`
--   Bun und Go
--   npm, pnpm und Yarn
--   Codex CLI
--   Zen Browser und Google Chrome Beta
--   Browser-Erweiterungen und Zen Mods
--   NVIDIA App und weitere Treiber-Logik
--   Windows-Einstellungen, Theme, HDR und Wallpaper
--   Windows-Debloat
--   Apple-Passwort-Voraussetzungen
--   Logitech G HUB inklusive Sicherung der Konfiguration
--   ReFS Dev Drive und separates Games-Laufwerk
--   Microsoft Defender Dev Drive Performance Mode
--   Package- und Build-Caches auf dem Dev Drive
--   normale Windows- und Microsoft-Updates
--   automatische wöchentliche Wartung über die Windows-Aufgabenplanung
--   Desktop-Benachrichtigungen bei erforderlichem Neustart oder
-    Git-Änderungen
--   abschließende Code-Prüfung mit PSScriptAnalyzer
+Der Kern des Setups ist produktiv nutzbar und weitgehend reproduzierbar.
 
-## Installation
+Bereits umgesetzt sind unter anderem:
 
-Eine **PowerShell als Administrator** öffnen und folgenden Befehl
-ausführen:
+- Paketinstallation und Updates über `winget` und Microsoft Store
+- Windows-Debloat und Grundkonfiguration
+- Windows- und Microsoft-Updates
+- Treiberlogik für NVIDIA und Intel
+- PowerShell-, Node.js-, Bun- und Go-Entwicklungsumgebung
+- Git, GitHub CLI und GitHub Desktop
+- Visual Studio Code inklusive Extensions und Settings
+- Windows Terminal, Nushell und Starship
+- Zen Browser und Google Chrome Beta
+- Logitech G HUB inklusive Konfigurationssynchronisierung
+- ReFS Dev Drive und separates Games-Laufwerk
+- Microsoft Defender Dev Drive Performance Mode
+- automatische wöchentliche Wartung
+- Desktop-Benachrichtigungen
+- PSScriptAnalyzer-Codeprüfung
+- komorebi + whkd als Tiling Window Manager
+- masir für Focus Follows Mouse
+- Zebar als eigene interaktive Desktop-Bar
+- Catppuccin Mocha als gemeinsame Designsprache
 
-``` powershell
+Die nächsten größeren Desktop-Themen sind PowerToys Command Palette + Everything, Windhawk für die Windows-Shell, ein eigenes OSD sowie weiterer Catppuccin-Polish.
+
+Siehe auch [`roadmap.md`](roadmap.md).
+
+---
+
+# Installation
+
+Eine **PowerShell als Administrator** öffnen und ausführen:
+
+```powershell
 irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | iex
 ```
 
 `init.ps1` übernimmt automatisch:
 
-1.  Prüfung von `winget`
-2.  Installation von Git, falls erforderlich
-3.  Download des Repositories nach `%USERPROFILE%\windows-setup`
-4.  Aktualisierung eines bereits vorhandenen Repositories
-5.  Ausführung von `bootstrap.ps1`
+1. Prüfung von `winget`
+2. Installation von Git, falls erforderlich
+3. Klonen des Repositories nach `%USERPROFILE%\windows-setup`
+4. Aktualisierung eines bereits vorhandenen Repositories
+5. Start von `bootstrap.ps1`
 
 ## Erneuter Setup-Durchlauf
 
-``` powershell
+```powershell
 cd ~/windows-setup
 .\bootstrap.ps1
 ```
 
-Alternativ kann erneut der Installationsbefehl verwendet werden. Bei
-einem erneuten Lauf werden vorhandene Komponenten erkannt und
-übersprungen beziehungsweise aktualisiert.
+Der Bootstrap versucht zu Beginn, das Repository zu aktualisieren. Enthält das Working Tree lokale Änderungen, wird ein automatisches `git pull` aus Sicherheitsgründen übersprungen.
 
-Der Bootstrap versucht außerdem zu Beginn, das Repository zu
-aktualisieren. Enthält das Working Tree lokale Änderungen, wird ein
-automatisches `git pull` aus Sicherheitsgründen übersprungen.
+Bereits vorhandene Komponenten werden soweit vorgesehen erkannt, übersprungen oder aktualisiert.
 
-## Automatische wöchentliche Wartung
+---
 
-Der Bootstrap richtet die Windows-Aufgabe
-`Windows Setup Weekly Maintenance` ein.
+# Desktop Experience
 
-Sie startet den vollständigen `bootstrap.ps1` **wöchentlich am Sonntag
-um 12:00 Uhr**. Es existiert bewusst kein separater
-Maintenance-Workflow: Neuinstallation, manuelle Aktualisierung und
-automatische Wartung verwenden dieselbe Logik.
+## Zielbild
 
-Die Aufgabe läuft im interaktiven Benutzerkontext mit erhöhten Rechten.
-Dadurch können administrative Änderungen vorgenommen und gleichzeitig
-Desktop-Benachrichtigungen angezeigt werden.
+Die Windows-Desktop-Umgebung soll sich im täglichen Workflow möglichst ähnlich zur Arch-/Hyprland-Umgebung verhalten:
 
-Der Wartungslauf umfasst unter anderem:
+```text
+Arch                           Windows
+────────────────────────────────────────────────
+Hyprland                       komorebi
+Waybar                         Zebar
+Fuzzel                         PowerToys Command Palette (geplant)
+SwayOSD                        eigenes OSD (geplant)
+Focus follows mouse            masir
+Catppuccin Mocha               Catppuccin Mocha
+```
 
--   Aktualisierung des Repositories, sofern keine lokalen Änderungen
-    vorliegen
--   Aktualisierung der konfigurierten `winget`-/Store-Pakete
--   Aktualisierung der Entwicklungswerkzeuge
--   Treiberprüfung und Treiberupdates
--   normale Windows- und Microsoft-Updates
--   Synchronisierung der Logitech-G-HUB-Konfiguration
--   erneute Anwendung der gewünschten Windows- und
-    Entwicklungs-Konfiguration
--   PSScriptAnalyzer-Codeprüfung
--   Prüfung auf erforderlichen Neustart
--   Prüfung auf lokale Git-Änderungen und noch nicht gepushte Commits
+Aktuelle Windows-Architektur:
 
-Der Rechner wird **nicht automatisch neu gestartet**.
+```text
+Windows Desktop
+│
+├── Window Management
+│   ├── komorebi
+│   ├── whkd
+│   └── masir
+│
+├── Desktop Bar
+│   └── Zebar
+│
+├── Launcher / Search (geplant)
+│   ├── PowerToys Command Palette
+│   └── Everything
+│
+├── Windows Shell Styling (geplant)
+│   └── Windhawk
+│       ├── File Explorer Styler
+│       ├── Taskbar Styler
+│       ├── Start Menu Styler
+│       └── Notification Center Styler
+│
+└── OSD (geplant)
+    └── eigenes Catppuccin OSD
+```
 
-### Desktop-Benachrichtigungen
+## komorebi
 
-Für Desktop-Benachrichtigungen wird `BurntToast` verwendet.
+komorebi übernimmt die Tiling-Fensterverwaltung.
 
-Nach einem Wartungslauf wird eine Benachrichtigung angezeigt, wenn:
+Umgesetzt sind:
 
-1.  Windows beziehungsweise ein installiertes Update einen Neustart
-    benötigt.
-2.  das `windows-setup`-Repository lokale Änderungen oder noch nicht
-    gepushte Commits enthält.
+- fünf Workspaces
+- Windows Snap deaktiviert
+- Catppuccin-Integration
+- `UltrawideVerticalStack` als bevorzugtes Layout
+- Fokus-, Move-, Resize-, Stack- und Workspace-Steuerung über whkd
+- reproduzierbare Konfiguration unter `dotfiles/komorebi/`
+- Autostart über die Windows-Aufgabenplanung
 
-Änderungen am Repository werden bewusst **nicht automatisch committed
-oder gepusht**. Sie sollen zunächst geprüft werden.
+Der Desktop-Task läuft mit erhöhten Rechten. Dadurch kann komorebi auch erhöhte Anwendungen verwalten. Beispielsweise wird ein als Administrator gestartetes Windows Terminal normal in das bestehende Tiling-Layout aufgenommen.
 
-## Windows Updates
+## Focus Follows Mouse mit masir
 
-Normale Windows- und Microsoft-Updates werden über `PSWindowsUpdate`
-installiert. Dazu gehören beispielsweise kumulative Windows-Updates,
-Security Updates, .NET-Updates und Microsoft Defender Security
-Intelligence Updates.
+`LGUG2Z.masir` ergänzt komorebi um Focus Follows Mouse.
 
-Treiber werden separat durch die vorhandene Treiberlogik behandelt.
+Dadurch reicht es aus, mit der Maus über ein Fenster zu fahren:
 
-Ein erforderlicher Neustart wird erkannt, aber nicht automatisch
-ausgeführt.
+```text
+Mauszeiger
+    │
+    ▼
+  masir
+    │
+    ▼
+Windows-Fokus
+    │
+    ▼
+ komorebi
+```
 
-## Software und Updates
+Ein Mausklick zum Fokussieren ist nicht notwendig.
 
-Software wird gruppiert über `config/packages.psd1` verwaltet.
+masir nutzt seine automatische komorebi-Integration und wird ohne zusätzliche Parameter gestartet.
 
-### Basis
+komorebi, whkd und masir starten gemeinsam über den Scheduled Task `komorebi Desktop`.
 
--   JetBrainsMono Nerd Font
+## Zebar
 
-### System-Tools
+Zebar ersetzt im normalen Desktop-Betrieb weitgehend die Windows-Taskbar.
 
--   Windows HDR Calibration
--   iCloud
--   OpenVPN
--   Logitech G HUB
+Die eigene Bar befindet sich unter:
 
-OpenVPN ist bewusst auf Version `2.7.101` festgelegt und wird nicht
-automatisch auf eine andere Version aktualisiert.
+```text
+dotfiles/zebar/windows-setup-bar/
+```
 
-### Browser
+Sie wird mit TypeScript entwickelt und lokal mit esbuild gebündelt. Es bestehen keine CDN-Abhängigkeiten.
 
--   Zen Browser
--   Google Chrome Beta
+### Linke Seite
+
+- fünf komorebi-Workspaces
+- aktiver Workspace dynamisch hervorgehoben
+- Workspace-Wechsel per Mausklick
+- aktuelle Tiling-Methode
+- Layout-Pill vollständig klickbar
+- separates Layout-Popup
+- direkte Auswahl einer Tiling-Methode
+- aktuelles Layout im Popup hervorgehoben
+- Tooltips mit den Namen der Tiling-Methoden
+- Popup schließt nach Auswahl
+- Popup schließt bei Fokusverlust
+
+### Mitte
+
+- Titel des fokussierten Fensters
+- echtes Windows-Anwendungsicon
+- Icon-Ermittlung über EXE und PowerShell
+- Base64-PNG und Icon-Cache
+- Schutz vor asynchronen Render-Races
+
+### Rechte Seite
+
+- CPU-Auslastung
+- RAM verwendet/gesamt
+- Storage-Auslastung
+- aktive Netzwerk-Schnittstelle
+- IPv4-Adresse
+- Download-/Upload-Durchsatz
+- Lautstärke
+- Mute-Status
+- Klick zum Muten/Entmuten
+- Mausrad zur Lautstärkeregelung
+- Media-Titel und Artist
+- Previous / Play-Pause / Next
+- deutsches Datum
+- 24-Stunden-Uhrzeit
+
+Batterie und Systray sind bewusst nicht Bestandteil der Bar.
 
 ### Entwicklung
 
--   fnm
--   Go
--   Bun
--   Git
--   GitHub CLI
--   GitHub Desktop
--   Visual Studio Code
--   PowerShell 7
--   Nushell
--   Starship
+```powershell
+cd ~/windows-setup/dotfiles/zebar/windows-setup-bar
 
-Pakete mit aktivierter Update-Option werden bei späteren
-Bootstrap-Durchläufen automatisch aktualisiert.
+npm ci
+npm run build
+```
 
-## Development Storage
+Für Entwicklung und Neustart:
 
-Das Setup kann automatisch eine vollständig leere, geeignete interne SSD
-für Entwicklungs- und Spieldaten einrichten. Die System-/Bootdisk sowie
-ungeeignete Datenträger werden dabei ausgeschlossen. Vor destruktiven
-Änderungen werden der erkannte Datenträger und die geplante
-Partitionierung angezeigt und müssen vom Benutzer bestätigt werden.
+```powershell
+npm run dev:reload
+```
 
-  Laufwerk            Größe Dateisystem      Label     Zweck
-  ---------- -------------- ---------------- --------- -------------
-  `D:`               100 GB ReFS Dev Drive   `Dev`     Entwicklung
-  `G:`         Rest der SSD NTFS             `Games`   Spiele
+Der Build führt zunächst einen TypeScript-Typecheck aus und erstellt anschließend die Browser-Bundles mit esbuild.
+
+## Catppuccin Mocha
+
+Catppuccin Mocha ist die gemeinsame Designsprache des Windows-Desktops.
+
+Es wird bewusst keine universelle CSS-Datei für alle Anwendungen erzwungen. Jedes Programm verwendet die für es sinnvollste und stabilste Theme-Methode.
+
+Beispiele:
+
+| Komponente          | Theme-Methode                                 |
+| ------------------- | --------------------------------------------- |
+| komorebi            | integriertes Catppuccin                       |
+| Zebar               | eigenes CSS                                   |
+| Windows Terminal    | Farbschema in `settings.json`                 |
+| VS Code             | Catppuccin Theme/Extension                    |
+| Zen Browser         | eigene CSS-/UI-Anpassungen                    |
+| Explorer            | Windhawk File Explorer Styler (geplant)       |
+| Taskbar             | Windhawk Taskbar Styler (geplant)             |
+| Startmenü           | Windhawk Start Menu Styler (geplant)          |
+| Notification Center | Windhawk Notification Center Styler (geplant) |
+| eigenes OSD         | eigene Styles (geplant)                       |
+
+GitHub Desktop wird nur soweit angepasst, wie es stabil unterstützt wird.
+
+---
+
+# Automatische wöchentliche Wartung
+
+Der Bootstrap richtet die Windows-Aufgabe
+
+```text
+Windows Setup Weekly Maintenance
+```
+
+ein.
+
+Sie startet den vollständigen `bootstrap.ps1` **jeden Sonntag um 12:00 Uhr**.
+
+Es existiert bewusst kein separater Maintenance-Workflow. Neuinstallation, manuelle Aktualisierung und automatische Wartung verwenden dieselbe Logik.
+
+Die Aufgabe läuft im interaktiven Benutzerkontext mit erhöhten Rechten.
+
+Der Wartungslauf umfasst unter anderem:
+
+- Repository aktualisieren, sofern keine lokalen Änderungen vorliegen
+- konfigurierte Winget-/Store-Pakete aktualisieren
+- Entwicklungswerkzeuge aktualisieren
+- Treiber prüfen und aktualisieren
+- Windows- und Microsoft-Updates installieren
+- Logitech-G-HUB-Konfiguration synchronisieren
+- Windows- und Entwicklungs-Konfiguration erneut anwenden
+- Zebar-Abhängigkeiten und Build sicherstellen
+- PSScriptAnalyzer ausführen
+- erforderlichen Neustart erkennen
+- lokale Git-Änderungen erkennen
+- noch nicht gepushte Commits erkennen
+
+Der Rechner wird **nicht automatisch neu gestartet**.
+
+## Desktop-Benachrichtigungen
+
+Für Benachrichtigungen wird `BurntToast` verwendet.
+
+Nach einem Wartungslauf wird eine Benachrichtigung angezeigt, wenn:
+
+- Windows oder ein Update einen Neustart benötigt
+- das Repository lokale Änderungen enthält
+- noch nicht gepushte Commits vorhanden sind
+
+Änderungen werden bewusst **nicht automatisch committed oder gepusht**.
+
+---
+
+# Windows Updates
+
+Normale Windows- und Microsoft-Updates werden über `PSWindowsUpdate` installiert.
+
+Dazu gehören unter anderem:
+
+- kumulative Windows-Updates
+- Security Updates
+- .NET-Updates
+- Microsoft Defender Security Intelligence Updates
+
+Treiber werden separat durch die Treiberlogik behandelt.
+
+Ein erforderlicher Neustart wird erkannt, aber nicht automatisch durchgeführt.
+
+---
+
+# Software und Paketverwaltung
+
+Software wird deklarativ über `config/packages.psd1` verwaltet.
+
+Pakete können:
+
+- installiert werden
+- automatisch aktualisiert werden
+- von Updates ausgeschlossen werden
+- auf eine bestimmte Version festgelegt werden
+
+OpenVPN ist beispielsweise bewusst auf Version `2.7.101` festgelegt.
+
+## Basis
+
+- JetBrainsMono Nerd Font
+
+## System- und Desktop-Tools
+
+- Windows HDR Calibration
+- iCloud
+- OpenVPN
+- Logitech G HUB
+- komorebi
+- whkd
+- masir
+- Zebar
+
+Geplant:
+
+- PowerToys
+- Everything
+- Windhawk
+
+## Browser
+
+- Zen Browser
+- Google Chrome Beta
+
+## Entwicklung
+
+- fnm
+- Go
+- Bun
+- Git
+- GitHub CLI
+- GitHub Desktop
+- Visual Studio Code
+- PowerShell 7
+- Nushell
+- Starship
+- Codex CLI
+
+---
+
+# Development Storage
+
+Das Setup kann eine vollständig leere, geeignete interne SSD für Entwicklungs- und Spieldaten einrichten.
+
+System-/Bootdisk und ungeeignete Datenträger werden ausgeschlossen. Vor destruktiven Änderungen werden der erkannte Datenträger und die geplante Partitionierung angezeigt und müssen explizit bestätigt werden.
+
+| Laufwerk |        Größe | Dateisystem    | Label   | Zweck       |
+| -------- | -----------: | -------------- | ------- | ----------- |
+| `D:`     |       100 GB | ReFS Dev Drive | `Dev`   | Entwicklung |
+| `G:`     | Rest der SSD | NTFS           | `Games` | Spiele      |
 
 Für das Games-Laufwerk müssen mindestens 100 GB zur Verfügung stehen.
-Existieren die Laufwerke bereits in der erwarteten Form, wird die
-Partitionierung nicht erneut durchgeführt.
 
-### Dev-Drive-Verzeichnisse und Caches
+Existieren die Laufwerke bereits in der erwarteten Form, wird die Partitionierung nicht erneut durchgeführt.
 
-``` text
+## Dev-Drive-Verzeichnisse
+
+```text
 D:\
 ├── Projects\
 ├── Build\
@@ -202,62 +400,158 @@ D:\
 
 Die Entwicklungs-Caches werden auf das Dev Drive verschoben:
 
-  Tool              Pfad
-  ----------------- -----------------------
-  npm               `D:\Cache\npm`
-  pnpm              `D:\Cache\pnpm`
-  Yarn              `D:\Cache\yarn`
-  Bun               `D:\Cache\bun`
-  Go Build Cache    `D:\Cache\go\build`
-  Go Module Cache   `D:\Cache\go\modules`
+| Tool            | Pfad                  |
+| --------------- | --------------------- |
+| npm             | `D:\Cache\npm`        |
+| pnpm            | `D:\Cache\pnpm`       |
+| Yarn            | `D:\Cache\yarn`       |
+| Bun             | `D:\Cache\bun`        |
+| Go Build Cache  | `D:\Cache\go\build`   |
+| Go Module Cache | `D:\Cache\go\modules` |
 
-Für das ReFS Dev Drive wird außerdem der Microsoft Defender Dev Drive
-Performance Mode aktiviert. Der Echtzeitschutz bleibt grundsätzlich
-aktiv.
+Für das ReFS Dev Drive wird Microsoft Defender Dev Drive Performance Mode aktiviert. Der Echtzeitschutz bleibt grundsätzlich aktiv.
 
-## Windows Debloat
+---
 
-Der Bootstrap entfernt beziehungsweise deprovisioniert eine definierte
-Auswahl nicht benötigter Windows-AppX-Pakete und deaktiviert
-verschiedene Consumer- und Content-Delivery-Funktionen.
+# Windows Debloat
 
-Die Debloat-Logik ist wiederholbar aufgebaut. Bereits entfernte Pakete
-werden erkannt und übersprungen. Gaming-, Entwicklungs- und für Windows
-Hello relevante Funktionen sollen erhalten bleiben.
+Der Bootstrap entfernt beziehungsweise deprovisioniert eine definierte Auswahl nicht benötigter Windows-AppX-Pakete und deaktiviert verschiedene Consumer- und Content-Delivery-Funktionen.
 
-## Logitech G HUB
+Die Debloat-Logik ist wiederholbar. Bereits entfernte Pakete werden erkannt und übersprungen.
 
-Logitech G HUB wird über `winget` installiert und automatisch aktuell
-gehalten.
+Gaming-, Entwicklungs- und für Windows Hello relevante Funktionen sollen erhalten bleiben.
 
-Die aktuelle G-HUB-Konfiguration wird als `config\lghub\settings.db` im
-Repository gesichert.
+Windows Snap wird deaktiviert, da komorebi die Fensterverwaltung übernimmt.
 
-Auf einem frisch eingerichteten System wird die gespeicherte
-Konfiguration einmalig nach G HUB übernommen. Bei späteren
-Bootstrap-Durchläufen wird die aktuelle lokale G-HUB-Datenbank bei
-Änderungen zurück ins Repository kopiert.
+---
 
-G HUB wird für den Zugriff auf die Datenbank kurz beendet und
-anschließend wieder gestartet. Seine Konsolenausgaben werden umgeleitet.
-Da G HUB die Datenbank auch intern verändern kann, kann `settings.db`
-bei einem Wartungslauf als Git-Änderung erscheinen. Der abschließende
-Repository-Check weist darauf per Desktop-Benachrichtigung hin.
+# Entwicklerumgebung
 
-## PowerShell-Module
+## Node.js
+
+- Installation und Versionsverwaltung über fnm
+- Node LTS
+- npm
+- pnpm
+- Yarn
+
+## Bun
+
+- automatische Installation und Updates
+- Cache auf dem Dev Drive
+
+## Go
+
+- automatische Installation und Updates
+- Build- und Module-Cache auf dem Dev Drive
+
+## Git
+
+Das Setup konfiguriert unter anderem:
+
+- Benutzername
+- E-Mail
+- globale Git-Konfiguration
+- globale Gitignore
+- Editor
+- Git LFS
+- sinnvolle Default-Einstellungen
+
+Am Ende eines Wartungslaufs werden lokale Änderungen und ungepushte Commits erkannt.
+
+## Codex
+
+Die Codex CLI wird automatisch installiert.
+
+---
+
+# Browser
+
+## Zen Browser
+
+Automatisiert werden unter anderem:
+
+- Installation und Updates
+- Erweiterungen
+- deutsche Sprache
+- deutsches Wörterbuch
+- Enterprise Policies
+- Session Restore
+- Google als Suchmaschine
+- Telemetrie deaktivieren
+- Firefox Studies deaktivieren
+- Pocket deaktivieren
+- Zen Mods installieren
+- Zen-Mod-Installation über Marionette
+- idempotente Mod-Installation
+
+Weitere Catppuccin-CSS-Anpassungen sind geplant.
+
+## Google Chrome Beta
+
+- Installation
+- automatische Updates
+- Enterprise Policies
+- Extension Deployment
+
+---
+
+# Logitech G HUB
+
+Logitech G HUB wird über `winget` installiert und automatisch aktuell gehalten.
+
+Die aktuelle Konfiguration wird als
+
+```text
+config/lghub/settings.db
+```
+
+im Repository gesichert.
+
+Auf einem frisch eingerichteten System wird die gespeicherte Konfiguration einmalig nach G HUB übernommen. Bei späteren Bootstrap-Durchläufen wird die aktuelle lokale G-HUB-Datenbank bei Änderungen zurück ins Repository kopiert.
+
+G HUB wird für den Datenbankzugriff kontrolliert beendet und anschließend wieder gestartet.
+
+Da G HUB die Datenbank intern verändern kann, kann `settings.db` nach einem Wartungslauf als Git-Änderung erscheinen. Der abschließende Repository-Check weist darauf hin.
+
+---
+
+# PowerShell und Codequalität
 
 Folgende PowerShell-Module werden automatisch verwaltet:
 
--   `PSScriptAnalyzer`
--   `BurntToast`
--   `PSWindowsUpdate`
+- `PSScriptAnalyzer`
+- `BurntToast`
+- `PSWindowsUpdate`
 
-## Projektstruktur
+Manuelle Codeprüfung:
 
-``` text
+```powershell
+. .\modules\index.ps1
+Test-PowerShellCode .
+```
+
+Die Prüfung läuft außerdem am Ende des Bootstraps.
+
+Ziel:
+
+```text
+[OK] Keine PSScriptAnalyzer-Probleme gefunden.
+```
+
+CI und zusätzliche Pester-Tests sind für einen späteren Ausbau vorgesehen.
+
+---
+
+# Projektstruktur
+
+```text
 windows-setup/
 ├── bootstrap.ps1
 ├── init.ps1
+├── roadmap.md
+├── README.md
+│
 ├── config/
 │   ├── browsers.psd1
 │   ├── debloat.psd1
@@ -267,6 +561,7 @@ windows-setup/
 │   ├── vscode.psd1
 │   └── lghub/
 │       └── settings.db
+│
 ├── modules/
 │   ├── Drivers/
 │   ├── Windows/
@@ -287,63 +582,102 @@ windows-setup/
 │   ├── Terminal.ps1
 │   ├── VSCode.ps1
 │   └── WindowsUpdate.ps1
+│
 ├── dotfiles/
+│   ├── komorebi/
+│   └── zebar/
+│       └── windows-setup-bar/
+│           ├── src/
+│           ├── dist/
+│           ├── index.html
+│           ├── layout-menu.html
+│           ├── styles.css
+│           ├── layout-menu.css
+│           ├── package.json
+│           └── zpack.json
+│
 ├── assets/
 ├── AGENTS.md
 └── .codex/
 ```
 
-### `init.ps1`
+## `init.ps1`
 
-Minimaler Einstiegspunkt für ein frisch installiertes Windows.
-Installiert die Voraussetzungen, lädt beziehungsweise aktualisiert das
-Repository und startet `bootstrap.ps1`.
+Minimaler Einstiegspunkt für ein frisch installiertes Windows. Installiert Voraussetzungen, lädt beziehungsweise aktualisiert das Repository und startet `bootstrap.ps1`.
 
-### `bootstrap.ps1`
+## `bootstrap.ps1`
 
-Zentrale Orchestrierung für Erstinstallation, manuelle erneute
-Setup-Durchläufe und automatische wöchentliche Wartung. Die eigentliche
-Installations- und Konfigurationslogik befindet sich in den Modulen.
+Zentrale Orchestrierung für:
 
-### `config/`
+- Erstinstallation
+- manuelle erneute Setup-Durchläufe
+- automatische wöchentliche Wartung
 
-Enthält deklarative Konfigurationsdaten wie Paketgruppen,
-Browser-Konfiguration, VS-Code-Erweiterungen, PowerShell-Module,
-Debloat-, Storage- und G-HUB-Konfiguration.
+Die eigentliche Installations- und Konfigurationslogik befindet sich in den Modulen.
 
-### `modules/`
+## `config/`
 
-Enthält die eigentliche PowerShell-Logik. `modules/index.ps1` lädt die
-einzelnen Module zentral.
+Deklarative Konfiguration für Pakete, Browser, VS-Code-Erweiterungen, PowerShell-Module, Debloat, Storage und weitere Komponenten.
 
-## Entwicklung und Codequalität
+## `modules/`
 
-`PSScriptAnalyzer` wird automatisch installiert.
+PowerShell-Implementierung des Setups. `modules/index.ps1` lädt die einzelnen Module zentral.
 
-``` powershell
-. .\modules\index.ps1
-Test-PowerShellCode .
-```
+## `dotfiles/`
 
-Die Codeprüfung wird außerdem am Ende des Bootstraps ausgeführt. Ziel
-ist ein sauberer Lauf ohne Fehler, Warnungen oder Hinweise:
+Versionierte Konfigurationen der Desktop- und Benutzeranwendungen, insbesondere komorebi und Zebar.
 
-``` text
-[OK] Keine PSScriptAnalyzer-Probleme gefunden.
-```
+---
 
-## Grundprinzipien
+# Geplante nächste Schritte
 
--   **Ein Bootstrap:** Keine getrennte Setup- und Maintenance-Logik.
--   **Idempotenz:** Bereits eingerichtete Komponenten werden erkannt und
-    nicht unnötig neu erstellt.
--   **Konfiguration im Repository:** Relevante Einstellungen sollen
-    reproduzierbar und nachvollziehbar sein.
--   **Keine automatischen Git-Pushes:** Änderungen werden gemeldet und
-    vor Commit beziehungsweise Push geprüft.
--   **Keine automatischen Neustarts:** Ein erforderlicher Neustart wird
-    gemeldet, aber nicht erzwungen.
--   **Sichere Storage-Einrichtung:** Destruktive Änderungen benötigen
-    eine explizite Bestätigung.
--   **Automatische Wartung:** Derselbe Bootstrap hält das System
-    regelmäßig aktuell.
+Die Desktop-Basis ist inzwischen funktional. Die aktuelle Reihenfolge für den weiteren Ausbau ist:
+
+1. **PowerToys + Everything**
+   - Command Palette als App Launcher
+   - Everything-Integration
+   - bevorzugt `Win+Space` als Launcher-Hotkey
+
+2. **Windhawk**
+   - File Explorer Styler
+   - Taskbar Styler
+   - Start Menu Styler
+   - Notification Center Styler
+   - Catppuccin Mocha für die Windows-Shell
+
+3. **Eigenes OSD**
+   - Lautstärke
+   - Mute
+   - Mikrofon
+   - Caps Lock
+   - Num Lock
+
+4. **Desktop-Polish**
+   - Zen Browser
+   - Lock Screen
+   - verbleibende visuelle Inkonsistenzen
+
+5. **Gaming und Home Office**
+
+6. **Qualität und Wartbarkeit**
+   - vollständiges Lauf-Logging
+   - Clean-Install-Test
+   - CI
+   - Pester
+   - Security-Abschlussprüfungen
+
+Die detaillierte Planung befindet sich in [`roadmap.md`](roadmap.md).
+
+---
+
+# Grundprinzipien
+
+- **Ein Bootstrap:** Keine getrennte Setup- und Maintenance-Logik.
+- **Idempotenz:** Bereits eingerichtete Komponenten werden erkannt und nicht unnötig neu erstellt.
+- **Konfiguration im Repository:** Relevante Einstellungen sollen reproduzierbar und nachvollziehbar sein.
+- **Keine automatischen Git-Pushes:** Änderungen werden gemeldet und vor Commit beziehungsweise Push geprüft.
+- **Keine automatischen Neustarts:** Ein erforderlicher Neustart wird gemeldet, aber nicht erzwungen.
+- **Sichere Storage-Einrichtung:** Destruktive Änderungen benötigen eine explizite Bestätigung.
+- **Automatische Wartung:** Derselbe Bootstrap hält das System regelmäßig aktuell.
+- **Desktop als Code:** Window Manager, Bar, Hotkeys und Desktop-Verhalten werden soweit sinnvoll reproduzierbar versioniert.
+- **Native Theme-Wege bevorzugen:** Catppuccin wird pro Anwendung über die jeweils stabilste unterstützte Methode umgesetzt.
