@@ -102,7 +102,7 @@ function Register-KomorebiStartupTask {
 
     Write-Host ""
     Write-Host "========================================"
-    Write-Host " komorebi Autostart"
+    Write-Host " komorebi Desktop Autostart"
     Write-Host "========================================"
 
 
@@ -116,12 +116,22 @@ function Register-KomorebiStartupTask {
             -ErrorAction Stop
     ).Source
 
+    $masir = (
+        Get-Command `
+            -Name "masir" `
+            -ErrorAction Stop
+    ).Source
 
     $action = New-ScheduledTaskAction `
         -Execute $pwsh `
         -Argument (
         '-NoProfile -WindowStyle Hidden ' +
-        '-Command "komorebic start --whkd"'
+        '-Command "' +
+        'komorebic start --whkd; ' +
+        'Start-Process -FilePath ''' +
+        $masir +
+        ''' -WindowStyle Hidden' +
+        '"'
     )
 
 
@@ -138,7 +148,7 @@ function Register-KomorebiStartupTask {
     $principal = New-ScheduledTaskPrincipal `
         -UserId $env:USERNAME `
         -LogonType Interactive `
-        -RunLevel Limited
+        -RunLevel Highest
 
 
     $settings = New-ScheduledTaskSettingsSet `
@@ -155,7 +165,7 @@ function Register-KomorebiStartupTask {
 
     if ($existingTask) {
 
-        Write-Host "[UPDATE] Bestehende komorebi-Aufgabe."
+        Write-Host "[UPDATE] Bestehende Desktop-Aufgabe."
 
 
         Set-ScheduledTask `
@@ -168,7 +178,7 @@ function Register-KomorebiStartupTask {
     }
     else {
 
-        Write-Host "[CREATE] komorebi Autostart-Aufgabe."
+        Write-Host "[CREATE] Desktop-Autostart-Aufgabe."
 
 
         Register-ScheduledTask `

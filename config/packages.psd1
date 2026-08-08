@@ -66,6 +66,13 @@
             Source = "winget"
             Update = $true
         }
+
+        @{
+            Name   = "Masir"
+            Id     = "LGUG2Z.masir"
+            Source = "winget"
+            Update = $true
+        }
     )
 
     Browser     = @(

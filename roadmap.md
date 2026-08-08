@@ -89,6 +89,7 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [ ] PowerToys aufnehmen
 - [ ] Everything aufnehmen
 - [ ] Windhawk aufnehmen
+- [x] masir aufnehmen
 
 ## Aktuelle Gruppen
 
@@ -108,6 +109,7 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [ ] PowerToys
 - [ ] Everything
 - [ ] Windhawk
+- [x] masir
 
 ### Development
 
@@ -404,13 +406,27 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [ ] PowerToys Command Palette mit passendem Keybinding integrieren
 - [ ] bevorzugt `Win+Space` als Windows-Äquivalent zu `Super+Space` unter Arch prüfen/einrichten
 
+## Focus Follows Mouse / masir
+
+- [x] `LGUG2Z.masir` über Winget installieren
+- [x] masir 0.1.2 praktisch getestet
+- [x] automatische komorebi-Integration von masir verwenden
+- [x] Focus Follows Mouse wie unter Hyprland
+- [x] masir parameterlos starten
+- [x] masir gemeinsam mit komorebi/whkd über den Desktop-Task starten
+- [x] keine separate masir-Konfiguration notwendig
+
 ## Autostart
 
 - [x] Scheduled Task `komorebi Desktop`
 - [x] Start bei Benutzeranmeldung
 - [x] interaktiver Benutzerkontext
-- [x] keine unnötigen Adminrechte
-- [x] realer Neustart-/Login-Test erfolgreich
+- [x] komorebi, whkd und masir gemeinsam starten
+- [x] Task mit `RunLevel Highest` starten
+- [x] dadurch auch erhöhte/Admin-Fenster durch komorebi verwaltbar
+- [x] Windows Terminal als Administrator wird korrekt in das Tiling-Layout aufgenommen
+- [x] realer manueller Task-Test erfolgreich
+- [x] realer Neustart-/Login-Test für komorebi grundsätzlich bereits erfolgreich
 
 ---
 
@@ -449,15 +465,21 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [x] aktiven Workspace dynamisch hervorheben
 - [x] Layout/Tiling-Methode dynamisch anzeigen
 - [x] Catppuccin-Mocha-Pill-Design
-- [ ] Workspace-Pills per Mausklick steuerbar machen
-- [ ] Klick auf Workspace 1–5 fokussiert direkt den entsprechenden komorebi-Workspace
-- [ ] Hover-/Pointer-/Pressed-Feedback für interaktive Workspace-Pills
-- [ ] Layout-/Tiling-Anzeige per Mausklick steuerbar machen
-- [ ] Catppuccin-Popup/Dropdown für verfügbare komorebi-Layouts umsetzen
-- [ ] aktuelles Layout im Selector hervorheben
-- [ ] Layout-Auswahl setzt die Tiling-Methode direkt in komorebi
-- [ ] `UltrawideVerticalStack` im Selector berücksichtigen
-- [ ] Interaktionen praktisch gegen komorebi testen
+- [x] Workspace-Pills per Mausklick steuerbar machen
+- [x] Klick auf Workspace 1–5 fokussiert direkt den entsprechenden komorebi-Workspace
+- [x] Hover-/Pointer-/Pressed-Feedback für interaktive Workspace-Pills
+- [x] Layout-/Tiling-Anzeige per Mausklick steuerbar machen
+- [x] Catppuccin-Popup/Dropdown für verfügbare komorebi-Layouts umsetzen
+- [x] aktuelles Layout im Selector hervorheben
+- [x] Layout-Auswahl setzt die Tiling-Methode direkt in komorebi
+- [x] `UltrawideVerticalStack` im Selector berücksichtigen
+- [x] Interaktionen praktisch gegen komorebi testen
+- [x] Layout-Selector als separates Zebar-Widget umgesetzt
+- [x] Popup schließt nach Layout-Auswahl automatisch
+- [x] Popup schließt bei Fokusverlust/Klick außerhalb
+- [x] Hover-Tooltip mit Bezeichnung jeder Tiling-Methode
+- [x] Rand-Tooltips gegen Abschneiden am Popup-Rand abgesichert
+- [x] gesamte Layout-Pill klickbar, nicht nur das Icon
 
 ## Mitte
 
@@ -506,7 +528,7 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [ ] optional Responsive-/Overflow-Verhalten für kleinere Monitore
 - [ ] optional Icon-Fallback für spezielle UWP-/Store-Anwendungen verbessern
 
-> **Aktuelle Priorität:** Zebar ist optisch und bei den Statusinformationen weit fortgeschritten, aber die Workspace- und Layout-Anzeigen sind noch nicht vollständig interaktiv. Diese Funktionen werden vor Windhawk, PowerToys-Polish und weiteren Desktop-Themen abgeschlossen.
+> **Status:** Zebar ist für den aktuellen Funktionsumfang abgeschlossen. Workspace-Wechsel und Layout-Auswahl funktionieren per Maus; der Layout-Selector ist als separates Popup-Widget mit Tooltips und automatischem Schließen umgesetzt.
 
 ---
 
@@ -541,8 +563,10 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [x] Zebar-TypeScript-Build erfolgreich
 - [x] Network-, Audio-, Media- und Date-Time-Widgets praktisch getestet
 - [x] PSScriptAnalyzer am Ende des Bootstraps
-- [ ] Zebar Workspace-Klicks praktisch getestet
-- [ ] Zebar Layout-Selector praktisch getestet
+- [x] Zebar Workspace-Klicks praktisch getestet
+- [x] Zebar Layout-Selector praktisch getestet
+- [x] masir Focus-Follows-Mouse praktisch getestet
+- [x] Admin-Windows-Terminal im komorebi-Tiling praktisch getestet
 - [ ] PowerToys/Everything-Launcher praktisch getestet
 - [ ] Windhawk-Konfiguration nach Windows-Neustart praktisch getestet
 - [ ] vollständiger Test auf einer wirklich frischen Windows-11-Installation
@@ -699,29 +723,36 @@ Ziel ist ein einheitliches OSD analog zum SwayOSD-Konzept unter Arch.
 
 Die Desktop-Basis ist bereits funktionsfähig. Die weitere Arbeit erfolgt in dieser Reihenfolge:
 
-1. [ ] **Zebar fertigstellen**
+1. [x] **Zebar fertigstellen**
    - Workspace-Umschaltung per Klick
    - Layout-/Tiling-Auswahl per Klick
-   - interaktives Catppuccin-Popup für Layouts
+   - separates Catppuccin-Popup für Layouts
    - Hover-/Pressed-Feedback
-2. [ ] **PowerToys + Everything**
+   - Tooltips für Tiling-Methoden
+   - Schließen bei Auswahl und Fokusverlust
+2. [x] **Focus Follows Mouse**
+   - masir über Winget
+   - automatische komorebi-Integration
+   - Autostart gemeinsam mit komorebi/whkd
+   - erhöhten Desktop-Task verwenden, damit Admin-Fenster getiled werden
+3. [ ] **PowerToys + Everything**
    - Command Palette als App Launcher
    - `Win+Space`
    - reproduzierbare Konfiguration
-3. [ ] **Windhawk**
+4. [ ] **Windhawk**
    - Explorer
    - Taskbar
    - Startmenü
    - Notification Center / Quick Settings
-4. [ ] **Eigenes OSD**
+5. [ ] **Eigenes OSD**
    - Volume/Mute/Mic
    - Caps Lock / Num Lock
-5. [ ] **Desktop-Polish**
+6. [ ] **Desktop-Polish**
    - Zen Catppuccin
    - Lock Screen
    - verbleibende visuelle Inkonsistenzen
-6. [ ] **Gaming & Home Office**
-7. [ ] **Qualität & Wartbarkeit**
+7. [ ] **Gaming & Home Office**
+8. [ ] **Qualität & Wartbarkeit**
    - Logging
    - Clean-Install-Test
    - CI/Pester/TypeScript-Checks
@@ -748,6 +779,9 @@ Besonders weit abgeschlossen sind:
 - komorebi + whkd
 - Zebar inklusive TypeScript-/esbuild-Build
 - Zebar System-, Audio-, Media-, Netzwerk- und Window-Widgets
+- Zebar Workspace- und Layout-Steuerung inklusive Popup/Tooltips
+- masir Focus Follows Mouse
+- Tiling von normalen und erhöhten/Admin-Fenstern
 - Desktop-Autostart
 - wöchentliche Wartung
 - Desktop-Benachrichtigungen
@@ -765,7 +799,9 @@ komorebi
    └── Zebar
 ```
 
-Zebar zeigt die fünf Workspaces und die aktuelle Tiling-Methode bereits dynamisch an. Die zugehörigen Icons sind jedoch derzeit noch primär Anzeigen: Workspace-Wechsel und Layout-Auswahl per Mausklick müssen noch implementiert werden.
+Zebar zeigt die fünf Workspaces und die aktuelle Tiling-Methode dynamisch an und ist inzwischen vollständig interaktiv. Workspaces können per Klick gewechselt werden. Die Layout-Pill öffnet ein separates Catppuccin-Popup mit den verfügbaren Tiling-Methoden; Hover zeigt Tooltips, Auswahl wird direkt angewendet und das Popup schließt bei Auswahl oder Fokusverlust.
+
+masir ergänzt komorebi um Focus Follows Mouse wie unter Hyprland. komorebi, whkd und masir werden gemeinsam über den Desktop-Scheduled-Task gestartet. Der Task läuft erhöht, damit auch als Administrator gestartete Anwendungen – beispielsweise Windows Terminal – korrekt in das Tiling-Layout aufgenommen werden.
 
 Das geplante Zielbild lautet:
 
@@ -774,7 +810,8 @@ Windows Desktop
 │
 ├── Window Management
 │   ├── komorebi
-│   └── whkd
+│   ├── whkd
+│   └── masir (Focus Follows Mouse)
 │
 ├── Bar
 │   └── Zebar
@@ -798,18 +835,15 @@ Windows Desktop
 
 Die aktuelle Priorität liegt bewusst auf der Fertigstellung des Desktop-Erlebnisses:
 
-1. Zebar Workspace- und Layout-Steuerung
-2. PowerToys Command Palette + Everything
-3. Windhawk-basierte Catppuccin-Anpassung der Windows-Shell
-4. eigenes Catppuccin-OSD
-5. Zen-/Lock-Screen-/Desktop-Polish
-6. Gaming- und Homeoffice-Pakete
-7. zentrale Logging-Strategie
-8. vollständiger Clean-Install-Test auf einem frischen Windows 11
-9. CI/Pester/TypeScript-Checks
-10. Security-Abschlussprüfungen für BitLocker, Secure Boot und Firewall
-11. Dokumentations-Feinschliff
+1. PowerToys Command Palette + Everything
+2. Windhawk-basierte Catppuccin-Anpassung der Windows-Shell
+3. eigenes Catppuccin-OSD
+4. Zen-/Lock-Screen-/Desktop-Polish
+5. Gaming- und Homeoffice-Pakete
+6. zentrale Logging-Strategie
+7. vollständiger Clean-Install-Test auf einem frischen Windows 11
+8. CI/Pester/TypeScript-Checks
+9. Security-Abschlussprüfungen für BitLocker, Secure Boot und Firewall
+10. Dokumentations-Feinschliff
 
 Damit ist der Grundaufbau nicht mehr das Hauptproblem. Der Fokus verschiebt sich jetzt auf einen vollständig bedienbaren, konsistenten und reproduzierbaren Windows-Desktop, der sich funktional und optisch an der Arch-/Hyprland-Umgebung orientiert.
-
-TODO: masir für focus follows mouse
