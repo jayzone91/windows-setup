@@ -35,6 +35,8 @@ $VSCode = Import-PowerShellDataFile "$Root\config\vscode.psd1"
 $Browsers = Import-PowerShellDataFile "$Root\config\browsers.psd1"
 $PowerShell = Import-PowerShellDataFile "$Root\config\powershell.psd1"
 $Debloat = Import-PowerShellDataFile "$Root\config\debloat.psd1"
+$Storage = Import-PowerShellDataFile `
+    "$Root\config\storage.psd1"
 
 # ------------------------------------------------------------
 # Software
@@ -102,6 +104,9 @@ Set-PowerShellPreferences
 Set-NushellPreferences
 
 Set-LanguageEnvironment
+
+Initialize-DevelopmentStorage `
+    -Config $Storage
 
 Install-CodexCli
 

@@ -13,6 +13,7 @@ $modules = @(
     "Packages.ps1"
     "PowerShell.ps1"
     "Security.ps1"
+    "Storage.ps1"
     "Terminal.ps1"
     "VSCode.ps1"
 )
