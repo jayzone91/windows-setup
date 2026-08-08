@@ -1,6 +1,27 @@
 {
   "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/v0.1.41/schema.bar.json",
-  "font_family": "JetBrains Mono",
+  "monitor": 0,
+  "font_family": "JetBrainsMono Nerd Font",
+  "font_size": 13,
+  "icon_scale": 1.5,
+  "height": 42,
+  "margin": {
+    "top": 6,
+    "bottom": 0,
+    "left": 8,
+    "right": 8
+  },
+  "padding": {
+    "horizontal": 6,
+    "vertical": 4
+  },
+  "widget_spacing": 8,
+  "grouping": {
+    "kind": "Widget",
+    "rounding": 10,
+    "style": "Default",
+    "transparency_alpha": 220
+  },
   "theme": {
     "palette": "Catppuccin",
     "name": "Mocha",
@@ -32,32 +53,39 @@
   ],
   "right_widgets": [
     {
-      "Update": {
-        "enable": true
+      "Media": {
+        "enable": true,
+        "display": "Full"
       }
     },
     {
-      "Media": {
-        "enable": true
+      "Cpu": {
+        "enable": true,
+        "data_refresh_interval": 2
+      }
+    },
+    {
+      "Memory": {
+        "enable": true,
+        "data_refresh_interval": 2
       }
     },
     {
       "Storage": {
         "enable": true,
+        "data_refresh_interval": 10,
         "show_removable_disks": false,
-        "show_read_only_disks": false
-      }
-    },
-    {
-      "Memory": {
-        "enable": true
+        "show_read_only_disks": false,
+        "storage_display_name": "Mount"
       }
     },
     {
       "Network": {
         "enable": true,
         "show_activity": true,
-        "show_total_activity": false
+        "show_total_activity": false,
+        "show_default_interface": true,
+        "data_refresh_interval": 2
       }
     },
     {
@@ -77,6 +105,31 @@
     {
       "Battery": {
         "enable": false
+      }
+    },
+    {
+      "Systray": {
+        "enable": true,
+        "info_button": "Overflow",
+        "overflow_toggle_position": "Right",
+        "hidden_icons": [
+          {
+            "guid": "ba82e2dc-f405-47ad-b032-cf0faa0e3933"
+          },
+          {
+            "guid": "6da68f06-00f1-4e6e-8158-7f1ffd4f9db9"
+          },
+          {
+            "guid": "067f7a07-0169-4536-9dbf-4c639f47927a"
+          },
+          {
+            "tooltip": {
+              "matching_strategy": "Contains",
+              "text": "Logitech",
+              "value": "Logitech"
+            }
+          }
+        ]
       }
     }
   ]

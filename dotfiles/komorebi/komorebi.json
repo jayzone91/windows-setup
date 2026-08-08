@@ -8,6 +8,12 @@
   "border": true,
   "border_width": 3,
   "border_offset": -1,
+  "animation": {
+    "enabled": true,
+    "duration": 200,
+    "fps": 60,
+    "style": "EaseOutSine"
+  },
   "theme": {
     "palette": "Catppuccin",
     "name": "Mocha",
