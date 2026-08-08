@@ -1,70 +1,43 @@
-import type {
-  KomorebiOutput,
-} from "zebar";
+import type { KomorebiOutput } from "zebar";
 
-import {
-  getElement,
-} from "../utils/dom";
+import { getElement } from "../utils/dom";
 
-import {
-  escapeHtml,
-} from "../utils/html";
+import { escapeHtml } from "../utils/html";
 
-import {
-  getFocusedWindow,
-} from "./window-state";
+import { getFocusedWindow } from "./window-state";
 
-import {
-  getWindowIcon,
-} from "./window-icon";
+import { getWindowIcon } from "./window-icon";
 
-
-let currentWindowHwnd:
-  number | null = null;
-
+let currentWindowHwnd: number | null = null;
 
 export async function renderWindowTitle(
   komorebi: KomorebiOutput,
 ): Promise<void> {
-  const element =
-    getElement("window-title");
+  const element = getElement("window-title");
 
-  const workspace =
-    komorebi.focusedWorkspace;
+  const workspace = komorebi.focusedWorkspace;
 
-  const window =
-    getFocusedWindow(workspace);
+  const window = getFocusedWindow(workspace);
 
   if (!window?.title) {
     currentWindowHwnd = null;
 
-    hideWindowTitle(
-      element,
-    );
+    hideWindowTitle(element);
 
     return;
   }
 
-  const hwnd =
-    window.hwnd;
+  const hwnd = window.hwnd;
 
-  currentWindowHwnd =
-    hwnd;
+  currentWindowHwnd = hwnd;
 
-  const icon =
-    await getWindowIcon(
-      window,
-    );
+  const icon = await getWindowIcon(window);
 
-  if (
-    currentWindowHwnd !==
-    hwnd
-  ) {
+  if (currentWindowHwnd !== hwnd) {
     return;
   }
 
-  element.style.display =
-    "flex";
+  element.style.display = "flex";
 
   element.innerHTML = `
     ${
@@ -89,11 +62,7 @@ export async function renderWindowTitle(
   `;
 }
 
-
-function hideWindowTitle(
-  element: HTMLElement,
-): void {
+function hideWindowTitle(element: HTMLElement): void {
   element.innerHTML = "";
-  element.style.display =
-    "none";
+  element.style.display = "none";
 }

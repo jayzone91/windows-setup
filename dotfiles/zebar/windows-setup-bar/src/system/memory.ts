@@ -1,27 +1,13 @@
-import type {
-  MemoryOutput,
-} from "zebar";
+import type { MemoryOutput } from "zebar";
 
-import {
-  bytesToGiB,
-} from "../utils/format";
+import { bytesToGiB } from "../utils/format";
 
+export function renderMemory(memory: MemoryOutput): string {
+  const usage = Math.round(memory.usage);
 
-export function renderMemory(
-  memory: MemoryOutput,
-): string {
-  const usage =
-    Math.round(memory.usage);
+  const used = bytesToGiB(memory.usedMemory);
 
-  const used =
-    bytesToGiB(
-      memory.usedMemory,
-    );
-
-  const total =
-    bytesToGiB(
-      memory.totalMemory,
-    );
+  const total = bytesToGiB(memory.totalMemory);
 
   return `
     <div

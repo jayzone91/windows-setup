@@ -1,56 +1,27 @@
-import type {
-  Disk,
-  DiskOutput,
-} from "zebar";
+import type { Disk, DiskOutput } from "zebar";
 
-import {
-  formatBytes,
-} from "../utils/format";
+import { formatBytes } from "../utils/format";
 
-import {
-  escapeHtml,
-} from "../utils/html";
+import { escapeHtml } from "../utils/html";
 
+export function renderDisks(diskOutput: DiskOutput): string {
+  const disks = diskOutput.disks.filter(
+    (disk) => !disk.isRemovable && disk.totalSpace.bytes > 0,
+  );
 
-export function renderDisks(
-  diskOutput: DiskOutput,
-): string {
-  const disks =
-    diskOutput.disks.filter(
-      (disk) =>
-        !disk.isRemovable &&
-        disk.totalSpace.bytes > 0,
-    );
-
-  return disks
-    .map(renderDisk)
-    .join("");
+  return disks.map(renderDisk).join("");
 }
 
+function renderDisk(disk: Disk): string {
+  const total = disk.totalSpace.bytes;
 
-function renderDisk(
-  disk: Disk,
-): string {
-  const total =
-    disk.totalSpace.bytes;
+  const available = disk.availableSpace.bytes;
 
-  const available =
-    disk.availableSpace.bytes;
+  const used = total - available;
 
-  const used =
-    total - available;
+  const usedPercent = total > 0 ? Math.round((used / total) * 100) : 0;
 
-  const usedPercent =
-    total > 0
-      ? Math.round(
-          (used / total) * 100,
-        )
-      : 0;
-
-  const mountPoint =
-    normalizeMountPoint(
-      disk.mountPoint,
-    );
+  const mountPoint = normalizeMountPoint(disk.mountPoint);
 
   const tooltip =
     `${mountPoint}: ` +
@@ -87,11 +58,6 @@ function renderDisk(
   `;
 }
 
-
-function normalizeMountPoint(
-  mountPoint: string,
-): string {
-  return mountPoint
-    .replaceAll("\\", "")
-    .replaceAll("/", "");
+function normalizeMountPoint(mountPoint: string): string {
+  return mountPoint.replaceAll("\\", "").replaceAll("/", "");
 }

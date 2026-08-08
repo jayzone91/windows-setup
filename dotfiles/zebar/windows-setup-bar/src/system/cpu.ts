@@ -1,18 +1,9 @@
-import type {
-  CpuOutput,
-} from "zebar";
+import type { CpuOutput } from "zebar";
 
+export function renderCpu(cpu: CpuOutput): string {
+  const usage = Math.round(cpu.usage);
 
-export function renderCpu(
-  cpu: CpuOutput,
-): string {
-  const usage =
-    Math.round(cpu.usage);
-
-  const highUsageClass =
-    usage >= 85
-      ? "high-usage"
-      : "";
+  const highUsageClass = usage >= 85 ? "high-usage" : "";
 
   return `
     <div

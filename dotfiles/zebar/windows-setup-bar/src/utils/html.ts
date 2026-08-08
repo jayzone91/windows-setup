@@ -1,10 +1,4 @@
-export function escapeHtml(
-  value:
-    | string
-    | number
-    | null
-    | undefined,
-): string {
+export function escapeHtml(value: string | number | null | undefined): string {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")

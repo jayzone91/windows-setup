@@ -1,71 +1,43 @@
-import type {
-  NetworkInterface,
-  NetworkOutput,
-} from "zebar";
+import type { NetworkInterface, NetworkOutput } from "zebar";
 
-import {
-  escapeHtml,
-} from "../utils/html";
+import { escapeHtml } from "../utils/html";
 
-
-export function renderNetwork(
-  network: NetworkOutput,
-): string {
-  const networkInterface =
-    network.defaultInterface;
+export function renderNetwork(network: NetworkOutput): string {
+  const networkInterface = network.defaultInterface;
 
   if (!networkInterface) {
     return "";
   }
 
-  const ipv4 =
-    getPrimaryIpv4(
-      networkInterface,
-    );
+  const ipv4 = getPrimaryIpv4(networkInterface);
 
-  const received =
-    network.traffic
-      ? formatNetworkRate(
-          network.traffic.received.bytes,
-        )
-      : "0 B/s";
+  const received = network.traffic
+    ? formatNetworkRate(network.traffic.received.bytes)
+    : "0 B/s";
 
-  const transmitted =
-    network.traffic
-      ? formatNetworkRate(
-          network.traffic.transmitted.bytes,
-        )
-      : "0 B/s";
+  const transmitted = network.traffic
+    ? formatNetworkRate(network.traffic.transmitted.bytes)
+    : "0 B/s";
 
-  const interfaceName =
-    formatInterfaceType(
-      networkInterface.type,
-    );
+  const interfaceName = formatInterfaceType(networkInterface.type);
 
   const tooltipParts = [
     networkInterface.friendlyName,
     networkInterface.description,
-    ipv4
-      ? `IPv4: ${ipv4}`
-      : null,
-  ].filter(
-    (value): value is string =>
-      Boolean(value),
-  );
+    ipv4 ? `IPv4: ${ipv4}` : null,
+  ].filter((value): value is string => Boolean(value));
 
   return `
     <div
       class="pill system-pill network-pill"
-      title="${escapeHtml(
-        tooltipParts.join("\n"),
-      )}"
+      title="${escapeHtml(tooltipParts.join("\n"))}"
     >
       <span class="system-icon network-icon">
         ${getNetworkIcon(networkInterface)}
       </span>
 
       <span class="network-interface">
-        ${escapeHtml(interfaceName ? interfaceName === "Ethernet" ? "LAN" : interfaceName : networkInterface.friendlyName)}
+        ${escapeHtml(interfaceName ? (interfaceName === "Ethernet" ? "LAN" : interfaceName) : networkInterface.friendlyName)}
       </span>
 
       ${
@@ -97,25 +69,15 @@ export function renderNetwork(
   `;
 }
 
-
-function getPrimaryIpv4(
-  networkInterface: NetworkInterface,
-): string | null {
+function getPrimaryIpv4(networkInterface: NetworkInterface): string | null {
   return (
-    networkInterface.ipv4Addresses
-      .find((address) =>
-        !address.startsWith(
-          "169.254.",
-        ),
-      ) ??
-    null
+    networkInterface.ipv4Addresses.find(
+      (address) => !address.startsWith("169.254."),
+    ) ?? null
   );
 }
 
-
-function formatInterfaceType(
-  type: NetworkInterface["type"],
-): string {
+function formatInterfaceType(type: NetworkInterface["type"]): string {
   switch (type) {
     case "ethernet":
       return "Ethernet";
@@ -140,10 +102,7 @@ function formatInterfaceType(
   }
 }
 
-
-function getNetworkIcon(
-  networkInterface: NetworkInterface,
-): string {
+function getNetworkIcon(networkInterface: NetworkInterface): string {
   switch (networkInterface.type) {
     case "wifi":
       return "󰖩";
@@ -156,35 +115,17 @@ function getNetworkIcon(
   }
 }
 
-
-function formatNetworkRate(
-  bytesPerSecond: number,
-): string {
+function formatNetworkRate(bytesPerSecond: number): string {
   if (bytesPerSecond >= 1_000_000_000) {
-    return (
-      `${(
-        bytesPerSecond /
-        1_000_000_000
-      ).toFixed(1)} GB/s`
-    );
+    return `${(bytesPerSecond / 1_000_000_000).toFixed(1)} GB/s`;
   }
 
   if (bytesPerSecond >= 1_000_000) {
-    return (
-      `${(
-        bytesPerSecond /
-        1_000_000
-      ).toFixed(1)} MB/s`
-    );
+    return `${(bytesPerSecond / 1_000_000).toFixed(1)} MB/s`;
   }
 
   if (bytesPerSecond >= 1_000) {
-    return (
-      `${(
-        bytesPerSecond /
-        1_000
-      ).toFixed(1)} KB/s`
-    );
+    return `${(bytesPerSecond / 1_000).toFixed(1)} KB/s`;
   }
 
   return `${Math.round(bytesPerSecond)} B/s`;

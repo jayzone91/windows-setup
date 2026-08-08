@@ -1,49 +1,49 @@
 {
-    "$schema": "https://github.com/glzr-io/zebar/raw/v3.3.1/resources/zpack-schema.json",
-    "name": "Windows Setup Bar",
-    "version": "1.0.0",
-    "description": "Catppuccin Mocha status bar for komorebi",
-    "widgets": [
+  "$schema": "https://github.com/glzr-io/zebar/raw/v3.3.1/resources/zpack-schema.json",
+  "name": "Windows Setup Bar",
+  "version": "1.0.0",
+  "description": "Catppuccin Mocha status bar for komorebi",
+  "widgets": [
+    {
+      "privileges": {
+        "shellCommands": [
+          {
+            "program": "pwsh",
+            "argsRegex": ".*Get-AppIcon\\.ps1.*"
+          }
+        ]
+      },
+      "includeFiles": [
+        "index.html",
+        "styles.css",
+        "dist/main.js",
+        "Get-AppIcon.ps1"
+      ],
+      "name": "bar",
+      "htmlPath": "index.html",
+      "zOrder": "top_most",
+      "shownInTaskbar": false,
+      "focused": false,
+      "resizable": false,
+      "transparent": true,
+      "presets": [
         {
-            "privileges": {
-                "shellCommands": [
-                    {
-                        "program": "pwsh",
-                        "argsRegex": ".*Get-AppIcon\\.ps1.*"
-                    }
-                ]
-            },
-            "includeFiles": [
-                "index.html",
-                "styles.css",
-                "dist/main.js",
-                "Get-AppIcon.ps1"
-            ],
-            "name": "bar",
-            "htmlPath": "index.html",
-            "zOrder": "top_most",
-            "shownInTaskbar": false,
-            "focused": false,
-            "resizable": false,
-            "transparent": true,
-            "presets": [
-                {
-                    "name": "default",
-                    "anchor": "top_left",
-                    "offsetX": "0px",
-                    "offsetY": "0px",
-                    "width": "100%",
-                    "height": "48px",
-                    "monitorSelection": {
-                        "type": "primary"
-                    },
-                    "dockToEdge": {
-                        "enabled": true,
-                        "edge": "top",
-                        "windowMargin": "6px"
-                    }
-                }
-            ]
+          "name": "default",
+          "anchor": "top_left",
+          "offsetX": "0px",
+          "offsetY": "0px",
+          "width": "100%",
+          "height": "48px",
+          "monitorSelection": {
+            "type": "primary"
+          },
+          "dockToEdge": {
+            "enabled": true,
+            "edge": "top",
+            "windowMargin": "6px"
+          }
         }
-    ]
+      ]
+    }
+  ]
 }
