@@ -48,6 +48,41 @@
           }
         }
       ]
+    },
+    {
+      "privileges": {
+        "shellCommands": [
+          {
+            "program": "komorebic",
+            "argsRegex": "change-layout (bsp|vertical-stack|horizontal-stack|ultrawide-vertical-stack|rows|grid|right-main-vertical-stack)"
+          }
+        ]
+      },
+      "includeFiles": [
+        "layout-menu.html",
+        "layout-menu.css",
+        "dist/layout-menu.js"
+      ],
+      "name": "layout-menu",
+      "htmlPath": "layout-menu.html",
+      "zOrder": "top_most",
+      "shownInTaskbar": false,
+      "focused": true,
+      "resizable": false,
+      "transparent": true,
+      "presets": [
+        {
+          "name": "default",
+          "anchor": "top_left",
+          "offsetX": "170px",
+          "offsetY": "48px",
+          "width": "326px",
+          "height": "82px",
+          "monitorSelection": {
+            "type": "primary"
+          }
+        }
+      ]
     }
   ]
 }

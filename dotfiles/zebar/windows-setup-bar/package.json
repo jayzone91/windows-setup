@@ -13,8 +13,8 @@
     "typescript": "^5.9.3"
   },
   "scripts": {
-    "build": "tsc --noEmit && esbuild src/main.ts --bundle --format=esm --platform=browser --outfile=dist/main.js",
-    "watch": "esbuild src/main.ts --bundle --format=esm --platform=browser --outfile=dist/main.js --watch",
+    "build": "tsc --noEmit && esbuild src/main.ts src/komorebi/layout-menu.ts --bundle --format=esm --platform=browser --outdir=dist --entry-names=[name]",
+    "watch": "esbuild src/main.ts src/komorebi/layout-menu.ts --bundle --format=esm --platform=browser --outdir=dist --entry-names=[name] --watch",
     "typecheck": "tsc --noEmit",
     "restart": "powershell -NoProfile -Command \"Stop-Process -Name zebar -Force -ErrorAction SilentlyContinue; Start-Process -FilePath 'C:\\Program Files\\glzr.io\\Zebar\\zebar.exe' -WindowStyle Hidden -RedirectStandardOutput \\\"$env:TEMP\\zebar-stdout.log\\\" -RedirectStandardError \\\"$env:TEMP\\zebar-stderr.log\\\"\"",
     "dev:reload": "npm run build && npm run restart"

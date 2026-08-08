@@ -1,12 +1,12 @@
 import type { KomorebiOutput, KomorebiWorkspace } from "zebar";
 
 import { getElement } from "../utils/dom";
-
 import { escapeHtml } from "../utils/html";
+import { zebar } from "../zebar";
 
 type KomorebiLayout = KomorebiWorkspace["layout"];
 
-const layoutIcons: Record<KomorebiLayout, string> = {
+export const layoutIcons: Record<KomorebiLayout, string> = {
   bsp: "󰕰",
   vertical_stack: "󰯌",
   horizontal_stack: "󰯍",
@@ -28,7 +28,6 @@ export function renderLayout(komorebi: KomorebiOutput): void {
   }
 
   const layout = workspace.layout;
-
   const icon = layoutIcons[layout];
 
   element.innerHTML = `
@@ -39,4 +38,16 @@ export function renderLayout(komorebi: KomorebiOutput): void {
       ${icon}
     </span>
   `;
+
+  element.onclick = () => {
+    void openLayoutMenu();
+  };
+}
+
+async function openLayoutMenu(): Promise<void> {
+  try {
+    await zebar.startWidgetPreset("layout-menu", "default");
+  } catch (error: unknown) {
+    console.error("Layout-Menü konnte nicht geöffnet werden:", error);
+  }
 }

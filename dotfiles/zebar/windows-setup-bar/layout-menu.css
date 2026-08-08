@@ -1,0 +1,176 @@
+:root {
+  --base: #1e1e2e;
+  --mantle: #181825;
+  --crust: #11111b;
+
+  --text: #cdd6f4;
+  --subtext0: #a6adc8;
+
+  --surface0: #313244;
+  --surface1: #45475a;
+  --surface2: #585b70;
+
+  --pink: #f5c2e7;
+  --mauve: #cba6f7;
+  --maroon: #eba0ac;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+
+  margin: 0;
+  padding: 0;
+
+  overflow: hidden;
+
+  font-family: "JetBrainsMono Nerd Font", monospace;
+}
+
+body {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  padding: 4px;
+}
+
+#layout-menu {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+
+  padding: 5px 7px;
+
+  border: 1px solid var(--surface1);
+  border-radius: 999px;
+
+  background: rgba(49, 50, 68, 0.96);
+
+  overflow: visible;
+}
+
+.layout-option {
+  position: relative;
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 38px;
+
+  padding: 0;
+
+  border: 0;
+  border-radius: 999px;
+
+  background: transparent;
+  color: var(--subtext0);
+
+  font: inherit;
+
+  cursor: pointer;
+  user-select: none;
+
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    transform 80ms ease;
+}
+
+.layout-option-icon {
+  font-size: 21px;
+  line-height: 1;
+}
+
+.layout-option:hover {
+  background: var(--surface1);
+  color: var(--text);
+}
+
+.layout-option:active {
+  transform: scale(0.88);
+}
+
+.layout-option.active {
+  background: var(--maroon);
+  color: var(--base);
+}
+
+.layout-option.active:hover {
+  background: var(--maroon);
+  color: var(--base);
+}
+
+/*
+ * Tooltip
+ */
+.layout-tooltip {
+  position: absolute;
+
+  top: calc(100% + 7px);
+  left: 50%;
+
+  padding: 4px 8px;
+
+  border: 1px solid var(--surface1);
+  border-radius: 6px;
+
+  background: var(--mantle);
+  color: var(--text);
+
+  font-size: 11px;
+  white-space: nowrap;
+
+  opacity: 0;
+  visibility: hidden;
+
+  pointer-events: none;
+
+  transform: translate(-50%, -3px);
+
+  transition:
+    opacity 100ms ease,
+    transform 100ms ease,
+    visibility 100ms ease;
+}
+
+.layout-option:hover .layout-tooltip {
+  opacity: 1;
+  visibility: visible;
+
+  transform: translate(-50%, 0);
+}
+
+.layout-option:last-child .layout-tooltip {
+  left: auto;
+  right: 0;
+
+  transform: translateY(-3px);
+}
+
+.layout-option:last-child:hover .layout-tooltip {
+  transform: translateY(0);
+}
+
+.layout-option:first-child .layout-tooltip {
+  left: 0;
+  right: auto;
+
+  transform: translateY(-3px);
+}
+
+.layout-option:first-child:hover .layout-tooltip {
+  transform: translateY(0);
+}
