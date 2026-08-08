@@ -9,6 +9,57 @@ $Root = $PSScriptRoot
 
 Write-Host ""
 Write-Host "========================================"
+Write-Host " Repository Update"
+Write-Host "========================================"
+
+
+if (Test-Path (Join-Path $Root ".git")) {
+
+    git `
+        -C $Root `
+        fetch origin
+
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "git fetch ist fehlgeschlagen."
+    }
+    else {
+
+        $localChanges = @(
+            git `
+                -C $Root `
+                status `
+                --porcelain
+        )
+
+
+        if ($localChanges.Count -gt 0) {
+
+            Write-Host (
+                "[SKIP] Repository enthält lokale Änderungen. " +
+                "Automatisches Pull wird übersprungen."
+            )
+        }
+        else {
+
+            git `
+                -C $Root `
+                pull `
+                --ff-only
+
+
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "[OK] Repository aktualisiert."
+            }
+            else {
+                Write-Warning "Repository konnte nicht aktualisiert werden."
+            }
+        }
+    }
+}
+
+Write-Host ""
+Write-Host "========================================"
 Write-Host " Windows Setup"
 Write-Host "========================================"
 Write-Host ""
