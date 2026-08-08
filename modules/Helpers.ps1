@@ -4,21 +4,41 @@ function Update-SessionPath {
     Write-Host "[CONFIG] Aktualisiere PATH"
 
 
-    $machinePath = [Environment]::GetEnvironmentVariable(
+    $machinePath =
+    [Environment]::GetEnvironmentVariable(
         "Path",
         "Machine"
     )
 
-    $userPath = [Environment]::GetEnvironmentVariable(
+    $userPath =
+    [Environment]::GetEnvironmentVariable(
         "Path",
         "User"
     )
 
+    $currentPath =
+    $env:Path
 
-    $env:Path = @(
-        $machinePath,
+
+    $paths = @(
+        $currentPath
+        $machinePath
         $userPath
-    ) -join ";"
+    ) |
+    Where-Object {
+        -not [string]::IsNullOrWhiteSpace($_)
+    } |
+    ForEach-Object {
+        $_ -split ";"
+    } |
+    Where-Object {
+        -not [string]::IsNullOrWhiteSpace($_)
+    } |
+    Select-Object -Unique
+
+
+    $env:Path =
+    $paths -join ";"
 
 
     Write-Host "[OK] PATH aktualisiert."

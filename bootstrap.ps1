@@ -111,6 +111,9 @@ Update-SessionPath
 Set-KomorebiConfiguration `
     -RepositoryPath $Root
 
+Set-ZebarConfiguration `
+    -RepositoryPath $Root
+
 # ------------------------------------------------------------
 # Treiber
 # ------------------------------------------------------------
@@ -203,6 +206,8 @@ Install-WindowsUpdates
 
 
 Register-KomorebiStartupTask
+
+Register-ZebarStartupTask
 
 Register-WindowsSetupScheduledTask `
     -BootstrapPath "$Root\bootstrap.ps1"

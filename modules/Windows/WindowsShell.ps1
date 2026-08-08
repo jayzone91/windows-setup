@@ -22,49 +22,35 @@
     # Suche
     Write-Host "[CONFIG] Suche ausblenden"
 
-    Set-ItemProperty `
+    Set-RegistryDword `
         -Path $searchPath `
         -Name "SearchboxTaskbarMode" `
-        -Value 0 `
-        -ErrorAction Stop
+        -Value 0
+
 
     # Taskansicht / Aktive Anwendungen
     Write-Host "[CONFIG] Aktive Anwendungen ausblenden"
 
-    Set-ItemProperty `
+    Set-RegistryDword `
         -Path $advancedPath `
         -Name "ShowTaskViewButton" `
-        -Value 0 `
-        -ErrorAction Stop
+        -Value 0
 
     # Widgets
-    Write-Host "[CONFIG] Widgets deaktivieren"
+    Write-Host "[CONFIG] Widgets ausblenden"
 
-    $widgetsPolicyPath = "HKLM:\SOFTWARE\Policies\Microsoft\Dsh"
-
-    if (-not (Test-Path $widgetsPolicyPath)) {
-        New-Item `
-            -Path $widgetsPolicyPath `
-            -Force `
-            -ErrorAction Stop | Out-Null
-    }
-
-    New-ItemProperty `
-        -Path $widgetsPolicyPath `
-        -Name "AllowNewsAndInterests" `
-        -PropertyType DWord `
-        -Value 0 `
-        -Force `
-        -ErrorAction Stop | Out-Null
+    Set-RegistryDword `
+        -Path $advancedPath `
+        -Name "TaskbarDa" `
+        -Value 0
 
     # Fortsetzen
     Write-Host "[CONFIG] Fortsetzen ausblenden"
 
-    Set-ItemProperty `
+    Set-RegistryDword `
         -Path $advancedPath `
         -Name "TaskbarResume" `
-        -Value 0 `
-        -ErrorAction Stop
+        -Value 0
 
     Write-Host "[OK] Taskleisten-Einstellungen gesetzt." `
         -ForegroundColor Green
@@ -172,4 +158,55 @@ function Restart-WindowsExplorer {
 
     Write-Host "[OK] Windows Explorer neu gestartet." `
         -ForegroundColor Green
+}
+
+function Set-RegistryDword {
+
+    param (
+        [Parameter(Mandatory)]
+        [string]$Path,
+
+        [Parameter(Mandatory)]
+        [string]$Name,
+
+        [Parameter(Mandatory)]
+        [int]$Value
+    )
+
+
+    if (-not (Test-Path $Path)) {
+        New-Item `
+            -Path $Path `
+            -Force `
+            -ErrorAction Stop |
+        Out-Null
+    }
+
+
+    $property =
+    Get-ItemProperty `
+        -Path $Path `
+        -Name $Name `
+        -ErrorAction SilentlyContinue
+
+
+    if ($null -eq $property) {
+
+        New-ItemProperty `
+            -Path $Path `
+            -Name $Name `
+            -PropertyType DWord `
+            -Value $Value `
+            -ErrorAction Stop |
+        Out-Null
+
+        return
+    }
+
+
+    Set-ItemProperty `
+        -Path $Path `
+        -Name $Name `
+        -Value $Value `
+        -ErrorAction Stop
 }

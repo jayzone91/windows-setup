@@ -187,3 +187,89 @@ function Register-KomorebiStartupTask {
     ) `
         -ForegroundColor Green
 }
+
+function Register-ZebarStartupTask {
+
+    Write-Host ""
+    Write-Host "========================================"
+    Write-Host " Zebar Autostart"
+    Write-Host "========================================"
+
+
+    $taskName =
+    "Zebar Desktop"
+
+
+    $zebar = (
+        Get-Command `
+            -Name "zebar" `
+            -ErrorAction Stop
+    ).Source
+
+
+    $action = New-ScheduledTaskAction `
+        -Execute $zebar
+
+
+    $trigger = New-ScheduledTaskTrigger `
+        -AtLogOn `
+        -User $env:USERNAME
+
+
+    #
+    # Zebar ist eine Desktop-Anwendung und benötigt
+    # keine erhöhten Rechte.
+    #
+
+    $principal = New-ScheduledTaskPrincipal `
+        -UserId $env:USERNAME `
+        -LogonType Interactive `
+        -RunLevel Limited
+
+
+    $settings = New-ScheduledTaskSettingsSet `
+        -StartWhenAvailable `
+        -AllowStartIfOnBatteries `
+        -DontStopIfGoingOnBatteries `
+        -MultipleInstances IgnoreNew
+
+
+    $existingTask = Get-ScheduledTask `
+        -TaskName $taskName `
+        -ErrorAction SilentlyContinue
+
+
+    if ($existingTask) {
+
+        Write-Host "[UPDATE] Bestehende Zebar-Aufgabe."
+
+
+        Set-ScheduledTask `
+            -TaskName $taskName `
+            -Action $action `
+            -Trigger $trigger `
+            -Principal $principal `
+            -Settings $settings |
+        Out-Null
+    }
+    else {
+
+        Write-Host "[CREATE] Zebar Autostart-Aufgabe."
+
+
+        Register-ScheduledTask `
+            -TaskName $taskName `
+            -Action $action `
+            -Trigger $trigger `
+            -Principal $principal `
+            -Settings $settings |
+        Out-Null
+    }
+
+
+    Write-Host (
+        "[OK] Aufgabe '{0}' eingerichtet." `
+            -f $taskName
+    ) `
+        -ForegroundColor Green
+}
