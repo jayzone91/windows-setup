@@ -7,8 +7,8 @@ $modules = @(
     "Debloat.ps1"
     "Development.ps1"
     "Git.ps1"
-
     "Helpers.ps1"
+    "Komorebi.ps1"
     "Languages.ps1"
     "Logitech.ps1"
     "Notifications.ps1"

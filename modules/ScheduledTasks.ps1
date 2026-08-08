@@ -97,3 +97,93 @@ function Register-WindowsSetupScheduledTask {
     ) `
         -ForegroundColor Green
 }
+
+function Register-KomorebiStartupTask {
+
+    Write-Host ""
+    Write-Host "========================================"
+    Write-Host " komorebi Autostart"
+    Write-Host "========================================"
+
+
+    $taskName =
+    "komorebi Desktop"
+
+
+    $pwsh = (
+        Get-Command `
+            -Name "pwsh" `
+            -ErrorAction Stop
+    ).Source
+
+
+    $action = New-ScheduledTaskAction `
+        -Execute $pwsh `
+        -Argument (
+        '-NoProfile -WindowStyle Hidden ' +
+        '-Command "komorebic start --whkd --bar"'
+    )
+
+
+    $trigger = New-ScheduledTaskTrigger `
+        -AtLogOn `
+        -User $env:USERNAME
+
+
+    #
+    # komorebi ist eine Desktop-Anwendung und benötigt
+    # keine erhöhten Rechte.
+    #
+
+    $principal = New-ScheduledTaskPrincipal `
+        -UserId $env:USERNAME `
+        -LogonType Interactive `
+        -RunLevel Limited
+
+
+    $settings = New-ScheduledTaskSettingsSet `
+        -StartWhenAvailable `
+        -AllowStartIfOnBatteries `
+        -DontStopIfGoingOnBatteries `
+        -MultipleInstances IgnoreNew
+
+
+    $existingTask = Get-ScheduledTask `
+        -TaskName $taskName `
+        -ErrorAction SilentlyContinue
+
+
+    if ($existingTask) {
+
+        Write-Host "[UPDATE] Bestehende komorebi-Aufgabe."
+
+
+        Set-ScheduledTask `
+            -TaskName $taskName `
+            -Action $action `
+            -Trigger $trigger `
+            -Principal $principal `
+            -Settings $settings |
+        Out-Null
+    }
+    else {
+
+        Write-Host "[CREATE] komorebi Autostart-Aufgabe."
+
+
+        Register-ScheduledTask `
+            -TaskName $taskName `
+            -Action $action `
+            -Trigger $trigger `
+            -Principal $principal `
+            -Settings $settings |
+        Out-Null
+    }
+
+
+    Write-Host (
+        "[OK] Aufgabe '{0}' eingerichtet." `
+            -f $taskName
+    ) `
+        -ForegroundColor Green
+}

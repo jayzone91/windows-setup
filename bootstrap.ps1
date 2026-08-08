@@ -108,6 +108,9 @@ Install-PackageGroup `
 # Pfade neu einlesen
 Update-SessionPath
 
+Set-KomorebiConfiguration `
+    -RepositoryPath $Root
+
 # ------------------------------------------------------------
 # Treiber
 # ------------------------------------------------------------
@@ -192,6 +195,13 @@ Sync-LogitechGHubConfiguration `
 # ------------------------------------------------------------
 
 Install-WindowsUpdates
+
+# ------------------------------------------------------------
+# Scheduled Tasks
+# ------------------------------------------------------------
+
+
+Register-KomorebiStartupTask
 
 Register-WindowsSetupScheduledTask `
     -BootstrapPath "$Root\bootstrap.ps1"
