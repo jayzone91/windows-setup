@@ -192,6 +192,9 @@ Sync-LogitechGHubConfiguration `
 
 Install-WindowsUpdates
 
+Register-WindowsSetupScheduledTask `
+    -BootstrapPath "$Root\bootstrap.ps1"
+
 # ------------------------------------------------------------
 # Abschließende Tests
 # ------------------------------------------------------------

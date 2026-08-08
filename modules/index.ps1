@@ -14,6 +14,7 @@ $modules = @(
     "Nushell.ps1"
     "Packages.ps1"
     "PowerShell.ps1"
+    "ScheduledTasks.ps1"
     "Security.ps1"
     "Storage.ps1"
     "Terminal.ps1"
