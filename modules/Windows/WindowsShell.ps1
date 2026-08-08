@@ -39,10 +39,52 @@
     # Widgets
     Write-Host "[CONFIG] Widgets ausblenden"
 
-    Set-RegistryDword `
-        -Path $advancedPath `
-        -Name "TaskbarDa" `
-        -Value 0
+    try {
+        Set-RegistryDword `
+            -Path $advancedPath `
+            -Name "TaskbarDa" `
+            -Value 0
+
+    }
+    catch {
+        Write-Warning (
+            "Widgets konnten nicht automatisch ausgeblendet werden: {0}" `
+                -f $_.Exception.Message
+        )
+    }
+
+    $widgetsPolicyPath = "HKLM:\SOFTWARE\Policies\Microsoft\Dsh"
+    try {
+
+        if (-not (Test-Path $widgetsPolicyPath)) {
+            New-Item `
+                -Path $widgetsPolicyPath `
+                -Force `
+                -ErrorAction Stop | Out-Null
+        }
+    }
+    catch {
+        Write-Warning (
+            "Widgets konnten nicht automatisch ausgeblendet werden: {0}" `
+                -f $_.Exception.Message
+        )
+    }
+
+    try {
+
+        Set-RegistryDword `
+            -Path $widgetsPolicyPath `
+            -Name "AllowNewsAndInterests" `
+            -Value 0
+    }
+    catch {
+        Write-Warning (
+            "Widgets konnten nicht automatisch ausgeblendet werden: {0}" `
+                -f $_.Exception.Message
+        )
+    }
+
+    Write-Host "[OK] Widgets ausgeblendet."
 
     # Fortsetzen
     Write-Host "[CONFIG] Fortsetzen ausblenden"
