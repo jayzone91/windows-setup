@@ -30,6 +30,14 @@
             Id     = "9PKTQ5699M62"
             Source = "msstore"
             Update = $true
+        },
+
+        @{
+            Name    = "OpenVPN"
+            Id      = "OpenVPNTechnologies.OpenVPN"
+            Source  = "winget"
+            Version = "2.7.101"
+            Update  = $false
         }
     )
 
