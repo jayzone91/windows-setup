@@ -28,4 +28,8 @@ export const providers = zebar.createProviderGroup({
   audio: {
     type: "audio",
   },
+
+  media: {
+    type: "media",
+  },
 });

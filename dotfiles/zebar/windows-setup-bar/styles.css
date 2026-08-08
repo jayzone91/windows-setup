@@ -304,3 +304,57 @@ body {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+.media-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  max-width: 360px;
+
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.media-control {
+  border: 0;
+  padding: 0;
+
+  background: transparent;
+  color: var(--text);
+
+  font: inherit;
+  font-size: 18px;
+
+  cursor: pointer;
+}
+
+.media-control:hover {
+  color: var(--maroon);
+}
+
+.media-info {
+  display: flex;
+  align-items: center;
+
+  min-width: 0;
+  overflow: hidden;
+}
+
+.media-title {
+  max-width: 170px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.media-artist {
+  max-width: 110px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: var(--subtext0);
+}

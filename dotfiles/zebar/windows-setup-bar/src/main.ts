@@ -15,6 +15,7 @@ import { renderDisks } from "./system/disk";
 import { renderMemory } from "./system/memory";
 import { renderNetwork } from "./system/network";
 import { bindAudioControls, renderAudio } from "./system/audio";
+import { bindMediaControls, renderMedia } from "./system/media";
 
 type ProviderOutput = typeof providers.outputMap;
 
@@ -34,19 +35,25 @@ function renderRight(output: ProviderOutput): void {
   const right = getElement("right");
 
   right.innerHTML = `
-    ${output.cpu ? renderCpu(output.cpu) : ""}
+  ${output.media ? renderMedia(output.media) : ""}
 
-    ${output.memory ? renderMemory(output.memory) : ""}
+  ${output.cpu ? renderCpu(output.cpu) : ""}
 
-    ${output.disk ? renderDisks(output.disk) : ""}
+  ${output.memory ? renderMemory(output.memory) : ""}
 
-     ${output.network ? renderNetwork(output.network) : ""}
+  ${output.disk ? renderDisks(output.disk) : ""}
 
-    ${output.audio ? renderAudio(output.audio) : ""}
+  ${output.network ? renderNetwork(output.network) : ""}
+
+  ${output.audio ? renderAudio(output.audio) : ""}
   `;
 
   if (output.audio) {
     bindAudioControls(output.audio);
+  }
+
+  if (output.media) {
+    bindMediaControls(output.media);
   }
 }
 
