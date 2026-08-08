@@ -2,5 +2,6 @@
     Modules = @(
         "PSScriptAnalyzer"
         "BurntToast"
+        "PSWindowsUpdate"
     )
 }

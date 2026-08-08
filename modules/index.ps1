@@ -18,6 +18,7 @@ $modules = @(
     "Storage.ps1"
     "Terminal.ps1"
     "VSCode.ps1"
+    "WindowsUpdate.ps1"
 )
 
 foreach ($module in $modules) {
