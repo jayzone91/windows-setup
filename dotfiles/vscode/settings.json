@@ -12,6 +12,7 @@
     "terminal.integrated.defaultProfile.windows": "PowerShell",
     "json.schemaDownload.trustedDomains": {
         "https://developer.microsoft.com/json-schemas/": true,
+        "https://github.com": true,
         "https://json-schema.org/": true,
         "https://json.schemastore.org/": true,
         "https://raw.githubusercontent.com": true,

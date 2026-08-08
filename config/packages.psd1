@@ -55,6 +55,12 @@
         },
 
         @{
+            Name   = "Zebar"
+            Id     = "glzr-io.zebar"
+            Source = "winget"
+        },
+
+        @{
             Name   = "whkd"
             Id     = "LGUG2Z.whkd"
             Source = "winget"
