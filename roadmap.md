@@ -18,6 +18,8 @@ Grundprinzipien:
 - [x] keine automatischen Neustarts
 - [x] keine automatischen Git-Commits oder Pushes
 - [x] lokale Änderungen und notwendige Neustarts per Desktop-Benachrichtigung melden
+- [x] Desktop-Umgebung mit komorebi, whkd und Zebar reproduzierbar konfigurieren
+- [x] Zebar lokal und offline-fähig über npm/TypeScript/esbuild bauen
 - [ ] zentrale Logging-Strategie für vollständige Wartungsläufe
 - [ ] optionaler Dry-Run-Modus
 
@@ -52,6 +54,7 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [x] `bootstrap.ps1` automatisch starten
 - [x] Repository am Anfang des Bootstrap per Git aktualisieren
 - [x] automatisches Pull bei lokal verändertem Working Tree überspringen
+- [x] Session-PATH aktualisieren, ohne vorhandene Session-Einträge zu verlieren
 
 ---
 
@@ -69,6 +72,9 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [x] installierte Version bei gepinnten Paketen prüfen
 - [x] gewünschte Version gezielt installieren
 - [x] OpenVPN als realen Test für Versions-Pinning
+- [x] komorebi über `LGUG2Z.komorebi`
+- [x] whkd über `LGUG2Z.whkd`
+- [x] Zebar über `glzr-io.zebar`
 
 ## Aktuelle Gruppen
 
@@ -82,6 +88,9 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [x] iCloud
 - [x] OpenVPN
 - [x] Logitech G HUB
+- [x] komorebi
+- [x] whkd
+- [x] Zebar
 
 ### Development
 
@@ -106,6 +115,8 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [ ] Retry-Mechanismus bei temporären Download-/Winget-Fehlern
 - [ ] optional strukturierte zentrale Paket-Logs
 - [ ] zusätzliche Paketgruppen für Gaming, Firmen-Tools, Media und Communication
+- [ ] Gaming Setup
+- [ ] Home Office Setup
 
 ---
 
@@ -121,26 +132,6 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [x] Gaming- und Entwicklungsfunktionen nicht unnötig beschädigen
 - [x] Windows Hello erhalten
 
-Aktuell entfernt/deprovisioniert werden unter anderem:
-
-- [x] Bing News
-- [x] Bing Search
-- [x] Bing Weather
-- [x] Microsoft Solitaire Collection
-- [x] Feedback Hub
-- [x] Get Help
-- [x] Copilot
-- [x] Outlook for Windows
-- [x] Phone Link
-- [x] Microsoft To Do
-- [x] Power Automate Desktop
-- [x] Quick Assist
-- [x] Teams Consumer
-- [x] Clipchamp
-- [x] Zune Music
-- [x] Sound Recorder
-- [x] Windows Alarms
-
 ## Windows-Konfiguration
 
 - [x] Taskbar-Konfiguration
@@ -150,6 +141,8 @@ Aktuell entfernt/deprovisioniert werden unter anderem:
 - [x] HDR
 - [x] Wallpaper Slideshow
 - [x] Consumer-/Content-Delivery-Einstellungen
+- [x] Windows Snap deaktiviert, damit komorebi die Fensterverwaltung übernimmt
+- [x] Widgets-Ausblenden so behandelt, dass ein geschützter `TaskbarDa`-Wert den Bootstrap nicht abbricht
 - [ ] weitere Datenschutz-/Telemetry-Einstellungen nur dort ergänzen, wo sie keine benötigten Windows-Funktionen beeinträchtigen
 - [ ] Dienste nur gezielt optimieren; keine aggressive pauschale Service-Deaktivierung
 
@@ -171,8 +164,6 @@ Aktuell entfernt/deprovisioniert werden unter anderem:
 
 # Phase 5 – Treiber
 
-## Architektur
-
 - [x] Treiberlogik in `modules/Drivers/` aufgeteilt
 - [x] gemeinsame Treiber-Helfer
 - [x] Treiber-Reboot-Erkennung
@@ -180,9 +171,6 @@ Aktuell entfernt/deprovisioniert werden unter anderem:
 - [x] NVIDIA App installieren und aktualisieren
 - [x] Intel-Treiberlogik
 - [x] PSScriptAnalyzer-Probleme in Treibermodulen bereinigt
-
-## Noch offen
-
 - [ ] zentrale übersichtliche Hardware-Zusammenfassung
 - [ ] Firmware-/BIOS-Update-Konzept prüfen
 - [ ] optional Monitor-/Geräte-Firmware prüfen, falls sinnvoll automatisierbar
@@ -230,7 +218,7 @@ Aktuell entfernt/deprovisioniert werden unter anderem:
 - [x] pnpm installieren und aktualisieren
 - [x] Yarn installieren und aktualisieren
 - [x] PATH-/PNPM_HOME-Konfiguration
-- [x] pnpm 11.x getestet
+- [x] npm für den Zebar-Build im Bootstrap verfügbar machen
 
 ## Bun
 
@@ -257,9 +245,6 @@ Aktuell entfernt/deprovisioniert werden unter anderem:
 - [x] Repository-Status auswerten
 - [x] lokale Änderungen erkennen
 - [x] ungepushte Commits erkennen
-- [ ] optionale Git-Aliases
-- [ ] optional SSH-Key-Bootstrap
-- [ ] optional GPG/SSH Commit Signing
 
 ## Codex
 
@@ -270,58 +255,22 @@ Aktuell entfernt/deprovisioniert werden unter anderem:
 
 # Phase 9 – Development Storage
 
-## SSD-Erkennung
-
-- [x] komplett leere interne Datenträger erkennen
-- [x] Boot-Disk ausschließen
-- [x] System-Disk ausschließen
-- [x] ReadOnly-/Offline-Datenträger ausschließen
-- [x] USB-Sticks und ungeeignete Bus-Typen ausschließen
-- [x] bei mehreren möglichen Ziel-Datenträgern sicher abbrechen
-- [x] Mindestgröße prüfen
-- [x] geplantes Layout vor Änderungen anzeigen
-- [x] destruktive Änderungen nur nach expliziter `Y`-Bestätigung
-- [x] bestehendes D:/G:-Layout erkennen und nicht erneut partitionieren
+- [x] leere interne Datenträger sicher erkennen
+- [x] Boot-/System-Disk ausschließen
+- [x] ungeeignete Datenträger ausschließen
+- [x] destruktive Änderungen nur nach expliziter Bestätigung
+- [x] bestehendes D:/G:-Layout erkennen
 
 ## Layout
 
-- [x] `D:` mit 100 GB
-- [x] echtes ReFS Dev Drive
-- [x] Label `Dev`
-- [x] `G:` mit restlichem Speicher
-- [x] NTFS
-- [x] Label `Games`
+- [x] `D:` mit 100 GB ReFS Dev Drive, Label `Dev`
+- [x] `G:` mit restlichem Speicher, NTFS, Label `Games`
 
-Aktueller getesteter Zustand:
-
-```text
-D: 100 GB ReFS Dev Drive
-G: Rest der SSD NTFS Games
-```
-
-## Dev Drive
-
-- [x] als vertrauenswürdiges Dev Drive erstellt
-- [x] Microsoft Defender `WdFilter` aktiv
-- [x] Defender Performance Mode aktiv
-- [x] Echtzeitschutz bleibt aktiv
-
-## Ordnerstruktur
-
-- [x] `D:\Projects`
-- [x] `D:\Build`
-- [x] `D:\Cache\npm`
-- [x] `D:\Cache\pnpm`
-- [x] `D:\Cache\yarn`
-- [x] `D:\Cache\bun`
-- [x] `D:\Cache\go\build`
-- [x] `D:\Cache\go\modules`
-
-## Cache-Konfiguration
+## Caches
 
 - [x] npm
 - [x] pnpm
-- [x] Yarn Classic
+- [x] Yarn
 - [x] Bun
 - [x] Go Build Cache
 - [x] Go Module Cache
@@ -330,32 +279,13 @@ G: Rest der SSD NTFS Games
 
 # Phase 10 – PowerShell & Codequalität
 
-## PowerShell
-
 - [x] PowerShell 7
 - [x] Modulinstallation automatisiert
 - [x] `PSScriptAnalyzer`
 - [x] `BurntToast`
 - [x] `PSWindowsUpdate`
-
-## Code Check
-
 - [x] `Test-PowerShellCode`
-- [x] Analyzer-Regeln bereinigt
-- [x] externe CLI-Positionsargumente sauber behandelt
-- [x] keine aktuellen Fehler
-- [x] keine aktuellen Warnungen
-- [x] keine aktuellen Hinweise
 - [x] Codeprüfung am Ende jedes Bootstrap-Laufs
-
-Zielzustand:
-
-```text
-[OK] Keine PSScriptAnalyzer-Probleme gefunden.
-```
-
-## Noch offen
-
 - [ ] optionale CI-Prüfung in GitHub Actions
 - [ ] optional Pester-Tests für kritische Module
 - [ ] optional Dry-Run-/WhatIf-Konzept
@@ -364,25 +294,12 @@ Zielzustand:
 
 # Phase 11 – Terminal Umgebung
 
-## Windows Terminal
-
-- [x] Einstellungen automatisiert anwenden
-- [x] Windows-Terminal-Konfiguration im Setup
-- [ ] Feinschliff der Profile bei Bedarf
-
-## Nushell
-
-- [x] Installation
-- [x] Konfiguration
-- [x] Starship-Integration
-- [ ] weitere Aliases/Komfortfunktionen bei Bedarf
-
-## Starship
-
-- [x] Installation
-- [x] Integration
+- [x] Windows Terminal konfigurieren
+- [x] Nushell installieren und konfigurieren
+- [x] Starship integrieren
 - [x] Catppuccin-orientiertes Terminal-Design
-- [ ] optional weiterer Prompt-Feinschliff
+- [ ] weiterer Feinschliff bei Bedarf
+- [ ] optional Profile/Keybindings vollständig versionieren
 
 ---
 
@@ -425,12 +342,182 @@ Zielzustand:
 - [x] Marionette-Konfigurationsmodus automatisch verlassen
 - [x] Zen danach normal neu starten
 - [x] Mod-Installation idempotent
-- [ ] optionale weitere Zen-Mods
-- [ ] optional Browser-UI weiter an Catppuccin anpassen
+- [ ] Browser-UI weiter an Catppuccin anpassen
 
 ---
 
-# Phase 14 – Apple Integration
+# Phase 14 – Logitech G HUB
+
+- [x] Installation über `winget`
+- [x] automatische Updates
+- [x] gespeicherte Konfiguration unter `config/lghub/settings.db`
+- [x] Erstimport auf frisch eingerichteten Systemen
+- [x] spätere lokale Änderungen zurück ins Repository synchronisieren
+- [x] G HUB für DB-Zugriff kontrolliert beenden und wieder starten
+- [x] Git-Änderungen an `settings.db` am Ende des Wartungslaufs melden
+
+---
+
+# Phase 15 – Desktop Window Management
+
+## komorebi
+
+- [x] komorebi installiert und aktualisierbar
+- [x] Konfiguration im Repository unter `dotfiles/komorebi/`
+- [x] `%USERPROFILE%\komorebi.json` per Symlink anbinden
+- [x] `applications.json` per Symlink anbinden
+- [x] fünf Workspaces konfigurieren
+- [x] `UltrawideVerticalStack` als bevorzugtes Layout
+- [x] Windows Snap deaktivieren
+- [x] komorebi nach echtem Neustart erfolgreich im Autostart getestet
+
+## whkd
+
+- [x] whkd installiert und aktualisierbar
+- [x] `whkdrc` im Repository
+- [x] `%USERPROFILE%\.config\whkdrc` per Symlink anbinden
+- [x] Fokus, Move, Resize, Workspaces, Stacking und Window-Aktionen
+- [x] komorebi und whkd gemeinsam über Scheduled Task starten
+
+## Autostart
+
+- [x] Scheduled Task `komorebi Desktop`
+- [x] Start bei Benutzeranmeldung
+- [x] interaktiver Benutzerkontext
+- [x] keine unnötigen Adminrechte
+- [x] realer Neustart-/Login-Test erfolgreich
+
+---
+
+# Phase 16 – Zebar Desktop Bar
+
+## Installation & Build
+
+- [x] Zebar installiert
+- [x] Zebar-Konfiguration unter `dotfiles/zebar/`
+- [x] `%USERPROFILE%\.glzr\zebar\settings.json` per Symlink
+- [x] kompletter `windows-setup-bar`-Ordner per Symlink
+- [x] keine CDN-Abhängigkeit mehr
+- [x] `zebar` lokal als npm-Abhängigkeit
+- [x] TypeScript
+- [x] esbuild
+- [x] `tsc --noEmit` vor dem Build
+- [x] Ausgabe nach `dist/main.js`
+- [x] `npm ci` im Bootstrap
+- [x] `npm run build` im Bootstrap
+- [x] lokaler/offline-fähiger Runtime-Build
+- [x] `npm run dev:reload`
+- [x] Zebar-Restart ohne dauerhaftes Terminal-Logging
+
+## Struktur
+
+- [x] `src/main.ts`
+- [x] `src/providers.ts`
+- [x] `src/zebar.ts`
+- [x] `src/utils/`
+- [x] `src/komorebi/`
+- [x] `src/system/`
+
+## Linke Seite
+
+- [x] fünf komorebi-Workspaces
+- [x] aktiven Workspace hervorheben
+- [x] Layout-Anzeige
+- [x] Catppuccin-Mocha-Pill-Design
+
+## Mitte
+
+- [x] Titel des fokussierten Fensters
+- [x] echtes Windows-Anwendungsicon
+- [x] kein manuelles App-zu-Icon-Mapping
+- [x] Icon-Ermittlung über EXE-Namen und `Get-AppIcon.ps1`
+- [x] Base64-PNG
+- [x] Icon-Cache
+- [x] Schutz vor asynchronen Render-Races
+
+## Rechte Seite
+
+- [x] CPU-Auslastung
+- [x] RAM inkl. verwendet/gesamt
+- [x] Storage-Auslastung
+- [x] aktive Netzwerk-Schnittstelle
+- [x] IPv4-Adresse
+- [x] Download-/Upload-Durchsatz
+- [x] feste Breiten für Traffic-Werte
+- [x] Audio-Lautstärke
+- [x] Mute-Status und dynamisches Icon
+- [x] Klick zum Muten/Entmuten
+- [x] Mausrad zur Lautstärkeregelung
+- [x] Media: Titel und Artist
+- [x] Previous / Play-Pause / Next
+- [x] korrektes Play/Pause-Icon
+- [x] Ellipsis für lange Media-Texte
+- [x] deutsches Datum
+- [x] 24-Stunden-Uhrzeit
+- [x] Batterie bewusst nicht umgesetzt
+- [x] Systray bewusst nicht umgesetzt
+
+## Autostart
+
+- [x] Scheduled Task `Zebar Desktop`
+- [x] Start bei Benutzeranmeldung
+- [x] interaktiver Benutzerkontext
+- [x] keine unnötigen Adminrechte
+- [x] realer Neustart-/Login-Test erfolgreich
+- [x] komorebi + whkd + Zebar starten gemeinsam sauber
+
+## Optionaler Feinschliff
+
+- [ ] CSS weiter konsolidieren
+- [ ] Workspaces/Layout per Mausklick steuerbar machen
+- [ ] optional Responsive-/Overflow-Verhalten für kleinere Monitore
+- [ ] optional Icon-Fallback für spezielle UWP-/Store-Anwendungen verbessern
+
+---
+
+# Phase 17 – Automatische Wartung & Benachrichtigungen
+
+- [x] Scheduled Task `Windows Setup Weekly Maintenance`
+- [x] Sonntag 12:00 Uhr
+- [x] kompletter Bootstrap als Wartungsworkflow
+- [x] `StartWhenAvailable`
+- [x] Mehrfachstarts verhindern
+- [x] interaktiver Benutzerkontext
+- [x] erhöhte Rechte für Wartungsaufgaben
+- [x] BurntToast-Benachrichtigung bei notwendigem Neustart
+- [x] Repository-Status nach Wartung prüfen
+- [x] lokale Änderungen melden
+- [x] ungepushte Commits melden
+- [x] keine automatischen Commits oder Pushes
+- [x] keine automatischen Neustarts
+- [ ] vollständiges Lauf-Logging in Datei
+- [ ] Historie der letzten Wartungsläufe
+- [ ] optional kompakte Wartungs-Zusammenfassung als Notification
+- [ ] optional Fehlerstatus einzelner Module persistieren
+
+---
+
+# Phase 18 – Abschlussprüfungen & Qualität
+
+- [x] Bootstrap mehrfach erfolgreich ausgeführt
+- [x] Windows-Updates mit anschließendem Neustart getestet
+- [x] komorebi-Autostart nach echtem Neustart getestet
+- [x] Zebar-Autostart nach echtem Neustart getestet
+- [x] Zebar-TypeScript-Build erfolgreich
+- [x] Network-, Audio-, Media- und Date-Time-Widgets praktisch getestet
+- [x] PSScriptAnalyzer am Ende des Bootstraps
+- [ ] vollständiger Test auf einer wirklich frischen Windows-11-Installation
+- [ ] optional GitHub Actions für PowerShell- und TypeScript-Prüfungen
+- [ ] optional Pester-Tests für kritische PowerShell-Module
+- [ ] optional automatisierter `npm run typecheck`/Build in CI
+- [ ] README um komorebi/Zebar und aktuelle Desktop-Architektur ergänzen
+- [ ] Dokumentation der wichtigsten Tastenkombinationen ergänzen
+
+---
+
+---
+
+# Phase 19 – Apple Integration
 
 ## iCloud
 
@@ -438,435 +525,37 @@ Zielzustand:
 - [x] automatische Updates
 - [x] iCloud Passwords Browser-Erweiterung
 - [x] Voraussetzungen für Apple Passwords/Windows Hello prüfen
-- [ ] iCloud Drive vollständig testen
-- [ ] Synchronisation nach Neuinstallation verifizieren
-- [ ] Kontakte/Kalender nur aufnehmen, falls für den Windows-Workflow benötigt
 
 ---
 
-# Phase 15 – Logitech G502 X Plus
-
-## Software
-
-- [x] Logitech G HUB über `winget`
-- [x] automatische Updates
-- [x] G HUB bleibt dauerhaft aktiv
-- [x] Akkuwarnungen über G HUB verfügbar
-
-## Maus-Konfiguration
-
-- [x] DPI manuell konfiguriert
-- [x] Polling Rate manuell konfiguriert
-- [x] Tastenbelegung manuell konfiguriert
-- [x] G-Shift nach Wunsch konfiguriert
-- [x] Catppuccin-Mocha-inspirierte RGB-Animation erstellt
-- [x] Onboard-Memory-Ansatz getestet
-- [x] wegen Einschränkungen des Onboard-RGB bewusst bei dauerhaft laufendem G HUB geblieben
-
-## Konfigurationssicherung
-
-- [x] `settings.db` identifiziert
-- [x] DB im Repository unter `config\lghub\settings.db`
-- [x] G HUB vor DB-Zugriff automatisch beenden
-- [x] G HUB danach automatisch neu starten
-- [x] stdout/stderr von G HUB umleiten
-- [x] frisches System: Repo-Konfiguration einmalig einspielen
-- [x] bestehendes System: lokale DB bei Änderung zurück ins Repo sichern
-- [x] Änderungen anschließend über Git-Status melden
-- [x] keine automatischen Commits oder Pushes
-
----
-
-# Phase 16 – Automatische Wartung & Benachrichtigungen
-
-## Windows Aufgabenplanung
-
-- [x] Aufgabe `Windows Setup Weekly Maintenance`
-- [x] wöchentlich
-- [x] Sonntag 12:00 Uhr
-- [x] `bootstrap.ps1` direkt ausführen
-- [x] kein separates Maintenance-Skript
-- [x] interaktiver Benutzerkontext
-- [x] höchste Privilegien
-- [x] Task bei bestehender Konfiguration aktualisieren
-- [x] realer Task-Lauf erfolgreich getestet
-
-## Wartungsumfang
-
-- [x] Repository aktualisieren
-- [x] Winget-/Store-Pakete aktualisieren
-- [x] Development Tools aktualisieren
-- [x] Treiber prüfen/aktualisieren
-- [x] Windows Updates installieren
-- [x] G-HUB-Konfiguration synchronisieren
-- [x] Windows-Konfiguration wiederholt anwenden
-- [x] Storage/Dev Drive prüfen
-- [x] Codeanalyse durchführen
-- [x] Neustartbedarf prüfen
-- [x] Git-Status prüfen
-
-## Desktop Notifications
-
-- [x] BurntToast integriert
-- [x] Benachrichtigung bei notwendigem Neustart
-- [x] Benachrichtigung bei lokalen Repository-Änderungen
-- [x] Benachrichtigung bei ungepushten Commits
-- [x] geänderte Dateien teilweise in Benachrichtigung anzeigen
-- [x] Benachrichtigungen aus Scheduled Task erfolgreich getestet
-- [ ] optional Erfolgs-Toast auch bei komplett sauberem Wartungslauf
-- [ ] optional Fehler-Toast bei abgebrochenem Bootstrap
-
----
-
-# Phase 17 – Gaming
-
-## Basis
-
-- [x] NVIDIA App
-- [x] Windows HDR Calibration
-- [x] Windows HDR konfigurieren
-- [x] separates `G:`-Games-Laufwerk
-- [ ] Steam automatisiert installieren
-- [ ] Epic Games Launcher automatisiert installieren
-- [ ] GOG Galaxy automatisiert installieren
-- [ ] EA App automatisiert installieren
-- [ ] Ubisoft Connect automatisiert installieren
-- [ ] weitere benötigte Launcher ergänzen
-
-## Games-Laufwerk
-
-- [x] NTFS für maximale Spiele-/Launcher-Kompatibilität
-- [ ] Bibliothekspfade der Launcher automatisiert auf `G:` setzen, soweit sinnvoll
-- [ ] optional Ordnerstruktur definieren
-
-## Monitor / Gaming Display
-
-Samsung Odyssey G93SD:
-
-- [ ] optimale Auflösung automatisiert/verifiziert
-- [ ] maximale Bildwiederholrate verifiziert
-- [x] HDR-Grundkonfiguration
-- [ ] HDR/SDR-Feinschliff
-- [ ] VRR/G-SYNC prüfen
-- [ ] Farbprofil/Farbraum prüfen
-
----
-
-# Phase 18 – Firmen-Tools
-
-Noch offen beziehungsweise nur teilweise außerhalb des Repositories vorhanden:
-
-- [ ] Remote Desktop Manager installieren
-- [ ] RDM-Konfiguration sichern/wiederherstellen
-- [ ] FileZilla installieren
-- [ ] FileZilla-Konfiguration sichern, falls sinnvoll
-- [ ] PCVisit Supporter Modul installieren
-- [ ] VPN-Abhängigkeiten dokumentieren
-- [ ] benötigte Zertifikate automatisiert importieren
-- [ ] Firmen-RDP-/VPN-Workflow testen
-
----
-
-# Phase 19 – Linux-ähnlicher Workflow unter Windows
-
-## Window Manager – komorebi
-
-GlazeWM wurde zunächst installiert und getestet. Die grundlegende Fensterverwaltung, Workspaces, `Win`-Hotkeys und die Konfigurationsanbindung funktionierten. Da GlazeWM jedoch kein natives BSP-/Dwindle-Layout bietet und dieses Verhalten ein wichtiges Kriterium für den Desktop-Workflow ist, wurde GlazeWM wieder vollständig entfernt.
-
-komorebi wurde anschließend mit Version `0.1.41` getestet. Das native `BSP`-Layout entspricht deutlich besser dem gewünschten Hyprland-Dwindle-Verhalten und wird deshalb als Window Manager weiterverfolgt.
-
-### Evaluation & Installation
-
-- [x] GlazeWM 3.10.1 installiert und getestet
-- [x] GlazeWM-Konfiguration und `Win`-Hotkeys getestet
-- [x] fehlendes natives BSP-/Dwindle-Layout als Ausschlusskriterium identifiziert
-- [x] GlazeWM und Zebar wieder vollständig vom System entfernt
-- [x] GlazeWM aus der aktiven Paketkonfiguration entfernt
-- [x] komorebi `0.1.41` installiert
-- [x] `whkd` installiert
-- [x] `komorebic quickstart` ausgeführt
-- [x] komorebi erfolgreich mit `whkd` und `komorebi-bar` gestartet
-- [x] natives `BSP`-Layout erfolgreich getestet
-- [x] bestätigt, dass neu geöffnete Fenster automatisch verwaltet werden
-- [ ] `LGUG2Z.komorebi` in `packages.psd1` aufnehmen
-- [ ] `LGUG2Z.whkd` in `packages.psd1` aufnehmen
-- [ ] komorebi und whkd über den Bootstrap automatisch aktualisieren
-
-### Workspaces & Layout
-
-Ziel ist ein möglichst Hyprland-ähnlicher Workflow mit automatischem BSP-/Dwindle-artigem Tiling.
-
-- [ ] genau 5 Workspaces
-- [ ] Workspace-Namen `1` bis `5`
-- [ ] alle Workspaces standardmäßig mit `BSP`
-- [ ] Außenabstand deutlich gegenüber dem 20-px-Default reduzieren
-- [ ] Fensterabstand deutlich gegenüber dem 20-px-Default reduzieren
-- [ ] mit etwa 6 px Workspace-/Container-Padding starten und praktisch optimieren
-- [ ] Border von aktuell 8 px auf etwa 2–3 px reduzieren
-- [ ] Catppuccin-Mocha-Borderfarben
-- [ ] Verhalten auf dem Samsung Odyssey G93SD Ultrawide optimieren
-- [ ] optional `UltrawideVerticalStack` als alternatives Layout per Hotkey verfügbar machen
-- [ ] sinnvolles Verhalten für Monocle/Fullscreen
-- [ ] Floating-Fenster sinnvoll behandeln
-
-### Tastatursteuerung
-
-Die von `quickstart` erzeugten Standard-`Alt`-Keybindings von `whkd` sollen vollständig durch ein eigenes konsistentes Schema ersetzt werden.
-
-- [ ] Fokussteuerung mit `Win`-Hotkeys
-- [ ] Fenster mit `Win + Shift` verschieben
-- [ ] `Win + 1–5` für Workspace-Wechsel
-- [ ] `Win + Shift + 1–5` zum Verschieben von Fenstern auf Workspaces
-- [ ] Floating per Hotkey umschalten
-- [ ] Monocle/Fullscreen per Hotkey
-- [ ] Fenster schließen
-- [ ] Terminal starten
-- [ ] komorebi-Konfiguration neu laden
-- [ ] Retile-Hotkey
-- [ ] Pause-/Resume-Hotkey
-- [ ] Layout bei Bedarf wechseln/spiegeln
-- [ ] bestehende Windows-/PowerToys-Hotkeys auf Konflikte prüfen
-- [ ] finale Keybindings dokumentieren
-
-### Window Rules / Anwendungen
-
-Die von komorebi erzeugte `applications.json` wird als Basis verwendet und nur gezielt erweitert.
-
-- [ ] vorhandene Community-/Default-Regeln prüfen
-- [ ] Windows-Dialoge sinnvoll ignorieren oder floating behandeln
-- [ ] Logitech G HUB korrekt behandeln
-- [ ] Browser-Popups und Picture-in-Picture sinnvoll behandeln
-- [ ] Installer und Updater sinnvoll behandeln
-- [ ] PowerToys Command Palette als Overlay behandeln
-- [ ] Spiele und Fullscreen-Anwendungen testen
-- [ ] GitHub Desktop testen
-- [ ] VS Code testen
-- [ ] Zen Browser testen
-- [ ] Edge testen
-- [ ] Windows Terminal testen
-- [ ] Everything später berücksichtigen
-
-## komorebi-bar
-
-Die mit komorebi gelieferte Bar wird zunächst anstelle von Zebar verwendet. Die Default-Bar funktioniert bereits und wird vollständig an den gewünschten Desktop angepasst.
-
-- [x] komorebi-bar erfolgreich gestartet
-- [x] Workspaces werden grundsätzlich unterstützt
-- [x] aktuelles Layout wird unterstützt
-- [x] fokussiertes Fenster wird unterstützt
-- [x] Datum und Uhrzeit werden unterstützt
-- [x] Memory-/Network-Widgets sind vorhanden, aktuell aber deaktiviert
-- [ ] JetBrainsMono Nerd Font verwenden
-- [ ] Catppuccin Mocha
-- [ ] 5 Workspace-Indikatoren
-- [ ] aktiven Workspace deutlich hervorheben
-- [ ] aktuelles Layout sinnvoll anzeigen
-- [ ] fokussiertes Fenster inklusive Icon
-- [ ] CPU-Anzeige prüfen/ergänzen
-- [ ] RAM aktivieren
-- [ ] Netzwerk aktivieren
-- [ ] VPN-Status integrieren
-- [ ] Audio/Lautstärke integrieren
-- [ ] Datum konfigurieren
-- [ ] 24-Stunden-Uhr konfigurieren
-- [ ] Systray-Unterstützung prüfen
-- [ ] Akku-/Gerätestatus soweit zuverlässig verfügbar
-- [ ] Update-Widget sinnvoll konfigurieren
-- [ ] Höhe und Abstände für den Ultrawide optimieren
-
-## Konfiguration im Repository
-
-Die von `komorebic quickstart` erzeugten Dateien dienen als Ausgangspunkt:
-
-```text
-%USERPROFILE%\komorebi.json
-%USERPROFILE%\komorebi.bar.json
-%USERPROFILE%\applications.json
-%USERPROFILE%\.config\whkdrc
-```
-
-Zielstruktur im Repository:
-
-```text
-dotfiles/
-└── komorebi/
-    ├── komorebi.json
-    ├── komorebi.bar.json
-    ├── applications.json
-    └── whkdrc
-```
-
-- [ ] `komorebi.json` ins Repository übernehmen
-- [ ] `komorebi.bar.json` ins Repository übernehmen
-- [ ] `applications.json` ins Repository übernehmen
-- [ ] `whkdrc` ins Repository übernehmen
-- [ ] eigenes komorebi-PowerShell-Modul erstellen
-- [ ] `komorebi.json` per Symlink anbinden
-- [ ] `komorebi.bar.json` per Symlink anbinden
-- [ ] `applications.json` per Symlink anbinden
-- [ ] `whkdrc` per Symlink anbinden
-- [ ] vorhandene Dateien beim ersten Bootstrap sicher behandeln
-- [ ] korrekte Symlink-Ziele idempotent erkennen
-- [ ] fehlerhafte/veraltete Links sauber ersetzen
-- [ ] Konfiguration über `modules/index.ps1` laden
-- [ ] Konfiguration im Bootstrap anwenden
-- [ ] komorebi beim Benutzer-Login automatisch starten
-- [ ] sicherstellen, dass kein zweiter WM parallel gestartet wird
-
-## Lizenzhinweis
-
-komorebi weist beim Start darauf hin, dass für die Nutzung am Arbeitsplatz eine Commercial-Use-Lizenz erforderlich ist. Der Bootstrap soll diese Entscheidung weder umgehen noch automatisch treffen, sondern transparent informieren und die technische Registrierung einer vorhandenen Lizenz dokumentieren.
-
-- [ ] beim Setup einen klaren Lizenzhinweis ausgeben
-- [ ] offiziellen Link zu den komorebi-Lizenzinformationen anzeigen
-- [ ] darauf hinweisen, dass kommerzielle Nutzung bzw. Nutzung am Arbeitsplatz eine Lizenz erfordern kann
-- [ ] dokumentieren, wie eine vorhandene Lizenz registriert wird
-- [ ] keine automatische Lizenzentscheidung treffen
-- [ ] keine Lizenzprüfung umgehen
-
-## Windows Desktop & Taskleiste
-
-Der native Windows-Desktop soll optisch und funktional hinter komorebi und der Topbar zurücktreten.
-
-- [ ] Desktop-Icons vollständig ausblenden
-- [ ] Windows-Taskleiste automatisch ausblenden
-- [ ] native Taskleiste als Fallback weiterhin erreichbar lassen
-- [ ] Einstellungen idempotent über den Bootstrap anwenden
-- [ ] Verhalten nach Explorer-Neustart testen
-- [ ] Spiele/Fullscreen-Anwendungen auf Nebenwirkungen testen
-
-## Launcher / Startmenü-Ersatz
-
-Das native Startmenü soll im täglichen Workflow nicht mehr der primäre Launcher sein, da es unten mittig erscheint und nicht zum Topbar-Konzept passt.
-
-PowerToys Command Palette ist als primärer Launcher vorgesehen. Die Command Palette bietet eine Everything-Integration und passt damit sehr gut zum geplanten Linux-ähnlichen Workflow.
-
-- [ ] PowerToys über die Paketverwaltung installieren
-- [ ] PowerToys automatisch aktualisieren
-- [ ] Everything über die Paketverwaltung installieren
-- [ ] Everything automatisch aktualisieren
-- [ ] PowerToys Command Palette aktivieren
-- [ ] Everything-Integration aktivieren und testen
-- [ ] Apps schnell starten
-- [ ] globale Datei-/Ordnersuche über Everything
-- [ ] Launcher-Hotkey festlegen
-- [ ] prüfen, ob die einzelne `Win`-Taste sinnvoll verwendet werden kann
-- [ ] andernfalls konfliktfreien Hotkey festlegen
-- [ ] Command Palette im Dark-/Catppuccin-orientierten Design konfigurieren
-- [ ] Position und Verhalten passend zur Topbar konfigurieren
-- [ ] native Startmenü-Nutzung im täglichen Workflow weitgehend ersetzen
-- [ ] PowerToys-/Command-Palette-Konfiguration soweit möglich im Repository sichern
-- [ ] Everything-Konfiguration soweit sinnvoll reproduzierbar machen
-
----
-
-# Phase 20 – Design / Catppuccin Mocha
-
-Bereits umgesetzt beziehungsweise begonnen:
-
-- [x] Terminal-/CLI-Umgebung
-- [x] Starship
-- [x] VS Code
-- [x] G502-X-Plus-RGB
-- [x] Windows Dark Theme
-- [ ] komorebi
-- [ ] komorebi-bar
-- [ ] PowerToys Command Palette
-- [ ] Browser optional weiter angleichen
-- [ ] weitere Anwendungen nur dort themen, wo es stabil und wartbar ist
-
----
-
-# Phase 21 – Backup & Restore
-
-## Bereits reproduzierbar
-
-- [x] Winget-/Store-Pakete über `packages.psd1`
-- [x] Git-Konfiguration
-- [x] VS-Code-Extensions und Settings
-- [x] Terminal-Konfiguration
-- [x] Nushell
-- [x] Starship
-- [x] Browser Policies
-- [x] Zen Mods
-- [x] G-HUB-Konfiguration
-- [x] Windows-Konfiguration
-- [x] Dev-Drive-Konfiguration
-- [ ] komorebi-/whkd-Konfiguration
-- [ ] komorebi-bar-Konfiguration
-
-## Noch offen
-
-- [ ] vollständigen Restore auf wirklich frischer Windows-Installation testen
-- [ ] dokumentieren, welche manuellen Schritte unvermeidbar bleiben
-- [ ] Export/Restore von Gaming-Launcher-Konfigurationen prüfen
-- [ ] Export/Restore von Firmen-Tools prüfen
-- [ ] optional Windows-Einstellungen ergänzen, die aktuell noch nicht versioniert sind
-- [ ] Recovery-/Rollback-Konzept für fehlerhafte Bootstrap-Änderungen
-
----
-
-# Phase 22 – Logging, Fehlerbehandlung & Qualität
-
-## Erledigt
-
-- [x] `$ErrorActionPreference = "Stop"`
-- [x] klare Statusausgaben
-- [x] wichtige Fehler führen zu Exceptions
-- [x] PSScriptAnalyzer sauber
-- [x] kritische Storage-Aktion benötigt Bestätigung
-- [x] kein automatischer Reboot
-- [x] Git-Änderungen werden nicht automatisch gepusht
-
-## Noch offen
-
-- [ ] zentraler Log-Ordner
-- [ ] vollständiges Transcript pro Bootstrap-Lauf
-- [ ] Log-Rotation
-- [ ] Fehler-Toast bei Scheduled-Task-Fehler
-- [ ] Task-Ergebnis/Exit-Code in Benachrichtigung integrieren
-- [ ] optional Retry für Netzwerk-/Downloadfehler
-- [ ] optional Pester-Tests
-- [ ] optional GitHub Actions für statische Codeanalyse
-
----
-
-# Nächste sinnvolle Schritte
-
-Priorität für die nächsten Arbeiten:
-
-1. [ ] **komorebi produktiv konfigurieren** – 5 BSP-Workspaces, kleine Gaps, dünne Borders und eigene Keybindings
-2. [ ] **komorebi + whkd in den Bootstrap integrieren** – Pakete, automatische Updates, Symlinks, Autostart und Lizenzhinweis
-3. [ ] **komorebi-bar gestalten** – Catppuccin Mocha, Workspaces und Systeminformationen
-4. [ ] **Desktop/Taskleiste integrieren** – Desktop-Icons ausblenden und Windows-Taskleiste auf Auto-Hide
-5. [ ] **Command Palette + Everything** – Startmenü im täglichen Workflow durch Launcher und schnelle Dateisuche ersetzen
-6. [ ] **Gaming-Pakete und Launcher** – Steam/Epic/GOG/EA/Ubisoft reproduzierbar installieren
-7. [ ] **Firmen-Tools** – RDM, FileZilla, PCVisit und Zertifikate
-8. [ ] **Logging/Fehler-Toast** – automatische Wochenwartung noch besser nachvollziehbar machen
-9. [ ] **vollständiger Restore-Test** auf einer frischen Windows-Installation
-
----
-
-# Aktueller Projektstatus
-
-Der Kern des Projekts ist inzwischen funktionsfähig:
-
-- [x] Windows kann mit einem Einzeiler initialisiert werden
-- [x] derselbe Bootstrap kann wiederholt ausgeführt werden
-- [x] Software wird installiert und aktualisiert
-- [x] feste Paketversionen werden unterstützt
-- [x] Windows wird debloated
-- [x] Treiber werden gewartet
-- [x] Windows Updates werden installiert
-- [x] Entwicklerumgebung wird eingerichtet
-- [x] Dev Drive wird automatisch und sicher eingerichtet
-- [x] Defender ist für das Dev Drive optimiert
-- [x] Browser werden automatisiert konfiguriert
-- [x] Zen Mods werden automatisiert installiert
-- [x] G502-X-Plus-/G-HUB-Konfiguration wird gesichert
-- [x] das Repository meldet lokale und ungepushte Änderungen
-- [x] notwendige Neustarts werden gemeldet
-- [x] der komplette Bootstrap läuft wöchentlich automatisch
-- [x] PSScriptAnalyzer meldet keine Probleme
-
-Das Projekt ist damit nicht mehr nur ein Installationsskript, sondern bereits ein reproduzierbares Setup- und Wartungssystem. Für den Linux-ähnlichen Desktop-Workflow wurde komorebi mit nativem BSP-Layout als Nachfolger des getesteten und wieder entfernten GlazeWM ausgewählt. Die größten offenen Blöcke sind derzeit die produktive komorebi-/Bar-/Launcher-Integration, Gaming-Launcher, Firmen-Tools sowie zusätzliche Restore-/Logging-Qualität.
+# Aktueller Gesamtstatus
+
+Die Kernarchitektur des Setups ist produktiv nutzbar und weitgehend reproduzierbar.
+
+Besonders weit abgeschlossen sind:
+
+- Bootstrap- und Repository-Architektur
+- Paketverwaltung
+- Windows Debloat und Grundkonfiguration
+- Windows-/Microsoft-Updates
+- Development Toolchain
+- ReFS Dev Drive und Cache-Verlagerung
+- Browser-Konfiguration
+- VS Code
+- Logitech G HUB
+- komorebi + whkd
+- Zebar inklusive TypeScript-/esbuild-Build
+- Desktop-Autostart
+- wöchentliche Wartung
+- Desktop-Benachrichtigungen
+- PSScriptAnalyzer-Codeprüfung
+
+Die größten verbleibenden Themen sind damit nicht mehr der Grundaufbau, sondern Qualitäts- und Komfortthemen:
+
+1. zentrale Logging-Strategie
+2. vollständiger Clean-Install-Test auf einem frischen Windows 11
+3. CI/Pester/TypeScript-Checks
+4. Security-Abschlussprüfungen für BitLocker, Secure Boot und Firewall
+5. Dokumentations-Feinschliff
+6. optionale VPN-/Zertifikats-Automatisierung
+7. kleinere Desktop-/Zebar-Polish-Aufgaben
