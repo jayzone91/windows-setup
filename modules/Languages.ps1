@@ -1,4 +1,11 @@
 function Set-LanguageEnvironment {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        "PSAvoidUsingPositionalParameters",
+        "",
+        Justification = "npm ist ein externes CLI-Programm und verwendet Positionsargumente als Teil seiner regulären CLI-Syntax."
+    )]
+    param()
+
 
     Write-Host ""
     Write-Host "========================================"
@@ -18,10 +25,17 @@ function Set-LanguageEnvironment {
         fnm install --lts
         fnm default lts-latest
 
-        $fnmEnvironment = fnm env --shell powershell |
+        $fnmEnvironment = fnm env `
+            --shell powershell |
         Out-String
 
-        Invoke-Expression $fnmEnvironment
+
+        $fnmScript = [scriptblock]::Create(
+            $fnmEnvironment
+        )
+
+
+        & $fnmScript
 
         if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
             throw "npm ist nach der fnm-Konfiguration nicht verfügbar."

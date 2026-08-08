@@ -22,20 +22,13 @@ function Set-BrowserConfiguration {
 
     if ($Config.Zen) {
 
-        Set-ZenExtensions `
-            -Extensions $Config.Zen.Extensions
-
-        if ($Config.Zen.Preferences) {
-
-            Set-ZenPreferences `
-                -Preferences $Config.Zen.Preferences
-        }
+        Set-ZenConfiguration `
+            -Config $Config.Zen
 
         if ($Config.Zen.Mods) {
             Set-ZenMods `
                 -Mods $Config.Zen.Mods
         }
-
     }
 
 
@@ -138,177 +131,6 @@ function Get-ZenInstallPath {
 
 
     return $null
-}
-
-function Set-ZenExtensions {
-
-    param(
-        [Parameter(Mandatory)]
-        $Extensions
-    )
-
-
-    Write-Host ""
-    Write-Host "[CONFIG] Zen Browser Extensions"
-
-
-    $zenPath = Get-ZenInstallPath
-
-    if (-not $zenPath) {
-        Write-Warning "Zen Browser nicht gefunden."
-        return
-    }
-
-    $distribution = Join-Path `
-        $zenPath `
-        "distribution"
-
-
-    $installPath = $distribution
-
-
-    Write-Host "[FOUND] $installPath"
-
-
-    $distributionPath = Join-Path `
-        $installPath `
-        "distribution"
-
-
-    if (-not (Test-Path $distributionPath)) {
-
-        New-Item `
-            -Path $distributionPath `
-            -ItemType Directory `
-            -Force |
-        Out-Null
-    }
-
-
-    $policy = @{
-        policies = @{
-
-            Extensions       = @{
-                Install = @(
-                    foreach ($extension in $Extensions) {
-                        $extension.InstallUrl
-                    }
-                )
-            }
-
-            RequestedLocales = @(
-                "de"
-            )
-
-            Languages        = @{
-                Requested = @(
-                    "de-DE"
-                )
-            }
-        }
-    }
-
-
-    $policyPath = Join-Path `
-        $distributionPath `
-        "policies.json"
-
-
-    $policy |
-    ConvertTo-Json -Depth 10 |
-    Set-Content `
-        -Path $policyPath `
-        -Encoding UTF8
-
-
-    foreach ($extension in $Extensions) {
-        Write-Host "[ADD] $($extension.Name)"
-    }
-
-
-    Write-Host "[OK] Zen Browser konfiguriert."
-}
-
-function Set-ZenPreferences {
-
-    param(
-        [Parameter(Mandatory)]
-        $Preferences
-    )
-
-
-    Write-Host ""
-    Write-Host "[CONFIG] Zen Browser Policies"
-
-
-    $zenPath = Get-ZenInstallPath
-
-    if (-not $zenPath) {
-        Write-Warning "Zen Browser nicht gefunden."
-        return
-    }
-
-
-    $distribution = Join-Path `
-        $zenPath `
-        "distribution"
-
-
-    if (-not (Test-Path $distribution)) {
-
-        New-Item `
-            -Path $distribution `
-            -ItemType Directory `
-            -Force |
-        Out-Null
-    }
-
-
-    $policyPath = Join-Path `
-        $distribution `
-        "policies.json"
-
-
-    $policy = @{
-        policies = @{
-
-            RequestedLocales      = @(
-                $Preferences.Locale
-            )
-
-            SpellcheckEnabled     = $true
-
-            DisableTelemetry      = $Preferences.DisableTelemetry
-
-            DisableFirefoxStudies = $true
-
-            DisablePocket         = $Preferences.DisablePocket
-
-
-            Preferences           = @{
-
-                "browser.startup.page"                                = @{
-                    Value = 3
-
-                }
-
-                "toolkit.legacyUserProfileCustomizations.stylesheets" = @{
-                    Value  = $true
-                    Status = "locked"
-                }
-            }
-        }
-    }
-
-
-    $policy |
-    ConvertTo-Json -Depth 10 |
-    Set-Content `
-        -Path $policyPath `
-        -Encoding UTF8
-
-
-    Write-Host "[OK] Zen Policies gesetzt."
 }
 
 function Read-ZenMarionettePacket {
@@ -417,14 +239,16 @@ function Set-ZenMods {
         return
     }
 
-
-    $zenPath = "C:\Program Files\Zen Browser\zen.exe"
+    $zenPath = Get-ZenInstallPath
 
     if (-not (Test-Path $zenPath)) {
         Write-Host "[SKIP] Zen Browser ist nicht installiert."
         return
     }
 
+    $zenPath = Join-Path `
+        $zenPath `
+        "zen.exe"
 
     #
     # Zen beenden, damit wir ihn mit Marionette starten können
@@ -451,12 +275,24 @@ function Set-ZenMods {
 
     Write-Host "[INFO] Starte Zen Konfigurationsmodus."
 
+    $stdoutLog = Join-Path `
+        $env:TEMP `
+        "zen-marionette.stdout.log"
+
+
+    $stderrLog = Join-Path `
+        $env:TEMP `
+        "zen-marionette.stderr.log"
+
+
     Start-Process `
         -FilePath $zenPath `
         -ArgumentList @(
         "--marionette"
         "-remote-allow-system-access"
-    )
+    ) `
+        -RedirectStandardOutput $stdoutLog `
+        -RedirectStandardError $stderrLog
 
 
     #
@@ -894,4 +730,160 @@ function Stop-ZenBrowser {
 
 
     throw "Zen Browser konnte nicht vollständig beendet werden."
+}
+
+function Set-ZenConfiguration {
+
+    param(
+        [Parameter(Mandatory)]
+        $Config
+    )
+
+
+    Write-Host ""
+    Write-Host "[CONFIG] Zen Browser"
+
+
+    $zenPath = Get-ZenInstallPath
+
+    if (-not $zenPath) {
+        Write-Warning "Zen Browser nicht gefunden."
+        return
+    }
+
+
+    $distributionPath = Join-Path `
+        $zenPath `
+        "distribution"
+
+
+    if (-not (Test-Path $distributionPath)) {
+
+        New-Item `
+            -Path $distributionPath `
+            -ItemType Directory `
+            -Force |
+        Out-Null
+    }
+
+
+    $policies = @{}
+
+
+    if ($Config.Extensions) {
+
+        $policies.Extensions = @{
+            Install = @(
+                foreach ($extension in $Config.Extensions) {
+                    $extension.InstallUrl
+                }
+            )
+        }
+    }
+
+
+    if ($Config.Preferences) {
+
+        $preferences = $Config.Preferences
+
+
+        if ($preferences.Locale) {
+
+            $policies.RequestedLocales = @(
+                $preferences.Locale
+            )
+        }
+
+
+        if ($null -ne $preferences.DisableTelemetry) {
+
+            $policies.DisableTelemetry =
+            [bool]$preferences.DisableTelemetry
+        }
+
+
+        if ($null -ne $preferences.DisableFirefoxStudies) {
+
+            $policies.DisableFirefoxStudies =
+            [bool]$preferences.DisableFirefoxStudies
+        }
+
+
+        if ($null -ne $preferences.DisablePocket) {
+
+            $policies.DisablePocket =
+            [bool]$preferences.DisablePocket
+        }
+
+
+        if ($preferences.SearchEngine) {
+
+            $policies.SearchEngines = @{
+                Default = $preferences.SearchEngine
+            }
+        }
+
+
+        $browserPreferences = @{}
+
+
+        if ($preferences.RestorePreviousSession) {
+
+            $browserPreferences["browser.startup.page"] = @{
+                Value  = 3
+                Status = "default"
+            }
+        }
+
+
+        if ($preferences.SpellcheckDictionary) {
+
+            $browserPreferences["layout.spellcheckDefault"] = @{
+                Value  = 2
+                Status = "default"
+            }
+
+
+            $browserPreferences["spellchecker.dictionary"] = @{
+                Value  = $preferences.SpellcheckDictionary
+                Status = "default"
+            }
+        }
+
+
+        if ($browserPreferences.Count -gt 0) {
+
+            $policies.Preferences =
+            $browserPreferences
+        }
+    }
+
+
+    $policy = @{
+        policies = $policies
+    }
+
+
+    $policyPath = Join-Path `
+        $distributionPath `
+        "policies.json"
+
+
+    $policy |
+    ConvertTo-Json -Depth 10 |
+    Set-Content `
+        -Path $policyPath `
+        -Encoding UTF8
+
+
+    foreach ($extension in $Config.Extensions) {
+
+        Write-Host (
+            "[ADD] {0}" `
+                -f $extension.Name
+        )
+    }
+
+
+    Write-Host "[OK] Zen Browser konfiguriert."
 }

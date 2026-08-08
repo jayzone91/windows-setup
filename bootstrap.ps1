@@ -33,6 +33,7 @@ Clear-WindowsSetupTemp
 $Packages = Import-PowerShellDataFile "$Root\config\packages.psd1"
 $VSCode = Import-PowerShellDataFile "$Root\config\vscode.psd1"
 $Browsers = Import-PowerShellDataFile "$Root\config\browsers.psd1"
+$PowerShell = Import-PowerShellDataFile "$Root\config\powershell.psd1"
 
 # ------------------------------------------------------------
 # Software
@@ -90,7 +91,12 @@ Set-WindowsWallpaperSlideshow
 Set-GitPreferences
 
 Set-WindowsTerminalPreferences
+
+Install-PowerShellModules `
+    -Modules $PowerShell.Modules
+
 Set-PowerShellPreferences
+
 Set-NushellPreferences
 
 Set-LanguageEnvironment
@@ -120,6 +126,9 @@ Restart-WindowsExplorer
 # ------------------------------------------------------------
 
 Test-ApplePasswordRequirements
+
+Test-PowerShellCode `
+    -Path $Root
 
 # ------------------------------------------------------------
 # Fertig

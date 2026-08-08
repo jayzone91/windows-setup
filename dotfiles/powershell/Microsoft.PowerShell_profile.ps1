@@ -27,12 +27,31 @@ Set-PSReadLineKeyHandler `
     -Function HistorySearchForward
 
 if (Get-Command fnm -ErrorAction SilentlyContinue) {
-    fnm env --use-on-cd --shell powershell |
-    Out-String |
-    Invoke-Expression
+
+    $fnmEnvironment = fnm env `
+        --use-on-cd `
+        --shell powershell |
+    Out-String
+
+    $fnmScript = [scriptblock]::Create(
+        $fnmEnvironment
+    )
+
+    & $fnmScript
 }
 
 # Starship
 if (Get-Command starship -ErrorAction SilentlyContinue) {
-    Invoke-Expression (&starship init powershell)
+
+    $starshipEnvironment =
+    & starship init powershell |
+    Out-String
+
+
+    $starshipScript = [scriptblock]::Create(
+        $starshipEnvironment
+    )
+
+
+    & $starshipScript
 }

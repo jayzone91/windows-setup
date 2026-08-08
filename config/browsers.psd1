@@ -39,11 +39,13 @@
         )
 
         Preferences = @{
-            Locale           = "de"
-            Homepage         = "about:blank"
-            SearchEngine     = "Google"
-            DisableTelemetry = $true
-            DisablePocket    = $true
+            Locale                 = "de"
+            SearchEngine           = "Google"
+            SpellcheckDictionary   = "de-DE"
+            RestorePreviousSession = $true
+            DisableTelemetry       = $true
+            DisableFirefoxStudies  = $true
+            DisablePocket          = $true
         }
 
         Mods        = @(

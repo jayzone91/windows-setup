@@ -113,7 +113,13 @@ function Get-IntelDsaUpdates {
     return @($results)
 }
 
+
 function Get-IntelDriverPackage {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        "PSAvoidUsingBrokenHashAlgorithms",
+        "",
+        Justification = "Intel DSA liefert den Paket-Hash als SHA1; der Wert wird ausschließlich zur Integritätsprüfung gegen Intels eigenen Hash verwendet."
+    )]
     param(
         [Parameter(Mandatory)]
         $Update

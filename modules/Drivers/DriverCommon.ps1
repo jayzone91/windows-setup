@@ -28,19 +28,16 @@ function Test-PendingReboot {
         }
     }
 
-    try {
-        $sessionManager = Get-ItemProperty `
-            "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" `
-            -Name PendingFileRenameOperations `
-            -ErrorAction Stop
 
-        if ($sessionManager.PendingFileRenameOperations) {
-            $rebootRequired = $true
-        }
+    $sessionManager = Get-ItemProperty `
+        "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" `
+        -Name PendingFileRenameOperations `
+        -ErrorAction Stop
+
+    if ($sessionManager -and $sessionManager.PendingFileRenameOperations) {
+        $rebootRequired = $true
     }
-    catch {
-        # Kein PendingFileRenameOperations vorhanden.
-    }
+
 
     return $rebootRequired
 }
