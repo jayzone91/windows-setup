@@ -20,5 +20,6 @@
         "https://schemastore.azurewebsites.net/": true,
         "https://www.schemastore.org/": true
     },
-    "chatgpt.localeOverride": "de-DE"
+    "chatgpt.localeOverride": "de-DE",
+    "git.confirmSync": false
 }
