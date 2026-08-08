@@ -23,7 +23,7 @@
             Name   = "Windows HDR Calibration"
             Source = "msstore"
             Update = $true
-        }
+        },
 
         @{
             Name   = "iCloud"
@@ -39,7 +39,7 @@
             Id     = "Zen-Team.Zen-Browser"
             Source = "winget"
             Update = $true
-        }
+        },
 
         @{
             Name   = "Google Chrome Dev"
@@ -55,57 +55,55 @@
             Id     = "Schniz.fnm"
             Source = "winget"
             Update = $true
-        }
+        },
         @{
             Name   = "Go"
             Id     = "GoLang.Go"
             Source = "winget"
             Update = $true
-        }
+        },
         @{
             Name   = "Bun"
             Id     = "Oven-sh.Bun"
             Source = "winget"
             Update = $true
-        }
+        },
         @{
             Id     = "Git.Git"
             Name   = "Git"
             Source = "winget"
             Update = $true
-        }
+        },
         @{
             Id     = "GitHub.cli"
             Name   = "GitHub CLI"
             Source = "winget"
             Update = $true
-        }
+        },
         @{
             Id     = "GitHub.GitHubDesktop"
             Name   = "GitHub Desktop"
             Source = "winget"
             Update = $true
-        }
+        },
         @{
             Id     = "Microsoft.VisualStudioCode"
             Name   = "Visual Studio Code"
             Source = "winget"
             Update = $true
-        }
+        },
         @{
             Id     = "Microsoft.PowerShell"
             Name   = "PowerShell 7"
             Source = "winget"
             Update = $true
-        }
-
+        },
         @{
             Id     = "Nushell.Nushell"
             Name   = "Nushell"
             Source = "winget"
             Update = $true
-        }
-
+        },
         @{
             Id     = "Starship.Starship"
             Name   = "Starship"

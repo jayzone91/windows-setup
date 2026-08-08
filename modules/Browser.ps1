@@ -1,14 +1,30 @@
 function Set-BrowserConfiguration {
 
+    param(
+        [Parameter(Mandatory)]
+        $Config
+    )
+
+
     Write-Host ""
     Write-Host "========================================"
     Write-Host " Browser"
     Write-Host "========================================"
 
 
-    Set-ChromiumExtensions
+    if ($Config.ChromeBeta) {
 
-    Set-ZenBrowserConfiguration
+        Set-ChromiumExtensions `
+            -Extensions $Config.ChromeBeta.Extensions `
+            -PolicyPath $Config.ChromeBeta.PolicyPath
+    }
+
+
+    if ($Config.Zen) {
+
+        Set-ZenExtensions `
+            -Extensions $Config.Zen
+    }
 
 
     Write-Host ""
@@ -20,46 +36,66 @@ function Set-BrowserConfiguration {
 
 function Set-ChromiumExtensions {
 
+    param(
+        [Parameter(Mandatory)]
+        $Extensions,
+
+        [Parameter(Mandatory)]
+        $PolicyPath
+    )
+
+
     Write-Host ""
     Write-Host "[CONFIG] Chromium Extensions"
 
 
-    $chromePolicyPath =
-    "HKLM:\Software\Policies\Google\Chrome"
+    $extensionPath = Join-Path `
+        $PolicyPath `
+        "ExtensionInstallForcelist"
 
 
-    if (-not (Test-Path $chromePolicyPath)) {
-
-        New-Item `
-            -Path $chromePolicyPath `
-            -Force | Out-Null
+    # alten Key entfernen
+    if (Test-Path $extensionPath) {
+        Remove-Item `
+            -Path $extensionPath `
+            -Recurse `
+            -Force
     }
 
 
-    Write-Host "[OK] Chromium Policy Pfad vorhanden."
-}
+    # neuen Key erstellen
+    New-Item `
+        -Path $extensionPath `
+        -Force |
+    Out-Null
 
 
-
-function Set-ZenBrowserConfiguration {
-
-    Write-Host ""
-    Write-Host "[CONFIG] Zen Browser"
+    $index = 1
 
 
-    $zenPath =
-    "$env:APPDATA\zen"
+    foreach ($extension in $Extensions) {
+
+        $value =
+        "$($extension.Id);https://clients2.google.com/service/update2/crx"
 
 
-    if (Test-Path $zenPath) {
+        New-ItemProperty `
+            -Path $extensionPath `
+            -Name $index `
+            -PropertyType String `
+            -Value $value `
+            -Force |
+        Out-Null
 
-        Write-Host "[OK] Zen Profil gefunden."
 
+        Write-Host (
+            "[ADD] {0}" -f $extension.Name
+        )
+
+
+        $index++
     }
-    else {
 
-        Write-Host "[INFO] Zen Profil wird nach dem ersten Start erstellt."
 
-    }
-
+    Write-Host "[OK] Chromium Extensions gesetzt."
 }

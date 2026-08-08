@@ -1,20 +1,24 @@
 @{
 
-    ChromeDev = @(
-        @{
-            Name = "iCloud Passwords"
-            Id   = "pejdijmoenmkgeppbflobdenhhabcpjm"
-            Type = "Chrome"
-        },
-        @{
-            Name = "uBlock Origin"
-            Id   = "cjpalhdlnbpafiamejdnhcphjbkeiagm"
-            Type = "Chrome"
-        }
-    )
+    ChromeBeta = @{
+        PolicyPath = "HKLM:\Software\Policies\Google\Chrome"
+
+        Extensions = @(
+            @{
+                Name = "iCloud Passwords"
+                Id   = "pejdijmoenmkgeppbflobdenhhabjlaj"
+                Type = "Chrome"
+            },
+            @{
+                Name = "AdBlock Plus"
+                Id   = "cfhdojbkjhnklbpkdaibdccddilifddb"
+                Type = "Chrome"
+            }
+        )
+    }
 
 
-    Zen       = @(
+    Zen        = @(
         @{
             Name       = "iCloud Passwords"
             Type       = "Firefox"
@@ -24,7 +28,7 @@
             Name       = "uBlock Origin"
             Type       = "Firefox"
             InstallUrl = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi"
-        }
+        },
         @{
             Name       = "Deutsch (Deutschland) Sprachpaket"
             Type       = "Firefox"

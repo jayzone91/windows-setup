@@ -32,6 +32,7 @@ Clear-WindowsSetupTemp
 
 $Packages = Import-PowerShellDataFile "$Root\config\packages.psd1"
 $VSCode = Import-PowerShellDataFile "$Root\config\vscode.psd1"
+$Browsers = Import-PowerShellDataFile "$Root\config\browsers.psd1"
 
 # ------------------------------------------------------------
 # Software
@@ -109,7 +110,8 @@ Set-VSCodeSettings `
 # Browser Config
 # ------------------------------------------------------------
 
-Set-BrowserConfiguration
+Set-BrowserConfiguration `
+    -Config $Browsers
 
 Restart-WindowsExplorer
 
