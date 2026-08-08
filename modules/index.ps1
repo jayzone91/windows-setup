@@ -9,6 +9,8 @@ $modules = @(
     "Git.ps1"
     "Helpers.ps1"
     "Languages.ps1"
+    "Logitech.ps1"
+    "Notifications.ps1"
     "Nushell.ps1"
     "Packages.ps1"
     "PowerShell.ps1"

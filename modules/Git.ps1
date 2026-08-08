@@ -133,3 +133,83 @@ function Set-GitPreferences {
     Write-Host "Aktuelle Konfiguration:"
     git config --global --list
 }
+
+function Get-WindowsSetupRepositoryStatus {
+
+    param(
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
+    )
+
+
+    $result = [PSCustomObject]@{
+        HasChanges      = $false
+        ChangedFiles    = @()
+        UnpushedCommits = 0
+    }
+
+
+    $gitDirectory = Join-Path `
+        $RepositoryPath `
+        ".git"
+
+
+    if (-not (Test-Path $gitDirectory)) {
+        return $result
+    }
+
+
+    $statusLines = @(
+        git `
+            -C $RepositoryPath `
+            status `
+            --porcelain
+    )
+
+
+    if ($LASTEXITCODE -eq 0) {
+
+        $result.HasChanges =
+        $statusLines.Count -gt 0
+
+
+        $result.ChangedFiles = @(
+            foreach ($line in $statusLines) {
+
+                if ($line.Length -gt 3) {
+                    $line.Substring(3).Trim()
+                }
+            }
+        )
+    }
+
+
+    $upstream = git `
+        -C $RepositoryPath `
+        rev-parse `
+        --abbrev-ref `
+        --symbolic-full-name `
+        "@{u}" `
+        2>$null
+
+
+    if (
+        $LASTEXITCODE -eq 0 -and
+        -not [string]::IsNullOrWhiteSpace($upstream)
+    ) {
+
+        $count = git `
+            -C $RepositoryPath `
+            rev-list `
+            --count `
+            "$upstream..HEAD"
+
+
+        if ($LASTEXITCODE -eq 0) {
+            $result.UnpushedCommits = [int]$count
+        }
+    }
+
+
+    return $result
+}

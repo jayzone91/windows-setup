@@ -32,9 +32,13 @@ function Test-PendingReboot {
     $sessionManager = Get-ItemProperty `
         "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" `
         -Name PendingFileRenameOperations `
-        -ErrorAction Stop
+        -ErrorAction SilentlyContinue
 
-    if ($sessionManager -and $sessionManager.PendingFileRenameOperations) {
+
+    if (
+        $sessionManager -and
+        $sessionManager.PendingFileRenameOperations
+    ) {
         $rebootRequired = $true
     }
 

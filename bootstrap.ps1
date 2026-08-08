@@ -129,6 +129,13 @@ Set-BrowserConfiguration `
 Restart-WindowsExplorer
 
 # ------------------------------------------------------------
+# Peripherie
+# ------------------------------------------------------------
+
+Sync-LogitechGHubConfiguration `
+    -RepositoryPath "$Root\config\lghub"
+
+# ------------------------------------------------------------
 # Abschließende Tests
 # ------------------------------------------------------------
 
@@ -146,3 +153,20 @@ Write-Host "========================================"
 Write-Host " Setup-Durchlauf abgeschlossen"
 Write-Host "========================================"
 Write-Host ""
+
+# ------------------------------------------------------------
+# Wartungsstatus
+# ------------------------------------------------------------
+
+$rebootRequired =
+Test-PendingReboot
+
+
+$repositoryStatus =
+Get-WindowsSetupRepositoryStatus `
+    -RepositoryPath $Root
+
+
+Send-WindowsSetupNotifications `
+    -RebootRequired $rebootRequired `
+    -RepositoryStatus $repositoryStatus

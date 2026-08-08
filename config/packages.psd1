@@ -38,6 +38,13 @@
             Source  = "winget"
             Version = "2.7.101"
             Update  = $false
+        },
+
+        @{
+            Name   = "Logitech G HUB"
+            Id     = "Logitech.GHUB"
+            Source = "winget"
+            Update = $true
         }
     )
 

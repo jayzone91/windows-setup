@@ -1,5 +1,6 @@
 @{
     Modules = @(
         "PSScriptAnalyzer"
+        "BurntToast"
     )
 }
