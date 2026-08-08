@@ -15,6 +15,8 @@
   "scripts": {
     "build": "tsc --noEmit && esbuild src/main.ts --bundle --format=esm --platform=browser --outfile=dist/main.js",
     "watch": "esbuild src/main.ts --bundle --format=esm --platform=browser --outfile=dist/main.js --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "restart": "powershell -NoProfile -Command \"Stop-Process -Name zebar -Force -ErrorAction SilentlyContinue; Start-Process -FilePath 'C:\\Program Files\\glzr.io\\Zebar\\zebar.exe' -WindowStyle Hidden -RedirectStandardOutput \\\"$env:TEMP\\zebar-stdout.log\\\" -RedirectStandardError \\\"$env:TEMP\\zebar-stderr.log\\\"\"",
+    "dev:reload": "npm run build && npm run restart"
   }
 }

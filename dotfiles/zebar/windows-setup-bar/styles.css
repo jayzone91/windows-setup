@@ -243,3 +243,64 @@ body {
   color: var(--text);
   font-weight: 600;
 }
+
+/* Netzwerk */
+
+.network-icon {
+  color: var(--sky);
+}
+
+.network-interface {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.network-ip {
+  color: var(--subtext0);
+}
+
+.network-download {
+  color: var(--green);
+}
+
+.network-upload {
+  color: var(--peach);
+}
+
+.network-download,
+.network-upload {
+  display: inline-flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 88px;
+
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.network-pill {
+  white-space: nowrap;
+}
+
+/* Audio */
+
+.audio-pill {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.audio-icon {
+  color: var(--green);
+}
+
+.audio-icon.muted {
+  color: var(--red);
+}
+
+.audio-volume {
+  display: inline-block;
+  min-width: 42px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
