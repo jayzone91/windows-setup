@@ -1,22 +1,20 @@
 {
-  "devDependencies": {
+  "dependencies": {
     "zebar": "^3.3.1"
   },
-  "name": "windows-setup",
+  "name": "windows-setup-bar",
   "version": "1.0.0",
-  "description": "Automatisiertes, reproduzierbares und weitgehend idempotentes Setup für\r meine Windows-Arbeitsumgebung.",
+  "description": "A simple bar for windows setup",
   "main": "index.js",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "esbuild": "^0.28.1",
+    "typescript": "^5.9.3"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jayzone91/windows-setup.git"
-  },
-  "keywords": [],
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/jayzone91/windows-setup/issues"
-  },
-  "homepage": "https://github.com/jayzone91/windows-setup#readme"
+    "build": "tsc --noEmit && esbuild src/main.ts --bundle --format=esm --platform=browser --outfile=dist/main.js",
+    "watch": "esbuild src/main.ts --bundle --format=esm --platform=browser --outfile=dist/main.js --watch",
+    "typecheck": "tsc --noEmit"
+  }
 }

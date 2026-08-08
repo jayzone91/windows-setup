@@ -16,7 +16,7 @@
             "includeFiles": [
                 "index.html",
                 "styles.css",
-                "script.js",
+                "dist/main.js",
                 "Get-AppIcon.ps1"
             ],
             "name": "bar",
