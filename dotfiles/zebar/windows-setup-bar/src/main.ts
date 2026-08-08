@@ -16,6 +16,7 @@ import { renderMemory } from "./system/memory";
 import { renderNetwork } from "./system/network";
 import { bindAudioControls, renderAudio } from "./system/audio";
 import { bindMediaControls, renderMedia } from "./system/media";
+import { renderDateTime, startDateTimeUpdates } from "./system/date-time";
 
 type ProviderOutput = typeof providers.outputMap;
 
@@ -46,6 +47,8 @@ function renderRight(output: ProviderOutput): void {
   ${output.network ? renderNetwork(output.network) : ""}
 
   ${output.audio ? renderAudio(output.audio) : ""}
+
+  ${renderDateTime()}
   `;
 
   if (output.audio) {
@@ -55,6 +58,8 @@ function renderRight(output: ProviderOutput): void {
   if (output.media) {
     bindMediaControls(output.media);
   }
+
+  startDateTimeUpdates();
 }
 
 providers.onOutput(() => {

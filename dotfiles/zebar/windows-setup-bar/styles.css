@@ -358,3 +358,31 @@ body {
 
   color: var(--subtext0);
 }
+
+/* Datum / Uhrzeit */
+
+.date-time-pill {
+  white-space: nowrap;
+}
+
+.date-time-icon {
+  color: var(--maroon);
+  font-size: 18px;
+}
+
+.date-time-date {
+  color: var(--text);
+}
+
+.date-time-time {
+  display: inline-block;
+
+  min-width: 42px;
+
+  text-align: right;
+
+  font-variant-numeric: tabular-nums;
+
+  color: var(--text);
+  font-weight: 600;
+}
