@@ -528,6 +528,38 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 
 ---
 
+---
+
+# Phase 20 – Sonstiges
+
+## Gaming
+
+- [ ] Steam
+- [ ] EA
+- [ ] Ubisoft
+- [ ] GOG
+- [ ] Epic
+
+## Windows
+
+- [ ] Lock Screen anpassen!
+- [ ] Startleiste ausblenden
+- [ ] App Launcher installieren
+- [ ] Windows key binding auf App Launcher
+- [ ] Caps Lock / Num Lock OSD (Ähnlich Logitech Options)
+
+## Home Office
+
+- [ ] Remote Desktop Manager
+- [ ] Filezilla
+
+## Enwicklung
+
+- [ ] NextJS Workflow in VS Code
+- [ ] Golang Workflow in VS Code
+
+---
+
 # Aktueller Gesamtstatus
 
 Die Kernarchitektur des Setups ist produktiv nutzbar und weitgehend reproduzierbar.
