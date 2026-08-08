@@ -1,9 +1,11 @@
 $moduleRoot = $PSScriptRoot
 
 $modules = @(
-    "Browser.ps1"
-    "Development.ps1"
     "Drivers\index.ps1"
+    "Windows\index.ps1"
+    "Browser.ps1"
+    "Debloat.ps1"
+    "Development.ps1"
     "Git.ps1"
     "Helpers.ps1"
     "Languages.ps1"
@@ -13,7 +15,6 @@ $modules = @(
     "Security.ps1"
     "Terminal.ps1"
     "VSCode.ps1"
-    "Windows\index.ps1"
 )
 
 foreach ($module in $modules) {

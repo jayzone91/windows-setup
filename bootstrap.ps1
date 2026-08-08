@@ -34,6 +34,7 @@ $Packages = Import-PowerShellDataFile "$Root\config\packages.psd1"
 $VSCode = Import-PowerShellDataFile "$Root\config\vscode.psd1"
 $Browsers = Import-PowerShellDataFile "$Root\config\browsers.psd1"
 $PowerShell = Import-PowerShellDataFile "$Root\config\powershell.psd1"
+$Debloat = Import-PowerShellDataFile "$Root\config\debloat.psd1"
 
 # ------------------------------------------------------------
 # Software
@@ -77,6 +78,7 @@ if ($script:DriverRebootRequired) {
 # Windows
 # ------------------------------------------------------------
 
+Set-WindowsDebloat -Config $Debloat
 Set-TaskbarPreferences
 Set-StartMenuPreferences
 Set-WindowsTheme
