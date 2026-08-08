@@ -137,6 +137,7 @@ if ($script:DriverRebootRequired) {
 Set-WindowsDebloat -Config $Debloat
 Set-TaskbarPreferences
 Set-StartMenuPreferences
+Disable-WindowsSnap
 Set-WindowsTheme
 Set-WindowsPowerPreferences
 Set-WindowsHDR

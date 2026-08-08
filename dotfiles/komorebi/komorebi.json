@@ -3,47 +3,43 @@
   "app_specific_configuration_path": "$Env:USERPROFILE/applications.json",
   "window_hiding_behaviour": "Cloak",
   "cross_monitor_move_behaviour": "Insert",
-  "default_workspace_padding": 20,
-  "default_container_padding": 20,
+  "default_workspace_padding": 6,
+  "default_container_padding": 6,
   "border": true,
-  "border_width": 8,
+  "border_width": 3,
   "border_offset": -1,
   "theme": {
-    "palette": "Base16",
-    "name": "Ashes",
-    "unfocused_border": "Base03",
-    "bar_accent": "Base0D"
+    "palette": "Catppuccin",
+    "name": "Mocha",
+    "unfocused_border": "Overlay0",
+    "bar_accent": "Maroon",
+    "floating_border": "Green",
+    "single_border": "Maroon",
+    "monocle_border": "Rosewater",
+    "stack_border": "Green"
   },
   "monitors": [
     {
       "workspaces": [
         {
-          "name": "I",
-          "layout": "BSP"
-        },
-        {
-          "name": "II",
-          "layout": "VerticalStack"
-        },
-        {
-          "name": "III",
-          "layout": "HorizontalStack"
-        },
-        {
-          "name": "IV",
+          "name": "1",
           "layout": "UltrawideVerticalStack"
         },
         {
-          "name": "V",
-          "layout": "Rows"
+          "name": "2",
+          "layout": "UltrawideVerticalStack"
         },
         {
-          "name": "VI",
-          "layout": "Grid"
+          "name": "3",
+          "layout": "UltrawideVerticalStack"
         },
         {
-          "name": "VII",
-          "layout": "RightMainVerticalStack"
+          "name": "4",
+          "layout": "UltrawideVerticalStack"
+        },
+        {
+          "name": "5",
+          "layout": "UltrawideVerticalStack"
         }
       ]
     }

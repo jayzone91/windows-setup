@@ -34,3 +34,43 @@ function Set-WindowsHDR {
         "'Einstellungen > System > Anzeige > HDR' aktivieren."
     )
 }
+
+function Disable-WindowsSnap {
+
+    Write-Host "[CONFIG] Windows Snap deaktivieren"
+
+
+    $desktopPath =
+    "HKCU:\Control Panel\Desktop"
+
+    $explorerAdvancedPath =
+    "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+
+
+    Set-ItemProperty `
+        -Path $desktopPath `
+        -Name "WindowArrangementActive" `
+        -Value "0"
+
+
+    New-ItemProperty `
+        -Path $explorerAdvancedPath `
+        -Name "EnableSnapAssistFlyout" `
+        -PropertyType DWord `
+        -Value 0 `
+        -Force |
+    Out-Null
+
+
+    New-ItemProperty `
+        -Path $explorerAdvancedPath `
+        -Name "EnableSnapBar" `
+        -PropertyType DWord `
+        -Value 0 `
+        -Force |
+    Out-Null
+
+
+    Write-Host "[OK] Windows Snap deaktiviert." `
+        -ForegroundColor Green
+}
