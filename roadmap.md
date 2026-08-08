@@ -10,6 +10,15 @@ Der gleiche `bootstrap.ps1` soll für drei Fälle funktionieren:
 - manueller erneuter Setup-Durchlauf
 - automatische wöchentliche Wartung
 
+Zusätzlich soll die Windows-Desktop-Umgebung funktional und optisch möglichst nah an die Arch-/Hyprland-Umgebung angelehnt werden, ohne Windows gegen seine Plattform zu verbiegen.
+
+Zielbild Desktop:
+
+- Arch: Hyprland + Waybar + Fuzzel + SwayOSD
+- Windows: komorebi + Zebar + PowerToys Command Palette + eigenes OSD
+- Catppuccin Mocha als gemeinsame Designsprache, aber mit nativer Konfiguration pro Anwendung
+- Windhawk für die Bereiche der Windows-Shell, die sich mit Bordmitteln nicht ausreichend anpassen lassen
+
 Grundprinzipien:
 
 - [x] ein zentraler Bootstrap statt getrennten Setup-/Maintenance-Skripten
@@ -20,6 +29,8 @@ Grundprinzipien:
 - [x] lokale Änderungen und notwendige Neustarts per Desktop-Benachrichtigung melden
 - [x] Desktop-Umgebung mit komorebi, whkd und Zebar reproduzierbar konfigurieren
 - [x] Zebar lokal und offline-fähig über npm/TypeScript/esbuild bauen
+- [ ] Catppuccin Mocha als gemeinsame Designsprache über alle sinnvoll anpassbaren Desktop-Komponenten
+- [ ] keine erzwungene gemeinsame CSS-Basis; jedes Programm nutzt seine native bzw. sinnvollste Theme-Methode
 - [ ] zentrale Logging-Strategie für vollständige Wartungsläufe
 - [ ] optionaler Dry-Run-Modus
 
@@ -75,6 +86,9 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [x] komorebi über `LGUG2Z.komorebi`
 - [x] whkd über `LGUG2Z.whkd`
 - [x] Zebar über `glzr-io.zebar`
+- [ ] PowerToys aufnehmen
+- [ ] Everything aufnehmen
+- [ ] Windhawk aufnehmen
 
 ## Aktuelle Gruppen
 
@@ -91,6 +105,9 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [x] komorebi
 - [x] whkd
 - [x] Zebar
+- [ ] PowerToys
+- [ ] Everything
+- [ ] Windhawk
 
 ### Development
 
@@ -143,6 +160,8 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [x] Consumer-/Content-Delivery-Einstellungen
 - [x] Windows Snap deaktiviert, damit komorebi die Fensterverwaltung übernimmt
 - [x] Widgets-Ausblenden so behandelt, dass ein geschützter `TaskbarDa`-Wert den Bootstrap nicht abbricht
+- [ ] Taskbar automatisch ausblenden, da Zebar die primäre Desktop-Bar ist
+- [ ] Lock Screen optisch an Desktop/Wallpaper-Konzept anpassen
 - [ ] weitere Datenschutz-/Telemetry-Einstellungen nur dort ergänzen, wo sie keine benötigten Windows-Funktionen beeinträchtigen
 - [ ] Dienste nur gezielt optimieren; keine aggressive pauschale Service-Deaktivierung
 
@@ -310,6 +329,8 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [x] Extensions automatisiert installieren
 - [x] Codex-Integration
 - [x] Setup wiederholbar
+- [ ] NextJS Workflow vervollständigen
+- [ ] Golang Workflow vervollständigen
 - [ ] Extension-Liste regelmäßig bereinigen/aktualisieren
 - [ ] optional Profile/Keybindings vollständig versionieren
 
@@ -342,7 +363,8 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [x] Marionette-Konfigurationsmodus automatisch verlassen
 - [x] Zen danach normal neu starten
 - [x] Mod-Installation idempotent
-- [ ] Browser-UI weiter an Catppuccin anpassen
+- [ ] Browser-UI weiter an Catppuccin Mocha anpassen
+- [ ] benötigte eigene CSS-Anpassungen reproduzierbar im Repository hinterlegen
 
 ---
 
@@ -369,6 +391,7 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [x] fünf Workspaces konfigurieren
 - [x] `UltrawideVerticalStack` als bevorzugtes Layout
 - [x] Windows Snap deaktivieren
+- [x] integriertes Catppuccin-Theme nutzen
 - [x] komorebi nach echtem Neustart erfolgreich im Autostart getestet
 
 ## whkd
@@ -378,6 +401,8 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [x] `%USERPROFILE%\.config\whkdrc` per Symlink anbinden
 - [x] Fokus, Move, Resize, Workspaces, Stacking und Window-Aktionen
 - [x] komorebi und whkd gemeinsam über Scheduled Task starten
+- [ ] PowerToys Command Palette mit passendem Keybinding integrieren
+- [ ] bevorzugt `Win+Space` als Windows-Äquivalent zu `Super+Space` unter Arch prüfen/einrichten
 
 ## Autostart
 
@@ -418,12 +443,21 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [x] `src/komorebi/`
 - [x] `src/system/`
 
-## Linke Seite
+## Linke Seite – Workspaces & Tiling
 
-- [x] fünf komorebi-Workspaces
-- [x] aktiven Workspace hervorheben
-- [x] Layout-Anzeige
+- [x] fünf komorebi-Workspaces anzeigen
+- [x] aktiven Workspace dynamisch hervorheben
+- [x] Layout/Tiling-Methode dynamisch anzeigen
 - [x] Catppuccin-Mocha-Pill-Design
+- [ ] Workspace-Pills per Mausklick steuerbar machen
+- [ ] Klick auf Workspace 1–5 fokussiert direkt den entsprechenden komorebi-Workspace
+- [ ] Hover-/Pointer-/Pressed-Feedback für interaktive Workspace-Pills
+- [ ] Layout-/Tiling-Anzeige per Mausklick steuerbar machen
+- [ ] Catppuccin-Popup/Dropdown für verfügbare komorebi-Layouts umsetzen
+- [ ] aktuelles Layout im Selector hervorheben
+- [ ] Layout-Auswahl setzt die Tiling-Methode direkt in komorebi
+- [ ] `UltrawideVerticalStack` im Selector berücksichtigen
+- [ ] Interaktionen praktisch gegen komorebi testen
 
 ## Mitte
 
@@ -466,12 +500,13 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [x] realer Neustart-/Login-Test erfolgreich
 - [x] komorebi + whkd + Zebar starten gemeinsam sauber
 
-## Optionaler Feinschliff
+## Feinschliff
 
-- [ ] CSS weiter konsolidieren
-- [ ] Workspaces/Layout per Mausklick steuerbar machen
+- [ ] CSS weiter konsolidieren, wo es innerhalb von Zebar sinnvoll ist
 - [ ] optional Responsive-/Overflow-Verhalten für kleinere Monitore
 - [ ] optional Icon-Fallback für spezielle UWP-/Store-Anwendungen verbessern
+
+> **Aktuelle Priorität:** Zebar ist optisch und bei den Statusinformationen weit fortgeschritten, aber die Workspace- und Layout-Anzeigen sind noch nicht vollständig interaktiv. Diese Funktionen werden vor Windhawk, PowerToys-Polish und weiteren Desktop-Themen abgeschlossen.
 
 ---
 
@@ -506,14 +541,16 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 - [x] Zebar-TypeScript-Build erfolgreich
 - [x] Network-, Audio-, Media- und Date-Time-Widgets praktisch getestet
 - [x] PSScriptAnalyzer am Ende des Bootstraps
+- [ ] Zebar Workspace-Klicks praktisch getestet
+- [ ] Zebar Layout-Selector praktisch getestet
+- [ ] PowerToys/Everything-Launcher praktisch getestet
+- [ ] Windhawk-Konfiguration nach Windows-Neustart praktisch getestet
 - [ ] vollständiger Test auf einer wirklich frischen Windows-11-Installation
 - [ ] optional GitHub Actions für PowerShell- und TypeScript-Prüfungen
 - [ ] optional Pester-Tests für kritische PowerShell-Module
 - [ ] optional automatisierter `npm run typecheck`/Build in CI
-- [ ] README um komorebi/Zebar und aktuelle Desktop-Architektur ergänzen
+- [ ] README um komorebi/Zebar/PowerToys/Windhawk und aktuelle Desktop-Architektur ergänzen
 - [ ] Dokumentation der wichtigsten Tastenkombinationen ergänzen
-
----
 
 ---
 
@@ -528,35 +565,168 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 
 ---
 
+# Phase 20 – Desktop Experience & Catppuccin
+
+## Designstrategie
+
+Ziel ist eine konsistente Catppuccin-Mocha-Designsprache ähnlich der Arch-Workstation.
+
+Es wird bewusst **keine universelle gemeinsame CSS-Datei** für alle Programme erzwungen. Die Anwendungen besitzen unterschiedliche Theme-Systeme und sollen jeweils mit der stabilsten nativen Methode konfiguriert werden.
+
+- [x] Catppuccin Mocha als Ziel-Design festgelegt
+- [x] JetBrainsMono Nerd Font als zentrale Desktop-/Terminal-Schrift vorhanden
+- [ ] Farben/Designwerte bei eigenen Komponenten konsistent halten
+- [ ] keine unnötige Theme-Abstraktion einführen
+
+### Theme-Methode pro Komponente
+
+- [x] komorebi: integriertes Catppuccin
+- [x] Zebar: eigenes CSS
+- [x] Windows Terminal: Farbschema in JSON
+- [x] VS Code: Catppuccin-Theme/Extension
+- [ ] Zen Browser: eigene CSS-/UI-Anpassungen
+- [ ] PowerToys Command Palette: vorhandene Theme-Möglichkeiten ausschöpfen
+- [ ] Explorer: Windhawk File Explorer Styler
+- [ ] Taskbar: Windhawk Taskbar Styler
+- [ ] Startmenü: Windhawk Start Menu Styler
+- [ ] Notification Center / Quick Settings: Windhawk Notification Center Styler
+- [ ] eigenes OSD: eigenes Catppuccin-Design
+- [ ] GitHub Desktop: nur soweit technisch sinnvoll/unterstützt; keine fragile Sonderlösung erzwingen
+
+## PowerToys & App Launcher
+
+PowerToys soll die Launcher-Funktion übernehmen. Ein separater Flow Launcher ist nicht vorgesehen.
+
+- [ ] PowerToys installieren und aktualisieren
+- [ ] PowerToys reproduzierbar konfigurieren
+- [ ] Command Palette aktivieren und als primären App Launcher verwenden
+- [ ] nicht benötigte PowerToys-Module gezielt deaktivieren
+- [ ] Everything installieren und konfigurieren
+- [ ] Everything-Suche mit PowerToys/Command Palette verbinden
+- [ ] Launcher optisch soweit möglich an Catppuccin Mocha anpassen
+- [ ] `Win+Space` als bevorzugten Launcher-Hotkey prüfen/einrichten
+- [ ] Verhalten mit whkd und Windows-eigenen Shortcuts testen
+- [ ] Windows-Startmenü als Fallback erhalten
+
+## Windhawk & Windows Shell
+
+Windhawk wird gezielt für Shell-Bereiche eingesetzt, die Windows selbst nicht ausreichend themen lässt. Mods müssen reproduzierbar konfiguriert und so behandelt werden, dass ein inkompatibler Mod nach einem Windows-Update nicht den gesamten Bootstrap scheitern lässt.
+
+- [ ] Windhawk installieren und aktualisieren
+- [ ] Windhawk-Konfiguration im Repository abbilden
+- [ ] benötigte Mods reproduzierbar installieren/aktivieren
+- [ ] Fehler/inkompatible Mods fehlertolerant behandeln
+
+### Explorer
+
+- [ ] Windows 11 File Explorer Styler
+- [ ] Catppuccin-Mocha-Explorer-Theme erstellen/anpassen
+- [ ] Explorer-Hintergründe, Navigation, Toolbar, Tabs und Auswahlzustände abstimmen
+- [ ] Lesbarkeit und Kontrast prüfen
+- [ ] Verhalten nach Explorer-Neustart und Windows-Update prüfen
+
+### Taskbar
+
+Die Taskbar bleibt trotz Zebar relevant, da Windows sie u. a. beim Startmenü einblendet.
+
+- [ ] Taskbar Auto-Hide aktivieren
+- [ ] Windows 11 Taskbar Styler
+- [ ] Taskbar auf Catppuccin Mocha abstimmen
+- [ ] Styling an Zebar/Waybar-Designsprache annähern
+- [ ] Search/Widgets/Task-View und unnötige Buttons reduzieren
+- [ ] Verhalten beim Öffnen des Startmenüs prüfen
+
+### Startmenü
+
+- [ ] Windows 11 Start Menu Styler
+- [ ] Startmenü auf Catppuccin Mocha abstimmen
+- [ ] Taskbar und Startmenü optisch als Einheit behandeln
+- [ ] Startmenü weiterhin als Fallback zum PowerToys Launcher nutzbar halten
+
+### Notification Center / Quick Settings
+
+- [ ] Windows 11 Notification Center Styler
+- [ ] Notification Center auf Catppuccin Mocha abstimmen
+- [ ] Quick Settings auf Catppuccin Mocha abstimmen
+- [ ] Lesbarkeit von Systemzuständen und Toggles sicherstellen
+
+## Eigenes Windows OSD
+
+Ziel ist ein einheitliches OSD analog zum SwayOSD-Konzept unter Arch.
+
+- [ ] technische Basis für eigenes OSD festlegen
+- [ ] Catppuccin-Mocha-Design
+- [ ] Lautstärke anzeigen
+- [ ] Mute anzeigen
+- [ ] Mikrofon-Mute anzeigen
+- [ ] Caps Lock anzeigen
+- [ ] Num Lock anzeigen
+- [ ] optional Media-Status
+- [ ] OSD ohne störende dauerhafte Hintergrundfenster starten
+- [ ] Autostart reproduzierbar konfigurieren
+- [ ] Zusammenspiel mit vorhandenen Windows-/Geräte-OSDs prüfen
+
+## Lock Screen
+
+- [ ] Lock Screen anpassen
+- [ ] Wallpaper/Design an Desktop-Konzept angleichen
+- [ ] reproduzierbare Konfiguration prüfen
+
 ---
 
-# Phase 20 – Sonstiges
-
-## Gaming
+# Phase 21 – Gaming
 
 - [ ] Steam
-- [ ] EA
-- [ ] Ubisoft
+- [ ] EA App
+- [ ] Ubisoft Connect
 - [ ] GOG
-- [ ] Epic
+- [ ] Epic Games Launcher
+- [ ] Installationen in Paket-/Setup-Logik integrieren
+- [ ] sinnvolle Games-Laufwerk-Defaults berücksichtigen
 
-## Windows
+---
 
-- [ ] Lock Screen anpassen!
-- [ ] Startleiste ausblenden
-- [ ] App Launcher installieren
-- [ ] Windows key binding auf App Launcher
-- [ ] Caps Lock / Num Lock OSD (Ähnlich Logitech Options)
-
-## Home Office
+# Phase 22 – Home Office
 
 - [ ] Remote Desktop Manager
-- [ ] Filezilla
+- [ ] FileZilla
+- [ ] weitere Firmen-/Homeoffice-Tools bei Bedarf als eigene Paketgruppe
+- [ ] VPN-Profile/Zertifikate aus Phase 7 bei Bedarf vervollständigen
 
-## Enwicklung
+---
 
-- [ ] NextJS Workflow in VS Code
-- [ ] Golang Workflow in VS Code
+# Phase 23 – Priorisierte nächste Schritte
+
+Die Desktop-Basis ist bereits funktionsfähig. Die weitere Arbeit erfolgt in dieser Reihenfolge:
+
+1. [ ] **Zebar fertigstellen**
+   - Workspace-Umschaltung per Klick
+   - Layout-/Tiling-Auswahl per Klick
+   - interaktives Catppuccin-Popup für Layouts
+   - Hover-/Pressed-Feedback
+2. [ ] **PowerToys + Everything**
+   - Command Palette als App Launcher
+   - `Win+Space`
+   - reproduzierbare Konfiguration
+3. [ ] **Windhawk**
+   - Explorer
+   - Taskbar
+   - Startmenü
+   - Notification Center / Quick Settings
+4. [ ] **Eigenes OSD**
+   - Volume/Mute/Mic
+   - Caps Lock / Num Lock
+5. [ ] **Desktop-Polish**
+   - Zen Catppuccin
+   - Lock Screen
+   - verbleibende visuelle Inkonsistenzen
+6. [ ] **Gaming & Home Office**
+7. [ ] **Qualität & Wartbarkeit**
+   - Logging
+   - Clean-Install-Test
+   - CI/Pester/TypeScript-Checks
+   - Security-Abschlussprüfungen
+   - Dokumentation
 
 ---
 
@@ -572,22 +742,72 @@ Besonders weit abgeschlossen sind:
 - Windows-/Microsoft-Updates
 - Development Toolchain
 - ReFS Dev Drive und Cache-Verlagerung
-- Browser-Konfiguration
+- Browser-Grundkonfiguration
 - VS Code
 - Logitech G HUB
 - komorebi + whkd
 - Zebar inklusive TypeScript-/esbuild-Build
+- Zebar System-, Audio-, Media-, Netzwerk- und Window-Widgets
 - Desktop-Autostart
 - wöchentliche Wartung
 - Desktop-Benachrichtigungen
 - PSScriptAnalyzer-Codeprüfung
 
-Die größten verbleibenden Themen sind damit nicht mehr der Grundaufbau, sondern Qualitäts- und Komfortthemen:
+## Aktueller Desktop-Stand
 
-1. zentrale Logging-Strategie
-2. vollständiger Clean-Install-Test auf einem frischen Windows 11
-3. CI/Pester/TypeScript-Checks
-4. Security-Abschlussprüfungen für BitLocker, Secure Boot und Firewall
-5. Dokumentations-Feinschliff
-6. optionale VPN-/Zertifikats-Automatisierung
-7. kleinere Desktop-/Zebar-Polish-Aufgaben
+Die Windows-Desktop-Architektur steht grundsätzlich:
+
+```text
+komorebi
+   │
+   ├── whkd
+   │
+   └── Zebar
+```
+
+Zebar zeigt die fünf Workspaces und die aktuelle Tiling-Methode bereits dynamisch an. Die zugehörigen Icons sind jedoch derzeit noch primär Anzeigen: Workspace-Wechsel und Layout-Auswahl per Mausklick müssen noch implementiert werden.
+
+Das geplante Zielbild lautet:
+
+```text
+Windows Desktop
+│
+├── Window Management
+│   ├── komorebi
+│   └── whkd
+│
+├── Bar
+│   └── Zebar
+│
+├── Launcher / Search
+│   ├── PowerToys Command Palette
+│   └── Everything
+│
+├── Windows Shell Styling
+│   └── Windhawk
+│       ├── File Explorer Styler
+│       ├── Taskbar Styler
+│       ├── Start Menu Styler
+│       └── Notification Center Styler
+│
+└── OSD
+    └── eigenes Catppuccin OSD
+```
+
+## Größte verbleibende Themen
+
+Die aktuelle Priorität liegt bewusst auf der Fertigstellung des Desktop-Erlebnisses:
+
+1. Zebar Workspace- und Layout-Steuerung
+2. PowerToys Command Palette + Everything
+3. Windhawk-basierte Catppuccin-Anpassung der Windows-Shell
+4. eigenes Catppuccin-OSD
+5. Zen-/Lock-Screen-/Desktop-Polish
+6. Gaming- und Homeoffice-Pakete
+7. zentrale Logging-Strategie
+8. vollständiger Clean-Install-Test auf einem frischen Windows 11
+9. CI/Pester/TypeScript-Checks
+10. Security-Abschlussprüfungen für BitLocker, Secure Boot und Firewall
+11. Dokumentations-Feinschliff
+
+Damit ist der Grundaufbau nicht mehr das Hauptproblem. Der Fokus verschiebt sich jetzt auf einen vollständig bedienbaren, konsistenten und reproduzierbaren Windows-Desktop, der sich funktional und optisch an der Arch-/Hyprland-Umgebung orientiert.
