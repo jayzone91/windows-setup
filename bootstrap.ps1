@@ -105,8 +105,12 @@ Install-PackageGroup `
     -Packages $Packages.Drivers `
     -GroupName "Treiber-Tools"
 
+Install-Windhawk
+
 # Pfade neu einlesen
 Update-SessionPath
+
+Set-WindhawkConfiguration
 
 Set-KomorebiConfiguration `
     -RepositoryPath $Root

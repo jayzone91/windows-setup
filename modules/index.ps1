@@ -13,6 +13,7 @@ $modules = @(
     "Logitech.ps1"
     "Notifications.ps1"
     "Nushell.ps1"
+    "OneCommander.ps1"
     "Packages.ps1"
     "PowerShell.ps1"
     "ScheduledTasks.ps1"
@@ -20,6 +21,7 @@ $modules = @(
     "Storage.ps1"
     "Terminal.ps1"
     "VSCode.ps1"
+    "Windhawk.ps1"
     "WindowsUpdate.ps1"
     "Zebar.ps1"
 )
