@@ -818,12 +818,28 @@ function Clear-PackageManagerCaches {
     }
 
     if (Get-Command scoop -ErrorAction SilentlyContinue) {
-        Write-Host "[CLEAN] Scoop Download-Cache"
+        $scoopRoot = if ($env:SCOOP) {
+            $env:SCOOP
+        }
+        else {
+            Join-Path $env:USERPROFILE "scoop"
+        }
 
-        & scoop cache rm *
+        $scoopCache = Join-Path $scoopRoot "cache"
 
-        if ($LASTEXITCODE -ne 0) {
-            Write-Warning "Scoop-Download-Cache konnte nicht bereinigt werden."
+        if (Test-Path $scoopCache) {
+            Write-Host "[CLEAN] Scoop Download-Cache"
+
+            & scoop cache rm *
+
+            if ($LASTEXITCODE -ne 0) {
+                Write-Warning (
+                    "Scoop-Download-Cache konnte nicht bereinigt werden."
+                )
+            }
+        }
+        else {
+            Write-Host "[SKIP] Scoop Download-Cache ist leer."
         }
 
         Write-Host "[CLEAN] Alte Scoop-App-Versionen"
