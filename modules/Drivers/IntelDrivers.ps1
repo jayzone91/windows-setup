@@ -3,7 +3,8 @@
 
     Install-WingetPackage `
         -Id "Intel.IntelDriverAndSupportAssistant" `
-        -Name "Intel Driver & Support Assistant"
+        -Name "Intel Driver & Support Assistant" `
+        -Source "winget"
 }
 
 function Get-IntelDsaUpdates {
