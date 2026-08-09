@@ -3,6 +3,7 @@
 > **Zweck dieses Dokuments**
 >
 > Diese Roadmap ist nicht nur eine Checkliste, sondern die **Arbeits- und Entscheidungsgrundlage für eine KI**, die das Repository weiterentwickelt.
+>
 > Eine KI soll nach dem Einlesen dieses Dokuments verstehen:
 >
 > 1. welches Zielbild für das Windows-System verfolgt wird,
@@ -31,10 +32,12 @@ Ein vollständig automatisiertes, reproduzierbares und wartbares Windows-11-Setu
 Der gleiche zentrale `bootstrap.ps1` soll für drei Fälle funktionieren:
 
 1. Neuinstallation eines frisch installierten Windows-11-Systems
-2. manueller erneuter Setup-Durchlauf
+2. manueller erneuter Setup-/Wartungsdurchlauf
 3. automatische regelmäßige Wartung
 
 Das Repository ist die **Source of Truth** für alle sinnvoll versionierbaren Einstellungen.
+
+Für wiederkehrende manuelle Aktionen dient `just` als einheitliche Bedienoberfläche. Das `Justfile` darf dabei keine zweite Setup-Architektur aufbauen, sondern ruft ausschließlich bestehende PowerShell-Einstiegspunkte auf.
 
 ---
 
@@ -111,6 +114,22 @@ Windows Desktop
 - [x] Keine automatischen Git-Commits
 - [x] Keine automatischen Git-Pushes
 - [x] Kein automatischer Windows-Neustart
+- [x] Bootstrap wird aus `init.ps1` in einem eigenen PowerShell-Prozess gestartet
+- [x] Bootstrap-Prozesse verwenden `ExecutionPolicy Bypass` ausschließlich auf Prozessebene
+- [x] Globale Benutzer-/System-Execution-Policy wird nicht verändert
+- [x] Execution-Policy-Fix auf dem aktuellen Windows-System erfolgreich getestet
+
+## Just / manueller Workflow
+
+- [x] `Justfile` als einheitliche Bedienoberfläche
+- [x] `just` als Base-Abhängigkeit über `Casey.Just`
+- [x] `just update` startet den vollständigen Bootstrap
+- [x] `just update` verwendet `-NoProfile -ExecutionPolicy Bypass`
+- [x] `just check` führt PSScriptAnalyzer rekursiv über das Repository aus
+- [x] `just update` auf dem aktuellen System erfolgreich getestet
+- [x] `just check` auf dem aktuellen System erfolgreich getestet
+- [x] Das `Justfile` enthält keine eigentliche Setup-Logik
+- [x] Neue wiederkehrende manuelle Aktionen dürfen als Recipes ergänzt werden, wenn die Implementierung in PowerShell verbleibt
 
 ## Konfigurationsdateien
 
@@ -153,6 +172,7 @@ Begründung:
 
 - [x] `init.ps1`
 - [x] `bootstrap.ps1`
+- [x] `Justfile`
 - [x] `config/`
 - [x] `modules/`
 - [x] `modules/index.ps1`
@@ -171,7 +191,17 @@ Begründung:
 - [x] Repository klonen
 - [x] bereits vorhandenes Repository aktualisieren
 - [x] `bootstrap.ps1` starten
+- [x] Bootstrap in definiertem PowerShell-Prozess starten
+- [x] `ExecutionPolicy Bypass` nur für Bootstrap-Prozess verwenden
 - [x] PATH der laufenden PowerShell-Session nach Installationen aktualisieren
+
+## Manueller Workflow
+
+- [x] `just update`
+- [x] `just check`
+- [x] direkter Bootstrap-Fallback dokumentiert
+- [x] Just als Base-Paket
+- [x] Just-Workflow im README dokumentiert
 
 ## Noch offen
 
@@ -185,6 +215,8 @@ Begründung:
 ### Akzeptanzkriterien
 
 Ein frisches Windows-System soll mit möglichst wenigen manuellen Schritten über `init.ps1` bis zu einer arbeitsfähigen Umgebung gelangen.
+
+Nach der Erstinstallation sollen wiederkehrende manuelle Aktionen über kurze, dokumentierte `just`-Recipes möglich sein.
 
 ---
 
@@ -209,6 +241,7 @@ Ein frisches Windows-System soll mit möglichst wenigen manuellen Schritten übe
 ### Base
 
 - [x] JetBrainsMono Nerd Font
+- [x] Just (`Casey.Just`)
 
 ### Tools
 
@@ -312,6 +345,8 @@ Aufgaben:
 - [x] `PendingFileRenameOperations` auswerten
 - [x] konkrete Ursachen diagnostisch anzeigen
 - [x] reine NSIS-/Temp-Cleanup-Einträge nicht als relevanten Rebootbedarf melden
+- [x] globale PowerShell Execution Policy nicht verändern
+- [x] interne Bootstrap-Skripte über prozesslokale Execution Policy ausführbar halten
 - [ ] BitLocker-Status prüfen
 - [ ] Secure-Boot-Status in Abschlussprüfung anzeigen
 - [ ] Firewall-Status in Abschlussprüfung anzeigen
@@ -463,6 +498,7 @@ Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games 
 - [x] Codeprüfung am Ende des Bootstrap-Laufs
 - [x] Fehler, Warnungen und Hinweise getrennt zählen
 - [x] Analyzer-Probleme im OneCommander-Icon-Build bereinigt
+- [x] `just check` als manueller Einstiegspunkt für PSScriptAnalyzer
 - [ ] GitHub Actions für statische Prüfung
 - [ ] Pester-Tests für kritische Helper
 - [ ] Tests für Paket-Versionserkennung
@@ -591,6 +627,34 @@ Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games 
 - [x] komorebi über Scheduled Task mit erhöhten Rechten starten
 - [x] als Administrator gestartete Terminals/Fenster in Tiling aufnehmen
 
+## Anwendungsregeln / Floating-Verhalten
+
+- [ ] Microsoft Kurznotizen / Sticky Notes grundsätzlich vom Tiling ausschließen
+- [ ] für Kurznotizen normales Windows-Fensterverhalten verwenden
+- [ ] Regel reproduzierbar in der vorgesehenen komorebi-Anwendungskonfiguration hinterlegen
+- [ ] prüfen, dass mehrere Kurznotiz-Fenster nicht versehentlich getiled oder gestackt werden
+- [ ] Verhalten nach Neustart von komorebi erneut testen
+
+## Bootstrap / Desktop-Neustart
+
+- [ ] analysieren, welche vom Bootstrap geschriebenen oder neu verlinkten Dateien dazu führen, dass Zebar danach von komorebi zeitweise nicht mehr korrekt erkannt wird
+- [ ] sicherstellen, dass Zebar nach Konfigurationsänderungen wieder zuverlässig als nicht zu tilendes Desktop-Element erkannt wird
+- [ ] prüfen, ob komorebi am Ende des Bootstrap-Laufs kontrolliert neu gestartet werden soll
+- [ ] prüfen, ob Zebar anschließend kontrolliert neu gestartet werden soll
+- [ ] falls Neustart erforderlich: Reihenfolge komorebi vollständig neu laden, danach Zebar starten
+- [ ] Neustart nur durchführen, wenn dies für einen stabilen Zustand erforderlich ist
+- [ ] bestehende Fenster dürfen nach einem Bootstrap-Lauf nicht hinter Zebar landen
+- [ ] Fenster müssen nach einem Bootstrap-Lauf wieder normal über Titelleiste, Ziehen und `X` bedienbar sein
+- [ ] Neustartlogik idempotent gestalten und keine doppelten komorebi-/Zebar-Instanzen erzeugen
+
+### Akzeptanzkriterien für Desktop-Stabilität
+
+- Microsoft Kurznotizen werden nicht getiled.
+- Nach `just update` funktioniert die komorebi-/Zebar-Erkennung ohne manuelle Nacharbeit.
+- Normale Fenster landen nicht hinter Zebar.
+- Fenster lassen sich nach dem Bootstrap weiterhin normal verschieben und schließen.
+- Es laufen jeweils nur die erwarteten komorebi-/Zebar-Instanzen.
+
 ## Dotfiles
 
 - [x] `komorebi.json` als Hardlink
@@ -671,6 +735,24 @@ Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games 
 - [x] Next
 - [x] deutsches Datum
 - [x] 24-Stunden-Uhrzeit
+
+## Vollbild-Verhalten
+
+- [ ] Zebar darf nicht über echten Vollbild-Anwendungen liegen
+- [ ] YouTube-/Browser-Vollbild darf nicht von Zebar überlagert werden
+- [ ] Spiele und andere Fullscreen-Anwendungen dürfen nicht von Zebar überlagert werden
+- [ ] prüfen, ob echtes Fullscreen und Borderless Fullscreen unterschiedlich behandelt werden müssen
+- [ ] Zebar nach Verlassen des Vollbildmodus zuverlässig wieder anzeigen
+- [ ] normale maximierte Fenster dürfen Zebar nicht versehentlich ausblenden
+- [ ] kein sichtbares Flackern oder unnötiger Prozess-Neustart beim Wechsel in oder aus Vollbild
+- [ ] Lösung möglichst ohne anwendungsspezifische Sonderregeln umsetzen
+
+### Akzeptanzkriterien für Vollbild
+
+- Bei echtem Vollbild ist Zebar vollständig unsichtbar.
+- Nach Verlassen des Vollbildmodus erscheint Zebar automatisch wieder.
+- Normale maximierte Fenster blenden Zebar nicht aus.
+- Verhalten funktioniert mindestens mit Browser-/YouTube-Vollbild und einer typischen Fullscreen-Anwendung.
 
 ## Bewusste Nicht-Ziele
 
@@ -1023,6 +1105,7 @@ Das System soll nach Neuinstallation auch als Gaming-PC möglichst schnell einsa
 - [x] kompletter `bootstrap.ps1`
 - [x] interaktiver Benutzerkontext
 - [x] erhöhte Rechte
+- [x] `-NoProfile -ExecutionPolicy Bypass`
 - [x] Repository aktualisieren, wenn Working Tree sauber
 - [x] Pakete prüfen
 - [x] Windows Updates
@@ -1082,6 +1165,10 @@ Das README soll den **aktuellen produktiven Stand** erklären.
 
 - [x] Installationsweg
 - [x] Bootstrap-Grundidee
+- [x] Execution-Policy-Verhalten
+- [x] Just-Workflow
+- [x] `just update`
+- [x] `just check`
 - [x] Desktop-Zielbild
 - [x] komorebi
 - [x] masir
@@ -1104,6 +1191,8 @@ Die Roadmap ist ausführlicher als das README und enthält auch offene Ziele.
 - [x] Gaming
 - [x] NanaZip
 - [x] OSD inklusive Caps Lock und Num Lock
+- [x] Just-Workflow
+- [x] Execution-Policy-Architektur
 - [x] klare nächste Prioritäten
 - [ ] bei jeder größeren Designentscheidung aktualisieren
 
@@ -1123,6 +1212,11 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
   - Generator + `.generated/` ist die gewünschte Architektur
 - [x] separate Setup- und Maintenance-Skripte
   - ein Bootstrap ist bewusst gewünscht
+- [x] Setup-Logik in das `Justfile` verschieben
+  - `Justfile` ist ausschließlich Bedienoberfläche
+  - PowerShell bleibt die Implementierungsebene
+- [x] globale Execution Policy für Benutzer oder System dauerhaft lockern
+  - prozesslokales `ExecutionPolicy Bypass` ist der definierte Weg
 - [x] aggressive pauschale Windows-Service-/Debloat-Tweaks
   - Stabilität und benötigte Funktionen haben Vorrang
 - [x] automatische Git-Commits/Pushes
@@ -1136,13 +1230,30 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
 
 Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende Reihenfolge verwenden, sofern der Benutzer nichts anderes vorgibt.
 
-## Priorität 1 – kleine fehlende Basis-Tools
+## Priorität 1 – Desktop-Stabilität
 
-1. [ ] NanaZip in Paketverwaltung aufnehmen
-2. [ ] Installation und Kontextmenü testen
-3. [ ] Roadmap/README anschließend aktualisieren
+1. [ ] Microsoft Kurznotizen vom Tiling ausschließen
+2. [ ] Zebar bei echten Vollbild-Anwendungen ausblenden
+3. [ ] Verhalten bei Browser-/YouTube-Vollbild und Fullscreen-Anwendungen testen
+4. [ ] Ursache für fehlerhafte komorebi-/Zebar-Erkennung nach `just update` analysieren
+5. [ ] entscheiden, ob ein kontrollierter komorebi-/Zebar-Neustart am Ende des Bootstrap erforderlich ist
+6. [ ] falls erforderlich, idempotenten Desktop-Neustart implementieren
+7. [ ] sicherstellen, dass Fenster danach nicht hinter Zebar landen und normal bedienbar sind
+8. [ ] `just update` vollständig testen
+9. [ ] `just check` ausführen
+10. [ ] Roadmap/README anschließend aktualisieren
 
-## Priorität 2 – Home Office Paketgruppe
+## Priorität 2 – NanaZip
+
+1. [ ] passende Paket-ID verifizieren
+2. [ ] NanaZip in Paketverwaltung aufnehmen
+3. [ ] Installation über `just update` testen
+4. [ ] Update-Verhalten testen
+5. [ ] Kontextmenü testen
+6. [ ] Standardhandler prüfen
+7. [ ] Roadmap/README anschließend aktualisieren
+
+## Priorität 3 – Home Office Paketgruppe
 
 1. [ ] `HomeOffice` in `packages.psd1` anlegen
 2. [ ] Remote Desktop Manager integrieren
@@ -1150,7 +1261,7 @@ Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende
 4. [ ] weitere benötigte Firmen-Tools inventarisieren
 5. [ ] VPN-/Zertifikat-Konzept getrennt und sicher planen
 
-## Priorität 3 – Launcher
+## Priorität 4 – Launcher
 
 1. [ ] PowerToys installieren
 2. [ ] Command Palette konfigurieren
@@ -1158,14 +1269,14 @@ Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende
 4. [ ] Everything integrieren
 5. [ ] Workflow testen
 
-## Priorität 4 – Windows Shell
+## Priorität 5 – Windows Shell
 
 1. [ ] Windhawk Taskbar Styler
 2. [ ] Windhawk Start Menu Styler
 3. [ ] Windhawk Notification Center Styler
 4. [ ] alle Einstellungen per CLI reproduzierbar machen
 
-## Priorität 5 – eigenes OSD
+## Priorität 6 – eigenes OSD
 
 1. [ ] technische Architektur festlegen
 2. [ ] Volume/Mute
@@ -1177,14 +1288,14 @@ Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende
 8. [ ] Autostart/Bootstrap
 9. [ ] Windows-OSD-Doppelanzeige vermeiden
 
-## Priorität 6 – Gaming
+## Priorität 7 – Gaming
 
 1. [ ] Paketgruppe
 2. [ ] Steam
 3. [ ] Game-Library-Pfade
 4. [ ] sinnvolle Windows-Gaming-Einstellungen
 
-## Priorität 7 – Qualität
+## Priorität 8 – Qualität
 
 1. [ ] Logging
 2. [ ] GitHub Actions
@@ -1199,10 +1310,12 @@ Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende
 ## Vor jeder Änderung
 
 1. Repository vollständig bzw. die betroffenen Module neu einlesen.
-2. Prüfen, ob der gewünschte Punkt bereits teilweise implementiert ist.
-3. Bestehende Helper und Architektur verwenden statt Parallel-Implementierungen zu erzeugen.
-4. Bestehende Designentscheidungen respektieren.
-5. Keine Secrets in das Repository schreiben.
+2. Den **aktuellen Default-Branch und neuesten Commit** prüfen.
+3. Prüfen, ob der gewünschte Punkt bereits teilweise implementiert ist.
+4. Bestehende Helper und Architektur verwenden statt Parallel-Implementierungen zu erzeugen.
+5. Bestehende Designentscheidungen respektieren.
+6. Keine Secrets in das Repository schreiben.
+7. `Justfile` nur als Bedienoberfläche behandeln; Implementierung gehört in PowerShell.
 
 ## Während der Implementierung
 
@@ -1214,12 +1327,14 @@ Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende
 6. Fehler verständlich ausgeben.
 7. bestehende Konfiguration nicht ohne Backup überschreiben, wenn sie nicht bereits verwaltet wird.
 8. PowerShell-Code mit PSScriptAnalyzer kompatibel halten.
+9. wiederkehrende manuelle Aktionen bei echtem Nutzen als `just`-Recipe bereitstellen.
+10. keine eigentliche Setup-Logik in Recipes duplizieren.
 
 ## Nach einer Implementierung
 
 1. Funktion gezielt testen.
-2. Bootstrap erneut testen.
-3. PSScriptAnalyzer ausführen.
+2. `just update` bzw. den relevanten Bootstrap-Pfad testen.
+3. `just check` ausführen.
 4. Git-Status prüfen.
 5. Roadmap aktualisieren.
 6. README aktualisieren, falls sich der produktive Stand oder Benutzer-Workflow geändert hat.
@@ -1238,8 +1353,14 @@ Ein Roadmap-Punkt darf nur `[x]` werden, wenn:
 - Konfigurationsdateien reproduzierbar sind,
 - keine unnötigen manuellen Schritte bestehen,
 - keine Secrets im Repository gelandet sind,
-- PSScriptAnalyzer keine neuen relevanten Probleme meldet,
+- `just check` bzw. PSScriptAnalyzer keine neuen relevanten Probleme meldet,
 - Roadmap und bei Bedarf README aktualisiert wurden.
+
+Für neue manuelle Projektaktionen gilt zusätzlich:
+
+- vorhandene `just`-Recipes bevorzugen,
+- neue Recipes nur bei wiederkehrendem Nutzen ergänzen,
+- keine Setup-Logik im `Justfile` implementieren.
 
 ---
 
@@ -1253,6 +1374,9 @@ Nach Abschluss der Roadmap soll ein frisch installiertes Windows 11 nach möglic
 - vollständig eingerichtete Entwicklerumgebung
 - Dev Drive + Games Drive
 - Git/VS Code/Terminal/Nushell/Starship
+- Just als einheitliche manuelle Repository-Bedienoberfläche
+- `just update` für Wartungs-/Setup-Läufe
+- `just check` für statische Prüfung
 - Browser
 - iCloud / Apple Passwords Voraussetzungen
 - komorebi + whkd + masir
@@ -1269,3 +1393,4 @@ Nach Abschluss der Roadmap soll ein frisch installiertes Windows 11 nach möglic
 - aussagekräftige Benachrichtigungen
 - reproduzierbare, im Repository nachvollziehbare Konfiguration
 - keine unnötigen manuellen Nacharbeiten
+- keine dauerhafte Aufweichung der globalen PowerShell Execution Policy
