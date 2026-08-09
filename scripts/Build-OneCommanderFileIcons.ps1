@@ -143,7 +143,22 @@
         if (-not (Test-Path (Join-Path $generatorRoot "node_modules\@resvg\resvg-js"))) {
             Write-Host "[INSTALL] Installiere SVG-Renderer für OneCommander."
 
-            npm install `
+            $npmPath = Get-Command `
+                -Name "npm.cmd" `
+                -ErrorAction SilentlyContinue
+
+            if (-not $npmPath) {
+                $npmPath = Get-Command `
+                    -Name "npm" `
+                    -ErrorAction SilentlyContinue
+            }
+
+            if (-not $npmPath) {
+                throw "npm wurde nicht gefunden."
+            }
+
+            & $npmPath.Source `
+                install `
                 --no-audit `
                 --no-fund
 

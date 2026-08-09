@@ -48,30 +48,65 @@ function Get-PendingRebootStatus {
         -ErrorAction SilentlyContinue
 
     $pendingFileRenames = @()
+    $relevantPendingFileRenames = @()
 
     if (
         $sessionManager -and
         $sessionManager.PendingFileRenameOperations
     ) {
         $pendingFileRenames = @(
-            $sessionManager.PendingFileRenameOperations
+            $sessionManager.PendingFileRenameOperations |
+            Where-Object {
+                -not [string]::IsNullOrWhiteSpace($_)
+            }
         )
 
-        $reasons += "PendingFileRenameOperations"
+        $relevantPendingFileRenames = @(
+            $pendingFileRenames |
+            Where-Object {
+                $entry = $_
+
+                #
+                # Registry-Einträge können Prefixe wie \??\ oder *1??\ enthalten.
+                #
+                $normalized = $entry `
+                    -replace '^[*0-9]*\\\?\?\\', ''
+
+                #
+                # Reine temporäre Installer-Cleanup-Dateien ignorieren.
+                #
+                $isTempCleanup =
+                $normalized -like "$env:TEMP\*" -and (
+                    $normalized -match '\\~nsu[^\\]*\.tmp(?:\\|$)' -or
+                    $normalized -match '\\ns[a-zA-Z0-9]+\.tmp(?:\\|$)'
+                )
+
+                -not $isTempCleanup
+            }
+        )
+
+        if ($relevantPendingFileRenames.Count -gt 0) {
+            $reasons += "PendingFileRenameOperations"
+        }
     }
 
 
     return [PSCustomObject]@{
-        RebootRequired          = $reasons.Count -gt 0
-        Reasons                 = $reasons
-        PendingFileRenames      = $pendingFileRenames
-        ComponentBasedServicing = (
+        RebootRequired             = $reasons.Count -gt 0
+        Reasons                    = $reasons
+
+        PendingFileRenames         = $pendingFileRenames
+        RelevantPendingFileRenames = $relevantPendingFileRenames
+
+        ComponentBasedServicing    = (
             $reasons -contains "ComponentBasedServicing"
         )
-        WindowsUpdate           = (
+
+        WindowsUpdate              = (
             $reasons -contains "WindowsUpdate"
         )
-        FileRenameOperations    = (
+
+        FileRenameOperations       = (
             $reasons -contains "PendingFileRenameOperations"
         )
     }
