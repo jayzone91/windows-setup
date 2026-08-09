@@ -72,13 +72,11 @@ function Set-KomorebiConfiguration {
         ".config"
 
     if (-not (Test-Path $userConfigDirectory)) {
-
         New-Item `
             -ItemType Directory `
             -Path $userConfigDirectory `
             -Force |
         Out-Null
-
 
         Write-Host "[CREATE] $userConfigDirectory"
     }
@@ -92,15 +90,13 @@ function Set-KomorebiConfiguration {
         $RepositoryPath `
         "dotfiles\komorebi"
 
-
     if (-not (Test-Path $repositoryConfigDirectory)) {
-
         Write-Host (
             "[SKIP] komorebi-Konfiguration ist noch nicht im Repository."
         )
 
         Write-Host (
-            "[INFO] Symlinks werden eingerichtet, sobald " +
+            "[INFO] Hardlinks werden eingerichtet, sobald " +
             "dotfiles\komorebi vorhanden ist."
         )
 
@@ -109,58 +105,35 @@ function Set-KomorebiConfiguration {
 
 
     $links = @(
-
         @{
             Name   = "komorebi.json"
-            Source = Join-Path `
-                $repositoryConfigDirectory `
-                "komorebi.json"
-            Target = Join-Path `
-                $env:USERPROFILE `
-                "komorebi.json"
+            Source = Join-Path $repositoryConfigDirectory "komorebi.json"
+            Target = Join-Path $env:USERPROFILE "komorebi.json"
         },
-
         @{
             Name   = "komorebi.bar.json"
-            Source = Join-Path `
-                $repositoryConfigDirectory `
-                "komorebi.bar.json"
-            Target = Join-Path `
-                $env:USERPROFILE `
-                "komorebi.bar.json"
+            Source = Join-Path $repositoryConfigDirectory "komorebi.bar.json"
+            Target = Join-Path $env:USERPROFILE "komorebi.bar.json"
         },
-
         @{
             Name   = "applications.json"
-            Source = Join-Path `
-                $repositoryConfigDirectory `
-                "applications.json"
-            Target = Join-Path `
-                $env:USERPROFILE `
-                "applications.json"
+            Source = Join-Path $repositoryConfigDirectory "applications.json"
+            Target = Join-Path $env:USERPROFILE "applications.json"
         },
-
         @{
             Name   = "whkdrc"
-            Source = Join-Path `
-                $repositoryConfigDirectory `
-                "whkdrc"
-            Target = Join-Path `
-                $userConfigDirectory `
-                "whkdrc"
+            Source = Join-Path $repositoryConfigDirectory "whkdrc"
+            Target = Join-Path $userConfigDirectory "whkdrc"
         }
-
     )
 
 
     Write-Host ""
-    Write-Host "[CONFIG] komorebi Symlinks"
+    Write-Host "[CONFIG] komorebi Hardlinks"
 
 
     foreach ($link in $links) {
-
         if (-not (Test-Path $link.Source)) {
-
             Write-Host (
                 "[SKIP] {0} noch nicht im Repository vorhanden." `
                     -f $link.Name
@@ -169,53 +142,10 @@ function Set-KomorebiConfiguration {
             continue
         }
 
-
-        if (Test-Path $link.Target) {
-
-            $targetItem = Get-Item `
-                -Path $link.Target `
-                -Force
-
-
-            $isCorrectLink =
-            $targetItem.LinkType -eq "SymbolicLink" -and
-            $targetItem.Target -eq $link.Source
-
-
-            if ($isCorrectLink) {
-
-                Write-Host (
-                    "[SKIP] {0} bereits korrekt verlinkt." `
-                        -f $link.Name
-                )
-
-                continue
-            }
-
-
-            Write-Host (
-                "[REMOVE] Bestehende Datei: {0}" `
-                    -f $link.Target
-            )
-
-
-            Remove-Item `
-                -Path $link.Target `
-                -Force
-        }
-
-
-        New-Item `
-            -ItemType SymbolicLink `
+        Set-FileHardLink `
             -Path $link.Target `
-            -Target $link.Source |
-        Out-Null
-
-
-        Write-Host (
-            "[LINK] {0} -> {1}" `
-                -f $link.Target, $link.Source
-        )
+            -Target $link.Source `
+            -ReplaceExistingFile
     }
 
 

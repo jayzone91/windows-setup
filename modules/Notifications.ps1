@@ -2,10 +2,19 @@ function Send-WindowsSetupNotifications {
 
     param(
         [Parameter(Mandatory)]
-        [bool] $RebootRequired,
+        [bool] $WindowsUpdateRebootRequired,
 
         [Parameter(Mandatory)]
-        $RepositoryStatus
+        [bool] $DriverRebootRequired,
+
+        [Parameter(Mandatory)]
+        [bool] $PendingReboot,
+
+        [Parameter(Mandatory)]
+        $RepositoryStatus,
+
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
     )
 
 
@@ -32,19 +41,61 @@ function Send-WindowsSetupNotifications {
 
 
     #
-    # Neustart
+    # Windows Update Neustart
     #
+    if ($WindowsUpdateRebootRequired) {
 
-    if ($RebootRequired) {
+        Register-WindowsSetupProtocol `
+            -RepositoryPath $RepositoryPath
+
+
+        $restartButton =
+        New-BTButton `
+            -Content "Jetzt neu starten" `
+            -Arguments "windows-setup://windows-update-reboot" `
+            -ActivationType Protocol
+
+
+        $laterButton =
+        New-BTButton `
+            -Dismiss `
+            -Content "Später"
+
 
         New-BurntToastNotification `
             -Text @(
-            "Windows Setup"
-            "Ein Neustart des Computers ist erforderlich."
+            "Windows Update"
+            "Installierte Updates benötigen einen Neustart."
+        ) `
+            -Button @(
+            $restartButton
+            $laterButton
         )
 
 
-        Write-Host "[NOTIFY] Neustart erforderlich."
+        Write-Host (
+            "[NOTIFY] Windows Update benötigt einen Neustart."
+        )
+    }
+
+    #
+    # Treiber-Neustart
+    #
+    if (
+        $DriverRebootRequired -and
+        -not $WindowsUpdateRebootRequired
+    ) {
+
+        New-BurntToastNotification `
+            -Text @(
+            "Windows Setup – Treiber"
+            "Ein installierter Treiber benötigt einen Neustart."
+        )
+
+
+        Write-Host (
+            "[NOTIFY] Treiber benötigt einen Neustart."
+        )
     }
 
 
@@ -114,13 +165,115 @@ function Send-WindowsSetupNotifications {
         Write-Host "[NOTIFY] Repository benötigt Aufmerksamkeit."
     }
 
+    #
+    # Sonstiger Pending Reboot
+    #
+    if (
+        $PendingReboot -and
+        -not $WindowsUpdateRebootRequired -and
+        -not $DriverRebootRequired
+    ) {
+
+        New-BurntToastNotification `
+            -Text @(
+            "Windows Setup"
+            (
+                "Windows meldet einen ausstehenden Neustart. " +
+                "Die Ursache wurde nicht Windows Update oder " +
+                "einem installierten Treiber zugeordnet."
+            )
+        )
+
+
+        Write-Host (
+            "[NOTIFY] Windows meldet einen sonstigen ausstehenden Neustart."
+        )
+    }
 
     if (
-        -not $RebootRequired -and
+        -not $WindowsUpdateRebootRequired -and
+        -not $DriverRebootRequired -and
+        -not $PendingReboot -and
         -not $RepositoryStatus.HasChanges -and
         $RepositoryStatus.UnpushedCommits -eq 0
     ) {
 
         Write-Host "[OK] Keine Desktop-Benachrichtigung erforderlich."
     }
+}
+
+function Register-WindowsSetupProtocol {
+
+    param(
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
+    )
+
+
+    $actionScript = Join-Path `
+        $RepositoryPath `
+        "scripts\WindowsSetupAction.ps1"
+
+
+    if (-not (Test-Path $actionScript)) {
+        throw (
+            "Windows Setup Action Script nicht gefunden: " +
+            $actionScript
+        )
+    }
+
+
+    $pwsh = (
+        Get-Command `
+            pwsh.exe `
+            -ErrorAction Stop
+    ).Source
+
+
+    $protocolPath =
+    "HKCU:\Software\Classes\windows-setup"
+
+
+    $commandPath = Join-Path `
+        $protocolPath `
+        "shell\open\command"
+
+
+    New-Item `
+        -Path $commandPath `
+        -Force |
+    Out-Null
+
+
+    Set-Item `
+        -Path $protocolPath `
+        -Value "URL:Windows Setup Protocol"
+
+
+    New-ItemProperty `
+        -Path $protocolPath `
+        -Name "URL Protocol" `
+        -PropertyType String `
+        -Value "" `
+        -Force |
+    Out-Null
+
+
+    $command = (
+        "`"$pwsh`" " +
+        "-NoProfile " +
+        "-ExecutionPolicy Bypass " +
+        "-File `"$actionScript`" " +
+        "-Action WindowsUpdateReboot"
+    )
+
+
+    Set-Item `
+        -Path $commandPath `
+        -Value $command
+
+
+    Write-Host (
+        "[OK] Windows Setup URI-Protokoll registriert."
+    ) -ForegroundColor Green
 }

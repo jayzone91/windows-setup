@@ -45,78 +45,39 @@ function Set-ZebarConfiguration {
         Write-Host "[CREATE] $userZebarDirectory"
     }
 
-    $links = @(
-        @{
-            Name   = "settings.json"
-            Source = Join-Path `
-                $repositoryConfigDirectory `
-                "settings.json"
-            Target = Join-Path `
-                $userZebarDirectory `
-                "settings.json"
-        },
-        @{
-            Name   = "windows-setup-bar"
-            Source = Join-Path `
-                $repositoryConfigDirectory `
-                "windows-setup-bar"
-            Target = Join-Path `
-                $userZebarDirectory `
-                "windows-setup-bar"
-        }
-    )
+    $settingsSource = Join-Path `
+        $repositoryConfigDirectory `
+        "settings.json"
 
-    foreach ($link in $links) {
+    $settingsTarget = Join-Path `
+        $userZebarDirectory `
+        "settings.json"
 
-        if (-not (Test-Path $link.Source)) {
-            Write-Host (
-                "[SKIP] {0} nicht im Repository vorhanden." `
-                    -f $link.Name
-            )
+    $widgetSource = Join-Path `
+        $repositoryConfigDirectory `
+        "windows-setup-bar"
 
-            continue
-        }
+    $widgetTarget = Join-Path `
+        $userZebarDirectory `
+        "windows-setup-bar"
 
-        if (Test-Path $link.Target) {
+    if (Test-Path $settingsSource) {
+        Set-FileHardLink `
+            -Path $settingsTarget `
+            -Target $settingsSource `
+            -ReplaceExistingFile
+    }
+    else {
+        Write-Host "[SKIP] Zebar settings.json nicht im Repository vorhanden."
+    }
 
-            $targetItem = Get-Item `
-                -Path $link.Target `
-                -Force
-
-            $isCorrectLink =
-            $targetItem.LinkType -eq "SymbolicLink" -and
-            $targetItem.Target -eq $link.Source
-
-            if ($isCorrectLink) {
-                Write-Host (
-                    "[SKIP] {0} bereits korrekt verlinkt." `
-                        -f $link.Name
-                )
-
-                continue
-            }
-
-            Write-Host (
-                "[REMOVE] Bestehend: {0}" `
-                    -f $link.Target
-            )
-
-            Remove-Item `
-                -Path $link.Target `
-                -Recurse `
-                -Force
-        }
-
-        New-Item `
-            -ItemType SymbolicLink `
-            -Path $link.Target `
-            -Target $link.Source |
-        Out-Null
-
-        Write-Host (
-            "[LINK] {0} -> {1}" `
-                -f $link.Target, $link.Source
-        )
+    if (Test-Path $widgetSource) {
+        Set-DirectoryJunction `
+            -Path $widgetTarget `
+            -Target $widgetSource
+    }
+    else {
+        Write-Host "[SKIP] Zebar Widget-Verzeichnis nicht im Repository vorhanden."
     }
 
     $zebarProjectDirectory = Join-Path `
@@ -179,6 +140,7 @@ function Set-ZebarConfiguration {
     Write-Host "[OK] Zebar-Konfiguration vorbereitet." `
         -ForegroundColor Green
 }
+
 
 function Get-NpmExecutable {
 

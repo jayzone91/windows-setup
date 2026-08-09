@@ -205,6 +205,7 @@ Sync-LogitechGHubConfiguration `
 # Windows Updates
 # ------------------------------------------------------------
 
+$windowsUpdateStatus =
 Install-WindowsUpdates
 
 # ------------------------------------------------------------
@@ -242,7 +243,7 @@ Write-Host ""
 # Wartungsstatus
 # ------------------------------------------------------------
 
-$rebootRequired =
+$pendingReboot =
 Test-PendingReboot
 
 
@@ -252,5 +253,8 @@ Get-WindowsSetupRepositoryStatus `
 
 
 Send-WindowsSetupNotifications `
-    -RebootRequired $rebootRequired `
-    -RepositoryStatus $repositoryStatus
+    -WindowsUpdateRebootRequired $windowsUpdateStatus.RebootRequired `
+    -DriverRebootRequired $script:DriverRebootRequired `
+    -PendingReboot $pendingReboot `
+    -RepositoryStatus $repositoryStatus `
+    -RepositoryPath $Root

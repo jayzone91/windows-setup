@@ -36,7 +36,8 @@ function Set-PowerShellPreferences {
             New-Item `
                 -Path $directory `
                 -ItemType Directory `
-                -Force | Out-Null
+                -Force |
+            Out-Null
         }
     }
 
@@ -48,42 +49,20 @@ function Set-PowerShellPreferences {
         throw "Starship-Konfiguration nicht gefunden: $starshipSource"
     }
 
-    # ------------------------------------------------------------
-    # PowerShell Profil verlinken
-    # ------------------------------------------------------------
-
-    if (Test-Path $profileDestination) {
-        Remove-Item `
-            -Path $profileDestination `
-            -Force
-    }
-
-    New-Item `
-        -ItemType SymbolicLink `
+    Set-FileHardLink `
         -Path $profileDestination `
-        -Target $profileSource | Out-Null
+        -Target $profileSource `
+        -ReplaceExistingFile
 
-    Write-Host "[OK] PowerShell-Profil verlinkt." `
-        -ForegroundColor Green
-
-    # ------------------------------------------------------------
-    # Starship config verlinken
-    # ------------------------------------------------------------
-
-    if (Test-Path $starshipDestination) {
-        Remove-Item `
-            -Path $starshipDestination `
-            -Force
-    }
-
-    New-Item `
-        -ItemType SymbolicLink `
+    Set-FileHardLink `
         -Path $starshipDestination `
-        -Target $starshipSource | Out-Null
+        -Target $starshipSource `
+        -ReplaceExistingFile
 
-    Write-Host "[OK] Starship-Konfiguration verlinkt." `
+    Write-Host "[OK] PowerShell- und Starship-Konfiguration verlinkt." `
         -ForegroundColor Green
 }
+
 
 function Install-PowerShellModules {
 

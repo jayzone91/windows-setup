@@ -11,7 +11,7 @@ function Get-VSCodeCommand {
     )
 
     foreach ($path in $possiblePaths) {
-        if (Test-Path $path ) {
+        if (Test-Path $path) {
             return $path
         }
     }
@@ -19,10 +19,11 @@ function Get-VSCodeCommand {
     return $null
 }
 
+
 function Test-VSCodeExtension {
     param(
         [Parameter(Mandatory)]
-        [string]$ExtensionId
+        [string] $ExtensionId
     )
 
     $code = Get-VSCodeCommand
@@ -41,10 +42,11 @@ function Test-VSCodeExtension {
     return $extensions -contains $ExtensionId.ToLowerInvariant()
 }
 
+
 function Install-VSCodeExtension {
     param(
         [Parameter(Mandatory)]
-        [string]$ExtensionId
+        [string] $ExtensionId
     )
 
     $code = Get-VSCodeCommand
@@ -74,10 +76,11 @@ function Install-VSCodeExtension {
     Write-Host "[OK] $ExtensionId installiert." -ForegroundColor Green
 }
 
+
 function Install-VSCodeExtensions {
     param(
         [Parameter(Mandatory)]
-        [array]$Extensions
+        [array] $Extensions
     )
 
     Write-Host ""
@@ -90,49 +93,56 @@ function Install-VSCodeExtensions {
     }
 }
 
+
 function Set-VSCodeSettings {
     param(
         [Parameter(Mandatory)]
-        [string]$Source
+        [string] $Source
     )
 
-    $settingsDirectory = Join-Path $env:APPDATA "Code\User"
-    $destination = Join-Path $settingsDirectory "settings.json"
+    $settingsDirectory = Join-Path `
+        $env:APPDATA `
+        "Code\User"
+
+    $destination = Join-Path `
+        $settingsDirectory `
+        "settings.json"
 
     if (-not (Test-Path $settingsDirectory)) {
         New-Item `
             -Path $settingsDirectory `
             -ItemType Directory `
-            -Force | Out-Null
+            -Force |
+        Out-Null
     }
 
-    if (Test-Path $destination) {
+    $existingItem = Get-Item `
+        -LiteralPath $destination `
+        -Force `
+        -ErrorAction SilentlyContinue
 
-        $item = Get-Item $destination -Force
+    if (
+        $existingItem -and
+        -not $existingItem.LinkType
+    ) {
+        $backup = "$destination.backup"
 
-        if ($item.LinkType) {
-            Remove-Item $destination -Force
-        }
-        else {
-            $backup = "$destination.backup"
+        Write-Host "[BACKUP] $destination -> $backup"
 
-            Write-Host "[BACKUP] $destination -> $backup"
+        Copy-Item `
+            -Path $destination `
+            -Destination $backup `
+            -Force
 
-            Copy-Item `
-                -Path $destination `
-                -Destination $backup `
-                -Force
-
-            Remove-Item $destination -Force
-        }
+        Remove-Item `
+            -LiteralPath $destination `
+            -Force
     }
 
-    Write-Host "[LINK] VS Code settings.json"
-
-    New-Item `
-        -ItemType SymbolicLink `
+    Set-FileHardLink `
         -Path $destination `
-        -Target $Source | Out-Null
+        -Target $Source
 
-    Write-Host "[OK] VS Code Settings verlinkt." -ForegroundColor Green
+    Write-Host "[OK] VS Code Settings verlinkt." `
+        -ForegroundColor Green
 }

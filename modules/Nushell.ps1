@@ -44,42 +44,20 @@ function Set-NushellPreferences {
         New-Item `
             -Path $configDirectory `
             -ItemType Directory `
-            -Force | Out-Null
+            -Force |
+        Out-Null
     }
 
-    # ------------------------------------------------------------
-    # config.nu
-    # ------------------------------------------------------------
-
-    if (Get-Item -LiteralPath $configDestination -Force -ErrorAction SilentlyContinue) {
-        Remove-Item `
-            -LiteralPath $configDestination `
-            -Force
-    }
-
-    New-Item `
-        -ItemType SymbolicLink `
+    Set-FileHardLink `
         -Path $configDestination `
-        -Target $configSource | Out-Null
+        -Target $configSource `
+        -ReplaceExistingFile
 
-    Write-Host "[OK] Nushell config.nu verlinkt." `
-        -ForegroundColor Green
-
-    # ------------------------------------------------------------
-    # env.nu
-    # ------------------------------------------------------------
-
-    if (Get-Item -LiteralPath $envDestination -Force -ErrorAction SilentlyContinue) {
-        Remove-Item `
-            -LiteralPath $envDestination `
-            -Force
-    }
-
-    New-Item `
-        -ItemType SymbolicLink `
+    Set-FileHardLink `
         -Path $envDestination `
-        -Target $envSource | Out-Null
+        -Target $envSource `
+        -ReplaceExistingFile
 
-    Write-Host "[OK] Nushell env.nu verlinkt." `
+    Write-Host "[OK] Nushell-Konfiguration verlinkt." `
         -ForegroundColor Green
 }

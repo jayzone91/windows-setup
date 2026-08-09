@@ -269,9 +269,9 @@ function Get-WingetInstalledVersion {
 
     param(
         [Parameter(Mandatory)]
-        [string]$Id,
+        [string] $Id,
 
-        [string]$Source
+        [string] $Source
     )
 
 
@@ -303,18 +303,32 @@ function Get-WingetInstalledVersion {
 
     foreach ($line in $output) {
 
-        if ($line -match [regex]::Escape($Id)) {
+        if ($line -notmatch [regex]::Escape($Id)) {
+            continue
+        }
 
-            $columns = $line -split "\s{2,}" |
+        $columns = @(
+            $line -split "\s{2,}" |
+            ForEach-Object {
+                $_.Trim()
+            } |
             Where-Object {
-                $_ -and $_.Trim()
+                -not [string]::IsNullOrWhiteSpace($_)
             }
+        )
 
 
-            if ($columns.Count -ge 3) {
+        $idIndex = [Array]::IndexOf(
+            $columns,
+            $Id
+        )
 
-                return $columns[2].Trim()
-            }
+
+        if (
+            $idIndex -ge 0 -and
+            $columns.Count -gt ($idIndex + 1)
+        ) {
+            return $columns[$idIndex + 1]
         }
     }
 
