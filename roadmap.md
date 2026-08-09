@@ -118,6 +118,7 @@ Windows Desktop
 - [x] Bootstrap-Prozesse verwenden `ExecutionPolicy Bypass` ausschließlich auf Prozessebene
 - [x] Globale Benutzer-/System-Execution-Policy wird nicht verändert
 - [x] Execution-Policy-Fix auf dem aktuellen Windows-System erfolgreich getestet
+- [x] laufende Anwendungen werden bei wiederholten Läufen nur geschlossen, wenn eine tatsächliche Änderung dies erfordert
 
 ## Just / manueller Workflow
 
@@ -126,8 +127,12 @@ Windows Desktop
 - [x] `just update` startet den vollständigen Bootstrap
 - [x] `just update` verwendet `-NoProfile -ExecutionPolicy Bypass`
 - [x] `just check` führt PSScriptAnalyzer rekursiv über das Repository aus
+- [x] `just desktop-restart` startet die Desktop-Umgebung kontrolliert neu
+- [x] `just ghub-backup` sichert die G-HUB-Konfiguration bewusst ins Repository
+- [x] `just ghub-restore` stellt die G-HUB-Konfiguration bewusst wieder her
 - [x] `just update` auf dem aktuellen System erfolgreich getestet
 - [x] `just check` auf dem aktuellen System erfolgreich getestet
+- [x] `just desktop-restart` auf dem aktuellen System erfolgreich getestet
 - [x] Das `Justfile` enthält keine eigentliche Setup-Logik
 - [x] Neue wiederkehrende manuelle Aktionen dürfen als Recipes ergänzt werden, wenn die Implementierung in PowerShell verbleibt
 
@@ -199,6 +204,9 @@ Begründung:
 
 - [x] `just update`
 - [x] `just check`
+- [x] `just desktop-restart`
+- [x] `just ghub-backup`
+- [x] `just ghub-restore`
 - [x] direkter Bootstrap-Fallback dokumentiert
 - [x] Just als Base-Paket
 - [x] Just-Workflow im README dokumentiert
@@ -585,9 +593,19 @@ Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games 
 - [x] Zen Mods automatisiert installieren
 - [x] Marionette für Mod-Installation
 - [x] Mod-Installation idempotent
-- [x] Browser danach normal neu starten
+- [x] aktives Zen-Profil über die Installationszuordnung ermitteln
+- [x] vorhandene Mods vor dem Schließen über `zen-themes.json` prüfen
+- [x] nur tatsächlich fehlende Mods an Marionette übergeben
+- [x] Zen bei vollständig vorhandenen Mods geöffnet lassen
+- [x] Zen nur bei erforderlicher Mod-Konfiguration schließen und danach normal neu starten
 - [ ] Browser-UI weiter an Catppuccin Mocha anpassen
 - [ ] stabile eigene CSS-Anpassungen versionieren
+
+### Akzeptanzkriterien für Zen-Mods
+
+- Ein normaler `just update` schließt Zen nicht, wenn alle konfigurierten Mods bereits vorhanden sind.
+- Fehlt ein Mod, wird nur der fehlende Mod über Marionette installiert.
+- Die lokale Vorprüfung verwendet das tatsächlich aktive Zen-Profil und nicht lediglich den `Default=1`-Eintrag aus `profiles.ini`.
 
 ---
 
@@ -596,11 +614,31 @@ Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games 
 - [x] Installation
 - [x] Updates
 - [x] `settings.db` im Repository
-- [x] Erstimport
-- [x] spätere lokale Änderungen zurück ins Repository synchronisieren
-- [x] G HUB für Datenbankzugriff kontrolliert beenden
-- [x] G HUB wieder starten
-- [x] Git erkennt Änderungen für spätere manuelle Commits
+- [x] einmalige Initialisierung auf einem neuen System
+- [x] Marker für bereits initialisierte Systeme
+- [x] nach der Erstinitialisierung keine automatische Datenbank-Synchronisierung im normalen Bootstrap
+- [x] `just ghub-backup` für eine bewusste Sicherung ins Repository
+- [x] `just ghub-restore` für eine bewusste Wiederherstellung
+- [x] G HUB für Initialisierung, Backup oder Restore kontrolliert beenden
+- [x] G HUB danach wieder starten
+- [x] Git erkennt bewusst gesicherte Änderungen für spätere manuelle Commits
+- [x] G HUB bei normalen `just update`-Läufen geöffnet lassen
+
+## Feste Entscheidung
+
+`settings.db` wird **nicht** per Hardlink oder Symbolic Link mit dem Repository verbunden.
+
+Grund:
+
+- G HUB verändert die SQLite-Datenbank laufend, auch ohne bewusste Konfigurationsänderung.
+- Ein Dateihash ist deshalb kein sinnvoller Desired-State-Indikator.
+- Die Datenbank wird als bewusster Snapshot behandelt.
+- Der Bootstrap stellt sie auf einem neuen System einmalig wieder her; spätere Sicherungen erfolgen nur explizit.
+
+### Akzeptanzkriterien
+
+- Auf einem bereits initialisierten System darf `just update` G HUB nicht schließen.
+- `just ghub-backup` und `just ghub-restore` dürfen G HUB kontrolliert schließen und anschließend wieder starten.
 
 ---
 
@@ -637,19 +675,29 @@ Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games 
 
 ## Bootstrap / Desktop-Neustart
 
-- [ ] analysieren, welche vom Bootstrap geschriebenen oder neu verlinkten Dateien dazu führen, dass Zebar danach von komorebi zeitweise nicht mehr korrekt erkannt wird
-- [ ] sicherstellen, dass Zebar nach Konfigurationsänderungen wieder zuverlässig als nicht zu tilendes Desktop-Element erkannt wird
-- [ ] prüfen, ob komorebi am Ende des Bootstrap-Laufs kontrolliert neu gestartet werden soll
-- [ ] prüfen, ob Zebar anschließend kontrolliert neu gestartet werden soll
-- [ ] falls Neustart erforderlich: Reihenfolge komorebi vollständig neu laden, danach Zebar starten
-- [ ] Neustart nur durchführen, wenn dies für einen stabilen Zustand erforderlich ist
-- [ ] bestehende Fenster dürfen nach einem Bootstrap-Lauf nicht hinter Zebar landen
-- [ ] Fenster müssen nach einem Bootstrap-Lauf wieder normal über Titelleiste, Ziehen und `X` bedienbar sein
-- [ ] Neustartlogik idempotent gestalten und keine doppelten komorebi-/Zebar-Instanzen erzeugen
+- [x] fehlerhafte Zebar-Z-Order nach wiederholten Bootstrap-Läufen reproduziert
+- [x] entschieden, komorebi und Zebar am Ende des Bootstrap kontrolliert neu zu starten
+- [x] zentralen `Stop-WindowsDesktopEnvironment`-Workflow implementiert
+- [x] zentralen `Start-WindowsDesktopEnvironment`-Workflow implementiert
+- [x] zentralen `Restart-WindowsDesktopEnvironment`-Workflow implementiert
+- [x] Zebar zuerst beenden
+- [x] komorebi/whkd/masir anschließend kontrolliert beenden
+- [x] komorebi mit `--whkd --masir` starten
+- [x] auf komorebi/whkd warten
+- [x] Zebar erst danach starten
+- [x] zwei getrennte Scheduled Tasks beibehalten
+- [x] komorebi-Task erhöht ausführen
+- [x] Zebar-Task nicht erhöht ausführen
+- [x] Neustartlogik idempotent gestalten und doppelte Instanzen vermeiden
+- [x] `just desktop-restart` als manuellen Einstiegspunkt ergänzen
+- [x] Desktop-Neustart am Ende von `bootstrap.ps1` ausführen
+- [x] `just update` mit der neuen Reihenfolge erfolgreich getestet
+- [x] normale Fenster liegen nach dem Bootstrap nicht mehr über bzw. falsch relativ zur Zebar
+- [x] Fenster bleiben nach dem Bootstrap normal bedienbar
 
 ### Akzeptanzkriterien für Desktop-Stabilität
 
-- Microsoft Kurznotizen werden nicht getiled.
+- Microsoft Kurznotizen werden nicht getiled. **Noch offen.**
 - Nach `just update` funktioniert die komorebi-/Zebar-Erkennung ohne manuelle Nacharbeit.
 - Normale Fenster landen nicht hinter Zebar.
 - Fenster lassen sich nach dem Bootstrap weiterhin normal verschieben und schließen.
@@ -674,6 +722,9 @@ Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games 
 - [x] kein Klick erforderlich
 - [x] masir zusammen mit komorebi/whkd starten
 - [x] Integration in Desktop Scheduled Task
+- [x] Start über `komorebic start --whkd --masir`
+- [x] Stop über `komorebic stop --whkd --masir`
+- [x] kontrollierter Desktop-Neustart praktisch getestet
 
 ---
 
@@ -689,6 +740,10 @@ Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games 
 - [x] `settings.json` als Hardlink
 - [x] `windows-setup-bar` als Junction
 - [x] Scheduled Task / reproduzierbarer Start
+- [x] separater nicht erhöhter Scheduled Task
+- [x] zentraler Desktop-Restart
+- [x] Start erst nach komorebi/whkd
+- [x] korrekte Z-Order nach `just update` praktisch getestet
 
 ## Linke Seite
 
@@ -843,6 +898,24 @@ https://github.com/catppuccin/vscode-icons
 - [x] ungültige Windows-Dateinamen dokumentieren
 - [x] FileIcons-Theme per Junction einbinden
 - [x] `FileIconsTheme = CatppuccinMocha`
+
+## Desired-State / störungsarme Wiederholung
+
+- [x] vollständigen OneCommander-Desired-State vor dem Beenden prüfen
+- [x] verwaltete OneCommander-Settings prüfen
+- [x] Theme-Junction prüfen
+- [x] Folder-Icon-Junction prüfen
+- [x] Main-Folder-Icon per SHA256 prüfen
+- [x] generiertes File-Icon-Pack und `_manifest.json` prüfen
+- [x] File-Icon-Junction prüfen
+- [x] Registry-Integration für Directory/Drive/Win+E prüfen
+- [x] OneCommander bei vollständig aktuellem Zustand geöffnet lassen
+- [x] OneCommander nur bei tatsächlichem Drift schließen und danach neu starten
+- [x] Verhalten auf dem aktuellen System praktisch getestet
+
+### Akzeptanzkriterium für wiederholte Bootstrap-Läufe
+
+Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwaltete Zustand bereits vollständig korrekt ist.
 
 ## Noch prüfen / verbessern
 
@@ -1110,10 +1183,13 @@ Das System soll nach Neuinstallation auch als Gaming-PC möglichst schnell einsa
 - [x] Pakete prüfen
 - [x] Windows Updates
 - [x] Treiber
-- [x] G HUB Sync
+- [x] G HUB auf neuen Systemen einmalig initialisieren
+- [x] bereits initialisiertes G HUB bei normalen Wartungsläufen unangetastet lassen
 - [x] Konfiguration erneut anwenden
+- [x] Zen-Mods vor möglichem Browser-Neustart lokal prüfen
 - [x] Zebar Build
-- [x] OneCommander-Konfiguration
+- [x] OneCommander-Desired-State vor möglichem Neustart prüfen
+- [x] Desktop-Environment am Ende definiert neu starten
 - [x] PSScriptAnalyzer
 - [x] Rebootstatus
 - [x] Git-Status
@@ -1169,6 +1245,13 @@ Das README soll den **aktuellen produktiven Stand** erklären.
 - [x] Just-Workflow
 - [x] `just update`
 - [x] `just check`
+- [x] `just desktop-restart`
+- [x] `just ghub-backup`
+- [x] `just ghub-restore`
+- [x] störungsarme Zen-Mod-Prüfung dokumentiert
+- [x] OneCommander-Desired-State-Prüfung dokumentiert
+- [x] G-HUB-Initialisierung/Backup/Restore dokumentiert
+- [x] Desktop-Neustart-Architektur dokumentiert
 - [x] Desktop-Zielbild
 - [x] komorebi
 - [x] masir
@@ -1193,6 +1276,10 @@ Die Roadmap ist ausführlicher als das README und enthält auch offene Ziele.
 - [x] OSD inklusive Caps Lock und Num Lock
 - [x] Just-Workflow
 - [x] Execution-Policy-Architektur
+- [x] Desktop-Neustart-Architektur
+- [x] Zen-Mod-Precheck
+- [x] OneCommander-Desired-State-Precheck
+- [x] G-HUB-Snapshot-Strategie
 - [x] klare nächste Prioritäten
 - [ ] bei jeder größeren Designentscheidung aktualisieren
 
@@ -1223,6 +1310,13 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
   - Änderungen sollen nur gemeldet werden
 - [x] automatischer Neustart nach Updates
   - Neustart wird nur gemeldet
+- [x] G-HUB-`settings.db` bei jedem Bootstrap per Hash automatisch synchronisieren
+  - G HUB verändert die SQLite-Datenbank laufend
+  - Hash-Unterschiede bilden keinen sinnvollen Konfigurations-Drift ab
+  - Initialisierung + bewusstes Backup/Restore ist der definierte Weg
+- [x] G-HUB-`settings.db` per Hardlink oder Symbolic Link direkt mit dem Repository verbinden
+  - laufende SQLite-Datenbanken werden als Snapshot behandelt
+  - sichere, bewusste Backup-/Restore-Aktionen haben Vorrang
 
 ---
 
@@ -1230,20 +1324,24 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
 
 Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende Reihenfolge verwenden, sofern der Benutzer nichts anderes vorgibt.
 
-## Priorität 1 – Desktop-Stabilität
+## Bereits gelöste Desktop-Stabilität
 
-1. [ ] Microsoft Kurznotizen vom Tiling ausschließen
-2. [ ] Zebar bei echten Vollbild-Anwendungen ausblenden
-3. [ ] Verhalten bei Browser-/YouTube-Vollbild und Fullscreen-Anwendungen testen
-4. [ ] Ursache für fehlerhafte komorebi-/Zebar-Erkennung nach `just update` analysieren
-5. [ ] entscheiden, ob ein kontrollierter komorebi-/Zebar-Neustart am Ende des Bootstrap erforderlich ist
-6. [ ] falls erforderlich, idempotenten Desktop-Neustart implementieren
-7. [ ] sicherstellen, dass Fenster danach nicht hinter Zebar landen und normal bedienbar sind
-8. [ ] `just update` vollständig testen
-9. [ ] `just check` ausführen
-10. [ ] Roadmap/README anschließend aktualisieren
+- [x] fehlerhafte komorebi-/Zebar-Z-Order nach `just update` analysiert
+- [x] kontrollierten Desktop-Neustart implementiert
+- [x] Startreihenfolge komorebi/whkd/masir → Zebar umgesetzt
+- [x] `just desktop-restart` ergänzt
+- [x] `just update` mit der Neustartlogik getestet
+- [x] Zen bei unverändertem Mod-Zustand geöffnet lassen
+- [x] OneCommander bei unverändertem Desired-State geöffnet lassen
+- [x] G HUB bei normalen Wartungsläufen geöffnet lassen
 
-## Priorität 2 – NanaZip
+Folgende Desktop-Stabilitätspunkte bleiben unabhängig davon offen:
+
+- [ ] Microsoft Kurznotizen vom Tiling ausschließen
+- [ ] Zebar bei echten Vollbild-Anwendungen ausblenden
+- [ ] Verhalten bei Browser-/YouTube-Vollbild und Fullscreen-Anwendungen testen
+
+## Priorität 1 – NanaZip
 
 1. [ ] passende Paket-ID verifizieren
 2. [ ] NanaZip in Paketverwaltung aufnehmen
@@ -1253,7 +1351,7 @@ Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende
 6. [ ] Standardhandler prüfen
 7. [ ] Roadmap/README anschließend aktualisieren
 
-## Priorität 3 – Home Office Paketgruppe
+## Priorität 2 – Home Office Paketgruppe
 
 1. [ ] `HomeOffice` in `packages.psd1` anlegen
 2. [ ] Remote Desktop Manager integrieren
@@ -1261,7 +1359,7 @@ Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende
 4. [ ] weitere benötigte Firmen-Tools inventarisieren
 5. [ ] VPN-/Zertifikat-Konzept getrennt und sicher planen
 
-## Priorität 4 – Launcher
+## Priorität 3 – Launcher
 
 1. [ ] PowerToys installieren
 2. [ ] Command Palette konfigurieren
@@ -1269,14 +1367,14 @@ Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende
 4. [ ] Everything integrieren
 5. [ ] Workflow testen
 
-## Priorität 5 – Windows Shell
+## Priorität 4 – Windows Shell
 
 1. [ ] Windhawk Taskbar Styler
 2. [ ] Windhawk Start Menu Styler
 3. [ ] Windhawk Notification Center Styler
 4. [ ] alle Einstellungen per CLI reproduzierbar machen
 
-## Priorität 6 – eigenes OSD
+## Priorität 5 – eigenes OSD
 
 1. [ ] technische Architektur festlegen
 2. [ ] Volume/Mute
@@ -1288,14 +1386,14 @@ Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende
 8. [ ] Autostart/Bootstrap
 9. [ ] Windows-OSD-Doppelanzeige vermeiden
 
-## Priorität 7 – Gaming
+## Priorität 6 – Gaming
 
 1. [ ] Paketgruppe
 2. [ ] Steam
 3. [ ] Game-Library-Pfade
 4. [ ] sinnvolle Windows-Gaming-Einstellungen
 
-## Priorität 8 – Qualität
+## Priorität 7 – Qualität
 
 1. [ ] Logging
 2. [ ] GitHub Actions
@@ -1329,6 +1427,8 @@ Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende
 8. PowerShell-Code mit PSScriptAnalyzer kompatibel halten.
 9. wiederkehrende manuelle Aktionen bei echtem Nutzen als `just`-Recipe bereitstellen.
 10. keine eigentliche Setup-Logik in Recipes duplizieren.
+11. laufende Anwendungen vor einem Stop/Restart nach Möglichkeit auf tatsächlichen Konfigurations-Drift prüfen.
+12. unveränderte Anwendungen bei wiederholten Bootstrap-Läufen möglichst unangetastet lassen.
 
 ## Nach einer Implementierung
 
@@ -1352,6 +1452,7 @@ Ein Roadmap-Punkt darf nur `[x]` werden, wenn:
 - die Umsetzung in den bestehenden Bootstrap integriert ist, sofern sie Teil des automatischen Setups sein soll,
 - Konfigurationsdateien reproduzierbar sind,
 - keine unnötigen manuellen Schritte bestehen,
+- keine unnötigen Anwendungsneustarts oder Prozessabbrüche bei unverändertem Zustand bestehen,
 - keine Secrets im Repository gelandet sind,
 - `just check` bzw. PSScriptAnalyzer keine neuen relevanten Probleme meldet,
 - Roadmap und bei Bedarf README aktualisiert wurden.
@@ -1377,6 +1478,8 @@ Nach Abschluss der Roadmap soll ein frisch installiertes Windows 11 nach möglic
 - Just als einheitliche manuelle Repository-Bedienoberfläche
 - `just update` für Wartungs-/Setup-Läufe
 - `just check` für statische Prüfung
+- `just desktop-restart` für einen gezielten Desktop-Neustart
+- `just ghub-backup` / `just ghub-restore` für bewusste G-HUB-Snapshots
 - Browser
 - iCloud / Apple Passwords Voraussetzungen
 - komorebi + whkd + masir
@@ -1393,4 +1496,5 @@ Nach Abschluss der Roadmap soll ein frisch installiertes Windows 11 nach möglic
 - aussagekräftige Benachrichtigungen
 - reproduzierbare, im Repository nachvollziehbare Konfiguration
 - keine unnötigen manuellen Nacharbeiten
+- keine unnötigen Anwendungsneustarts bei unverändertem Zustand
 - keine dauerhafte Aufweichung der globalen PowerShell Execution Policy
