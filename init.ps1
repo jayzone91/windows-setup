@@ -246,13 +246,49 @@ Write-Host "========================================"
 Write-Host ""
 
 
-Push-Location $InstallPath
+$currentPowerShell = (
+    Get-Process `
+        -Id $PID `
+        -ErrorAction Stop
+).Path
 
-try {
 
-    & $bootstrapPath
+if (-not $currentPowerShell) {
+    throw "Pfad der aktuellen PowerShell konnte nicht ermittelt werden."
 }
-finally {
 
-    Pop-Location
+
+Write-Host (
+    "[INFO] Bootstrap wird mit ExecutionPolicy Bypass " +
+    "auf Prozessebene gestartet."
+)
+
+
+$bootstrapArguments = @(
+    "-NoProfile"
+    "-ExecutionPolicy"
+    "Bypass"
+    "-File"
+    ('"{0}"' -f $bootstrapPath)
+) -join " "
+
+
+$bootstrapProcess = Start-Process `
+    -FilePath $currentPowerShell `
+    -ArgumentList $bootstrapArguments `
+    -WorkingDirectory $InstallPath `
+    -Wait `
+    -PassThru
+
+
+if ($bootstrapProcess.ExitCode -ne 0) {
+
+    throw (
+        "bootstrap.ps1 wurde mit ExitCode {0} beendet." `
+            -f $bootstrapProcess.ExitCode
+    )
 }
+
+
+Write-Host "[OK] Windows Setup abgeschlossen." `
+    -ForegroundColor Green
