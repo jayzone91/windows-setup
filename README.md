@@ -43,13 +43,19 @@ Bereits umgesetzt sind unter anderem:
 - Catppuccin-Mocha-Theme für OneCommander
 - Catppuccin-Mocha-Folder-Icons für OneCommander
 - automatisch generiertes Catppuccin-Mocha-File-Icon-Pack aus `catppuccin/vscode-icons`
+- NanaZip als Archivmanager
+- interaktive Initialisierung von Windows-Standard-Apps
+- direkte Navigation zur anwendungsspezifischen Standard-App-Konfiguration, sofern Windows eine passende App-ID bereitstellt
+- Fallback auf die allgemeine Windows-Standard-App-Seite
+- Bootstrap wartet bei interaktiver Standard-App-Konfiguration auf das Schließen der Windows-Einstellungen
+- persistenter Initialisierungsstatus unter `.generated/state/default-apps/`
 - Datei-Dotfiles werden als NTFS-Hardlinks eingebunden
 - Verzeichnis-Dotfiles werden als NTFS-Junctions eingebunden
 - Catppuccin Mocha als gemeinsame Designsprache
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 - Zen-Mod-Precheck: Browser-Neustart nur, wenn konfigurierte Mods tatsächlich fehlen
 
-Die nächsten größeren Arbeitspakete sind NanaZip, Home-Office-Werkzeuge, PowerToys Command Palette + Everything, Windhawk für Taskbar, Startmenü und Notification Center, ein eigenes OSD sowie weiterer Catppuccin-Polish.
+Die nächsten größeren Arbeitspakete sind Home-Office-Werkzeuge, PowerToys Command Palette + Everything, Windhawk für Taskbar, Startmenü und Notification Center, ein eigenes OSD sowie weiterer Catppuccin-Polish.
 
 Siehe auch [`roadmap.md`](roadmap.md).
 
@@ -106,6 +112,7 @@ Der vollständige Bootstrap:
 - synchronisiert Konfigurationen,
 - führt Treiber- und Windows-Update-Logik aus,
 - wendet Desktop- und Entwicklungs-Konfiguration erneut an,
+- führt erforderliche einmalige Benutzerinteraktionen aus,
 - prüft Rebootbedarf,
 - prüft Repository-Status und ungepushte Commits,
 - richtet bzw. aktualisiert Scheduled Tasks,
@@ -230,6 +237,87 @@ Bestehende verwaltete Symbolic Links werden beim nächsten Setup-Durchlauf autom
 
 Generierte Inhalte liegen unter `.generated/` und werden nicht committed. Generator-Code selbst bleibt versioniert.
 
+Neben tatsächlich generierten Dateien enthält `.generated/state/` lokale Zustandsmarker für einmalige oder bewusst interaktive Initialisierungsschritte. Diese Marker verhindern, dass bereits abgeschlossene Benutzerinteraktionen bei jedem `just update` erneut ausgeführt werden.
+
+---
+
+# Standard-Apps und Dateizuordnungen
+
+Windows schützt benutzerspezifische Standard-App-Zuordnungen und erlaubt deren direkte Änderung durch normale Skripte nicht zuverlässig.
+
+Das Setup automatisiert deshalb nicht die geschützten `UserChoice`-Registry-Einträge, sondern verwendet einen interaktiven Initialisierungsworkflow.
+
+Für Anwendungen mit konfigurierbaren Standard-Dateizuordnungen gilt:
+
+1. Das Setup ermittelt nach Möglichkeit die Windows-App-ID der Anwendung.
+2. Die anwendungsspezifische Seite unter **Einstellungen → Apps → Standard-Apps** wird geöffnet.
+3. Falls keine passende App-ID ermittelt werden kann, wird die allgemeine Standard-App-Seite geöffnet.
+4. Der Bootstrap wartet, bis das Einstellungsfenster tatsächlich geschlossen wurde.
+5. Anschließend wird die Konfiguration als initialisiert markiert.
+6. Bei späteren `just update`-Läufen wird die interaktive Konfiguration übersprungen.
+
+Die Erkennung des geöffneten Einstellungsfensters berücksichtigt auch von Windows gehostete `SystemSettings`-Child-Windows. Dadurch läuft der Bootstrap erst weiter, wenn das sichtbare Windows-Einstellungsfenster tatsächlich geschlossen wurde.
+
+Der Initialisierungsstatus wird unter:
+
+```text
+.generated/state/default-apps/
+```
+
+gespeichert.
+
+Beispiel:
+
+```text
+.generated/state/default-apps/nanazip.initialized
+```
+
+Soll die Standard-App-Konfiguration einer Anwendung erneut durchgeführt werden, kann der entsprechende Marker gelöscht werden.
+
+Für NanaZip beispielsweise:
+
+```powershell
+Remove-Item `
+    ".\.generated\state\default-apps\nanazip.initialized"
+```
+
+Beim nächsten `just update` wird die Konfiguration erneut geöffnet.
+
+Dieser Mechanismus ist bewusst generisch aufgebaut und kann auch für weitere Anwendungen verwendet werden, deren Standard-Dateizuordnungen beim ersten Setup durch den Benutzer bestätigt werden müssen.
+
+## NanaZip
+
+NanaZip wird über `winget` installiert und als bevorzugter Archivmanager verwendet.
+
+Beim ersten Setup versucht der Bootstrap, NanaZips AppX-/MSIX-Registrierung dynamisch zu ermitteln. Dazu werden der NanaZip-ProgID und die zugehörige `AppUserModelID` aus der Windows-Registrierung bestimmt.
+
+Kann die `AppUserModelID` ermittelt werden, öffnet der Bootstrap direkt:
+
+```text
+Einstellungen
+└── Apps
+    └── Standard-Apps
+        └── NanaZip
+```
+
+Kann die ID nicht zuverlässig ermittelt werden, wird stattdessen die allgemeine Standard-App-Seite geöffnet. Der Benutzer kann dort manuell nach NanaZip suchen.
+
+In beiden Fällen wartet der Bootstrap auf das Schließen der Windows-Einstellungen.
+
+NanaZip soll insbesondere klassische Archivformate wie ZIP, 7z, RAR, TAR und verwandte Formate übernehmen.
+
+Windows-Image- und Datenträgerformate wie ISO, VHD/VHDX und WIM werden bewusst nicht pauschal NanaZip zugeordnet, da Windows dafür eigene Mount- und Image-Funktionen bereitstellt.
+
+Nach erfolgreicher Initialisierung wird:
+
+```text
+.generated/state/default-apps/nanazip.initialized
+```
+
+angelegt.
+
+Dadurch bleibt `just update` bei späteren Durchläufen nicht unnötig interaktiv.
+
 ---
 
 # Desktop Experience
@@ -263,6 +351,9 @@ Windows Desktop
 │
 ├── File Manager
 │   └── OneCommander
+│
+├── Archive Manager
+│   └── NanaZip
 │
 ├── Launcher / Search (geplant)
 │   ├── PowerToys Command Palette
@@ -504,10 +595,10 @@ Aktuell unter anderem:
 - masir
 - Zebar
 - OneCommander
+- NanaZip
 
 Geplant:
 
-- NanaZip
 - PowerToys
 - Everything
 
@@ -557,6 +648,7 @@ Der Wartungslauf umfasst unter anderem:
 - Windows- und Microsoft-Updates installieren
 - Logitech G HUB auf einem neuen System einmalig initialisieren; danach keine automatische DB-Synchronisierung
 - Windows- und Entwicklungs-Konfiguration erneut anwenden
+- bereits initialisierte interaktive Standard-App-Konfigurationen überspringen
 - Zebar-Abhängigkeiten und Build sicherstellen
 - OneCommander-Desired-State prüfen und nur bei tatsächlichem Drift anwenden
 - Catppuccin-File-Icons bei Bedarf generieren
@@ -643,7 +735,11 @@ Folgende Entscheidungen sind bewusst getroffen und sollen nicht ohne technischen
 - Dateien per NTFS-Hardlink
 - Verzeichnisse per NTFS-Junction
 - keine Symbolic Links für verwaltete Dotfiles
-- generierte Inhalte ausschließlich unter `.generated/`
+- generierte Inhalte und lokaler Initialisierungsstatus ausschließlich unter `.generated/`
+- einmalige Benutzerinteraktionen über lokale State-Marker idempotent machen
+- geschützte Windows-Standard-App-Zuordnungen nicht durch inoffizielle `UserChoice`-Manipulation erzwingen
+- für Standard-App-Konfiguration nach Möglichkeit direkt die anwendungsspezifische Windows-Einstellungsseite öffnen
+- bei erforderlicher Benutzerinteraktion auf das tatsächliche Schließen des Einstellungsfensters warten
 - keine generierten OneCommander-Icons committen
 - OneCommander statt Windhawk File Explorer Styler
 - kein automatischer Git-Commit oder Push
@@ -660,10 +756,9 @@ Die ausführliche Priorisierung befindet sich in [`roadmap.md`](roadmap.md).
 
 Aktuell sind die nächsten Arbeitspakete:
 
-1. NanaZip
-2. Home Office Paketgruppe
-3. PowerToys Command Palette + Everything
-4. Windhawk Shell Styling
-5. eigenes Catppuccin OSD
-6. Gaming
-7. Logging, Tests und weitere Qualitätssicherung
+1. Home Office Paketgruppe
+2. PowerToys Command Palette + Everything
+3. Windhawk Shell Styling
+4. eigenes Catppuccin OSD
+5. Gaming
+6. Logging, Tests und weitere Qualitätssicherung

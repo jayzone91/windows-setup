@@ -75,6 +75,9 @@ Windows Desktop
 ├── File Manager
 │   └── OneCommander
 │
+├── Archive Manager
+│   └── NanaZip
+│
 ├── Launcher / Search
 │   ├── PowerToys Command Palette
 │   └── Everything
@@ -154,13 +157,17 @@ Begründung:
 - Das Repository liegt durch `init.ps1` immer unter dem Benutzerprofil auf `C:`.
 - Verzeichnis-Hardlinks existieren unter NTFS nicht; dafür werden Junctions verwendet.
 
-## Generierte Inhalte
+## Generierte Inhalte und lokaler Zustand
 
 - [x] Generierte Daten gehören nicht zwischen manuell gepflegte Dotfiles
 - [x] Generierte Daten liegen unter `.generated/`
 - [x] `.generated/` wird nicht committed
 - [x] Generator-Code selbst wird committed
 - [x] Generierte Inhalte müssen auf einer Neuinstallation reproduzierbar erzeugt werden können
+- [x] lokaler Initialisierungsstatus darf unter `.generated/state/` gespeichert werden
+- [x] State-Marker werden nicht committed
+- [x] State-Marker dürfen einmalige oder bewusst interaktive Schritte bei späteren `just update`-Läufen überspringen
+- [x] State-Marker dürfen erst nach erfolgreich abgeschlossener Benutzerinteraktion erzeugt werden
 
 ## Theme
 
@@ -262,7 +269,7 @@ Nach der Erstinstallation sollen wiederkehrende manuelle Aktionen über kurze, d
 - [x] masir
 - [x] Zebar
 - [x] OneCommander
-- [ ] **NanaZip**
+- [x] **NanaZip**
 - [ ] PowerToys
 - [ ] Everything
 
@@ -290,18 +297,55 @@ Ziel:
 
 - NanaZip als moderner Archivmanager
 - möglichst native Windows-11-Integration
-- Nutzung für ZIP, 7z und weitere Archive
-- Installation über Winget oder Microsoft Store, je nachdem welcher Weg reproduzierbarer ist
+- Nutzung für ZIP, 7z und weitere klassische Archivformate
+- Installation über Winget
+- Standard-App-Konfiguration ohne unsichere Manipulation geschützter `UserChoice`-Einträge
 
-Aufgaben:
+Umgesetzt:
 
-- [ ] passende Paket-ID prüfen
-- [ ] NanaZip in `config/packages.psd1` aufnehmen
-- [ ] Installation im Bootstrap testen
-- [ ] Update-Verhalten testen
-- [ ] Kontextmenü-Integration prüfen
-- [ ] prüfen, ob NanaZip sinnvoll als Standardhandler für unterstützte Archive gesetzt werden kann
+- [x] passende Winget-Paket-ID `M2Team.NanaZip` verifiziert
+- [x] NanaZip in `config/packages.psd1` aufgenommen
+- [x] Installation im Bootstrap integriert
+- [x] Installation über `just update` auf dem aktuellen System getestet
+- [x] Update-/Wiederholungspfad über `just update` getestet
+- [x] NanaZip-AppX-Paket dynamisch ermitteln
+- [x] NanaZip-ProgID dynamisch aus der tatsächlichen Windows-Registrierung ermitteln
+- [x] `AppUserModelID` dynamisch ermitteln
+- [x] direkte NanaZip-Seite unter **Einstellungen → Apps → Standard-Apps** öffnen
+- [x] Fallback auf die allgemeine Standard-App-Seite, wenn keine direkte ID ermittelt werden kann
+- [x] Bootstrap wartet, bis das sichtbare Windows-Einstellungsfenster tatsächlich geschlossen wurde
+- [x] gehostete `SystemSettings`-Child-Windows bei der Fenstererkennung berücksichtigen
+- [x] generischen Default-App-Initialisierungsworkflow statt NanaZip-Sonderlogik verwenden
+- [x] lokalen Marker `.generated/state/default-apps/nanazip.initialized` erst nach dem Schließen von Settings erzeugen
+- [x] spätere `just update`-Läufe öffnen die Standard-App-Konfiguration nicht erneut, wenn der Marker vorhanden ist
+- [x] erneute manuelle Konfiguration durch Löschen des Markers ermöglichen
+- [x] PSScriptAnalyzer für die neue File-Association-Logik ohne relevante Warnungen
+- [x] zweiter `just update`-Lauf auf dem aktuellen System erfolgreich und ohne erneutes Öffnen der Settings-Seite
+- [x] README um NanaZip und den generischen Standard-App-Workflow ergänzt
+
+Bewusste Auswahl:
+
+- NanaZip soll klassische Archivformate übernehmen.
+- Windows-Image- und Datenträgerformate wie ISO, VHD/VHDX und WIM sollen nicht pauschal NanaZip zugeordnet werden, da Windows dafür eigene Mount- und Image-Funktionen bereitstellt.
+- Die eigentliche Auswahl der Standard-App bleibt eine Benutzerinteraktion, weil Windows benutzerspezifische Standard-App-Zuordnungen schützt.
+
+Noch offen:
+
+- [ ] Kontextmenü-Integration explizit als eigenen Akzeptanztest dokumentieren, falls noch nicht separat geprüft
 - [ ] Catppuccin-Anpassung nur verfolgen, falls stabil unterstützt
+
+### Generischer Standard-App-Workflow
+
+Der NanaZip-Workflow ist absichtlich generisch aufgebaut und soll für weitere Programme wiederverwendet werden.
+
+- [x] direkte App-Seite über `ms-settings:defaultapps` verwenden, wenn eine passende Windows-App-ID vorhanden ist
+- [x] allgemeine Standard-App-Seite als Fallback verwenden
+- [x] Benutzer klar auffordern, die gewünschte Anwendung manuell zu suchen, wenn keine direkte ID ermittelt werden kann
+- [x] Bootstrap während der Benutzerinteraktion pausieren
+- [x] erst nach tatsächlichem Schließen der Windows-Einstellungen fortfahren
+- [x] erfolgreichen Abschluss über lokalen State-Marker merken
+- [x] Marker pro Anwendung unter `.generated/state/default-apps/<app>.initialized`
+- [x] wiederholte Wartungsläufe störungsarm und ohne erneute Benutzerinteraktion halten
 
 ## Noch offen in der Paketlogik
 
@@ -1186,6 +1230,7 @@ Das System soll nach Neuinstallation auch als Gaming-PC möglichst schnell einsa
 - [x] G HUB auf neuen Systemen einmalig initialisieren
 - [x] bereits initialisiertes G HUB bei normalen Wartungsläufen unangetastet lassen
 - [x] Konfiguration erneut anwenden
+- [x] bereits initialisierte Standard-App-Konfigurationen über `.generated/state/default-apps/` erkennen und überspringen
 - [x] Zen-Mods vor möglichem Browser-Neustart lokal prüfen
 - [x] Zebar Build
 - [x] OneCommander-Desired-State vor möglichem Neustart prüfen
@@ -1257,6 +1302,9 @@ Das README soll den **aktuellen produktiven Stand** erklären.
 - [x] masir
 - [x] Zebar
 - [x] OneCommander
+- [x] NanaZip
+- [x] generischer Standard-App-Initialisierungsworkflow
+- [x] lokale State-Marker unter `.generated/state/default-apps/`
 - [x] Hardlinks/Junctions
 - [x] Catppuccin
 - [x] Wartung
@@ -1280,6 +1328,9 @@ Die Roadmap ist ausführlicher als das README und enthält auch offene Ziele.
 - [x] Zen-Mod-Precheck
 - [x] OneCommander-Desired-State-Precheck
 - [x] G-HUB-Snapshot-Strategie
+- [x] Standard-App-Initialisierungsstrategie
+- [x] NanaZip-Default-App-Workflow
+- [x] Markdown-Ausgaberegel für vollständig kopierbare Dateien
 - [x] klare nächste Prioritäten
 - [ ] bei jeder größeren Designentscheidung aktualisieren
 
@@ -1317,6 +1368,15 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
 - [x] G-HUB-`settings.db` per Hardlink oder Symbolic Link direkt mit dem Repository verbinden
   - laufende SQLite-Datenbanken werden als Snapshot behandelt
   - sichere, bewusste Backup-/Restore-Aktionen haben Vorrang
+- [x] geschützte Windows-`UserChoice`-Einträge direkt per Registry überschreiben
+  - Windows schützt benutzerspezifische Standard-App-Zuordnungen mit zusätzlichen Integritätsmechanismen
+  - keine inoffizielle Hash-Manipulation in diesem Projekt
+  - Benutzerinteraktion über die offizielle Windows-Standard-App-Oberfläche ist der definierte Weg
+- [x] Default-App-XML/GPO als allgemeine Lösung für bestehende lokale Benutzerprofile verwenden
+  - der getestete Workflow hat die bestehende Benutzerzuordnung nicht zuverlässig übernommen
+  - der Bootstrap verwendet stattdessen die interaktive Standard-App-Initialisierung
+- [x] NanaZip-AppX-ProgID fest im Repository hinterlegen
+  - AppX-ProgIDs werden dynamisch aus der tatsächlich installierten Paketregistrierung ermittelt
 
 ---
 
@@ -1341,17 +1401,20 @@ Folgende Desktop-Stabilitätspunkte bleiben unabhängig davon offen:
 - [ ] Zebar bei echten Vollbild-Anwendungen ausblenden
 - [ ] Verhalten bei Browser-/YouTube-Vollbild und Fullscreen-Anwendungen testen
 
-## Priorität 1 – NanaZip
+## Kürzlich abgeschlossen – NanaZip / Standard-Apps
 
-1. [ ] passende Paket-ID verifizieren
-2. [ ] NanaZip in Paketverwaltung aufnehmen
-3. [ ] Installation über `just update` testen
-4. [ ] Update-Verhalten testen
-5. [ ] Kontextmenü testen
-6. [ ] Standardhandler prüfen
-7. [ ] Roadmap/README anschließend aktualisieren
+- [x] passende NanaZip-Paket-ID verifiziert
+- [x] NanaZip in Paketverwaltung aufgenommen
+- [x] Installation und Wiederholung über `just update` getestet
+- [x] generischen interaktiven Standard-App-Workflow implementiert
+- [x] direkte NanaZip-Standard-App-Seite mit Fallback
+- [x] zuverlässiges Warten auf das Schließen von Windows Settings
+- [x] Marker `.generated/state/default-apps/nanazip.initialized`
+- [x] zweiter `just update`-Lauf ohne erneute Benutzerinteraktion
+- [x] README und Roadmap aktualisiert
+- [ ] Kontextmenü-Integration bei Bedarf noch separat als Akzeptanztest dokumentieren
 
-## Priorität 2 – Home Office Paketgruppe
+## Priorität 1 – Home Office Paketgruppe
 
 1. [ ] `HomeOffice` in `packages.psd1` anlegen
 2. [ ] Remote Desktop Manager integrieren
@@ -1359,7 +1422,7 @@ Folgende Desktop-Stabilitätspunkte bleiben unabhängig davon offen:
 4. [ ] weitere benötigte Firmen-Tools inventarisieren
 5. [ ] VPN-/Zertifikat-Konzept getrennt und sicher planen
 
-## Priorität 3 – Launcher
+## Priorität 2 – Launcher
 
 1. [ ] PowerToys installieren
 2. [ ] Command Palette konfigurieren
@@ -1367,14 +1430,14 @@ Folgende Desktop-Stabilitätspunkte bleiben unabhängig davon offen:
 4. [ ] Everything integrieren
 5. [ ] Workflow testen
 
-## Priorität 4 – Windows Shell
+## Priorität 3 – Windows Shell
 
 1. [ ] Windhawk Taskbar Styler
 2. [ ] Windhawk Start Menu Styler
 3. [ ] Windhawk Notification Center Styler
 4. [ ] alle Einstellungen per CLI reproduzierbar machen
 
-## Priorität 5 – eigenes OSD
+## Priorität 4 – eigenes OSD
 
 1. [ ] technische Architektur festlegen
 2. [ ] Volume/Mute
@@ -1386,14 +1449,14 @@ Folgende Desktop-Stabilitätspunkte bleiben unabhängig davon offen:
 8. [ ] Autostart/Bootstrap
 9. [ ] Windows-OSD-Doppelanzeige vermeiden
 
-## Priorität 6 – Gaming
+## Priorität 5 – Gaming
 
 1. [ ] Paketgruppe
 2. [ ] Steam
 3. [ ] Game-Library-Pfade
 4. [ ] sinnvolle Windows-Gaming-Einstellungen
 
-## Priorität 7 – Qualität
+## Priorität 6 – Qualität
 
 1. [ ] Logging
 2. [ ] GitHub Actions
@@ -1429,6 +1492,10 @@ Folgende Desktop-Stabilitätspunkte bleiben unabhängig davon offen:
 10. keine eigentliche Setup-Logik in Recipes duplizieren.
 11. laufende Anwendungen vor einem Stop/Restart nach Möglichkeit auf tatsächlichen Konfigurations-Drift prüfen.
 12. unveränderte Anwendungen bei wiederholten Bootstrap-Läufen möglichst unangetastet lassen.
+13. geschützte Windows-Standard-App-Zuordnungen nicht durch inoffizielle `UserChoice`-/Hash-Manipulation erzwingen.
+14. erforderliche Standard-App-Benutzerinteraktionen über den generischen Settings-Workflow ausführen.
+15. einmalige interaktive Schritte erst nach erfolgreichem Abschluss mit einem Marker unter `.generated/state/` als erledigt markieren.
+16. bei einem Fallback ohne direkte App-ID die allgemeine Standard-App-Seite öffnen, den Benutzer zur manuellen Suche auffordern und auf das Schließen von Settings warten.
 
 ## Nach einer Implementierung
 
@@ -1439,6 +1506,14 @@ Folgende Desktop-Stabilitätspunkte bleiben unabhängig davon offen:
 5. Roadmap aktualisieren.
 6. README aktualisieren, falls sich der produktive Stand oder Benutzer-Workflow geändert hat.
 7. neue offene Folgearbeiten als eigene Checkboxen dokumentieren.
+
+## Ausgabe vollständiger Markdown-Dateien
+
+1. Wenn der Benutzer eine vollständige Markdown-Datei zur direkten Übernahme verlangt, muss die Ausgabe vollständig kopierbar bleiben.
+2. Enthält die Datei selbst dreifache Markdown-Codeblöcke, ist der gesamte Dateiinhalt in einen äußeren Codeblock mit **mindestens vier Backticks** einzuschließen.
+3. Innere Codeblöcke dürfen nicht durch die äußere Darstellung zerstört oder einzeln aus dem Gesamtinhalt herausgebrochen werden.
+4. Ist die Datei für eine zuverlässige vollständige Chat-Ausgabe zu groß, soll stattdessen eine vollständige Datei als Download erzeugt und angeboten werden.
+5. Bei einem Download muss die erzeugte Datei den vollständigen Inhalt enthalten; keine Abschnitte dürfen wegen Antwortlängenlimits ausgelassen werden.
 
 ---
 
@@ -1452,6 +1527,7 @@ Ein Roadmap-Punkt darf nur `[x]` werden, wenn:
 - die Umsetzung in den bestehenden Bootstrap integriert ist, sofern sie Teil des automatischen Setups sein soll,
 - Konfigurationsdateien reproduzierbar sind,
 - keine unnötigen manuellen Schritte bestehen,
+- technisch notwendige Benutzerinteraktionen klar geführt, abgewartet und idempotent über lokalen Zustand behandelt werden,
 - keine unnötigen Anwendungsneustarts oder Prozessabbrüche bei unverändertem Zustand bestehen,
 - keine Secrets im Repository gelandet sind,
 - `just check` bzw. PSScriptAnalyzer keine neuen relevanten Probleme meldet,
@@ -1489,6 +1565,8 @@ Nach Abschluss der Roadmap soll ein frisch installiertes Windows 11 nach möglic
 - Windhawk für verbleibende Shell-Bereiche
 - eigenes Catppuccin-OSD inklusive Caps Lock und Num Lock
 - NanaZip
+- generischer, interaktiver Standard-App-Initialisierungsworkflow für geschützte Windows-Dateizuordnungen
+- lokale Initialisierungsmarker unter `.generated/state/`
 - Home-Office-Werkzeuge
 - Gaming-Werkzeuge
 - Logitech G HUB
