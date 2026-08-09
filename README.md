@@ -2,7 +2,7 @@
 
 Automatisiertes, reproduzierbares und weitgehend idempotentes Setup für meine Windows-11-Arbeitsumgebung.
 
-Das Repository dient sowohl zur Einrichtung eines frisch installierten Windows-Systems als auch zur regelmäßigen Wartung eines bereits eingerichteten Rechners. Derselbe `bootstrap.ps1` wird für Neuinstallation, manuelle Setup-Durchläufe und automatische Wartung verwendet.
+Das Repository dient sowohl zur Einrichtung eines frisch installierten Windows-Systems als auch zur regelmäßigen Wartung eines bereits eingerichteten Rechners. Derselbe zentrale `bootstrap.ps1` wird für Neuinstallation, manuelle Setup-Durchläufe und automatische Wartung verwendet.
 
 Ein zweites wichtiges Ziel ist eine Windows-Desktop-Umgebung, die sich funktional und optisch an meiner Arch-/Hyprland-Workstation orientiert. Dafür werden komorebi, whkd, masir, Zebar und OneCommander kombiniert und mit Catppuccin Mocha gestaltet.
 
@@ -28,6 +28,10 @@ Bereits umgesetzt sind unter anderem:
 - automatische wöchentliche Wartung
 - Desktop-Benachrichtigungen
 - PSScriptAnalyzer-Codeprüfung
+- `just` als einheitliche Bedienoberfläche für manuelle Projektaktionen
+- `just update` für den vollständigen manuellen Wartungs-/Setup-Lauf
+- `just check` für die rekursive PSScriptAnalyzer-Prüfung
+- Bootstrap-Ausführung mit `ExecutionPolicy Bypass` ausschließlich auf Prozessebene
 - komorebi + whkd als Tiling Window Manager
 - masir für Focus Follows Mouse
 - Zebar als eigene interaktive Desktop-Bar
@@ -40,7 +44,7 @@ Bereits umgesetzt sind unter anderem:
 - Catppuccin Mocha als gemeinsame Designsprache
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 
-Die nächsten größeren Desktop-Themen sind PowerToys Command Palette + Everything, Windhawk für Taskbar, Startmenü und Notification Center, ein eigenes OSD sowie weiterer Catppuccin-Polish.
+Die nächsten größeren Arbeitspakete sind NanaZip, Home-Office-Werkzeuge, PowerToys Command Palette + Everything, Windhawk für Taskbar, Startmenü und Notification Center, ein eigenes OSD sowie weiterer Catppuccin-Polish.
 
 Siehe auch [`roadmap.md`](roadmap.md).
 
@@ -60,18 +64,109 @@ irm https://raw.githubusercontent.com/jayzone91/windows-setup/master/init.ps1 | 
 2. Installation von Git, falls erforderlich
 3. Klonen des Repositories nach `%USERPROFILE%\windows-setup`
 4. Aktualisierung eines bereits vorhandenen Repositories
-5. Start von `bootstrap.ps1`
+5. Start von `bootstrap.ps1` in einem eigenen PowerShell-Prozess
+6. Verwendung von `ExecutionPolicy Bypass` ausschließlich für diesen Bootstrap-Prozess
 
-## Erneuter Setup-Durchlauf
+Die globale Benutzer- oder System-Execution-Policy wird dabei **nicht** verändert.
+
+Das ist wichtig, weil das Repository mehrere PowerShell-Dateien unter `modules/` und `scripts/` nachlädt. Der komplette Bootstrap-Prozess erhält deshalb eine definierte Ausführungsumgebung, ohne die Sicherheitskonfiguration des Systems dauerhaft aufzuweichen.
+
+---
+
+# Manuelle Nutzung mit Just
+
+Nach der Erstinstallation steht `just` als einheitliche Bedienoberfläche für wiederkehrende Projektaktionen zur Verfügung.
+
+`just` wird über `config/packages.psd1` als **Base-Abhängigkeit** mit der Winget-ID `Casey.Just` installiert.
+
+Das `Justfile` enthält bewusst keine eigentliche Setup-Logik. Es ruft lediglich die bestehenden PowerShell-Einstiegspunkte auf.
+
+## Setup aktualisieren
 
 ```powershell
 cd ~/windows-setup
-.\bootstrap.ps1
+just update
 ```
 
-Der Bootstrap versucht zu Beginn, das Repository zu aktualisieren. Enthält das Working Tree lokale Änderungen, wird ein automatisches `git pull` aus Sicherheitsgründen übersprungen.
+`just update` startet:
 
-Bereits vorhandene Komponenten werden soweit vorgesehen erkannt, übersprungen oder aktualisiert.
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File ./bootstrap.ps1
+```
+
+Der vollständige Bootstrap:
+
+- aktualisiert das Repository, sofern keine lokalen Änderungen vorliegen,
+- installiert oder aktualisiert konfigurierte Pakete,
+- synchronisiert Konfigurationen,
+- führt Treiber- und Windows-Update-Logik aus,
+- wendet Desktop- und Entwicklungs-Konfiguration erneut an,
+- prüft Rebootbedarf,
+- prüft Repository-Status und ungepushte Commits,
+- richtet bzw. aktualisiert Scheduled Tasks,
+- führt die statische PowerShell-Prüfung aus.
+
+## Projekt prüfen
+
+```powershell
+just check
+```
+
+`just check` führt PSScriptAnalyzer rekursiv über das gesamte Repository aus:
+
+```powershell
+Invoke-ScriptAnalyzer -Path . -Recurse
+```
+
+## Direkter Bootstrap-Aufruf
+
+Falls `just` nicht verfügbar ist, kann der Bootstrap weiterhin direkt gestartet werden:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\bootstrap.ps1
+```
+
+Der direkte PowerShell-Aufruf bleibt der technische Fallback. Für normale manuelle Nutzung ist `just update` der bevorzugte Einstiegspunkt.
+
+---
+
+# Projektstruktur
+
+```text
+windows-setup/
+├── init.ps1
+├── bootstrap.ps1
+├── Justfile
+├── README.md
+├── roadmap.md
+├── PSScriptAnalyzerSettings.psd1
+├── config/
+├── modules/
+├── scripts/
+├── dotfiles/
+├── assets/
+└── .generated/
+```
+
+Grundprinzip:
+
+```text
+Justfile
+   │
+   │ Bedienoberfläche
+   ▼
+PowerShell Entry Points
+   │
+   │ Orchestrierung
+   ▼
+modules/*.ps1
+   │
+   │ eigentliche Logik
+   ▼
+Windows / winget / Registry / Anwendungen
+```
+
+Das `Justfile` soll nicht zu einer zweiten Setup-Architektur werden. Neue wiederkehrende manuelle Aktionen können als Recipes ergänzt werden, während die eigentliche Implementierung weiterhin in PowerShell verbleibt.
 
 ---
 
@@ -109,6 +204,8 @@ Beispiel für eine Junction:
 
 Bestehende verwaltete Symbolic Links werden beim nächsten Setup-Durchlauf automatisch entfernt und durch Hardlinks beziehungsweise Junctions ersetzt.
 
+Generierte Inhalte liegen unter `.generated/` und werden nicht committed. Generator-Code selbst bleibt versioniert.
+
 ---
 
 # Desktop Experience
@@ -120,10 +217,10 @@ Arch                           Windows
 ────────────────────────────────────────────────
 Hyprland                       komorebi
 Waybar                         Zebar
+Focus follows mouse            masir
 Fuzzel                         PowerToys Command Palette (geplant)
 Dolphin                        OneCommander
 SwayOSD                        eigenes OSD (geplant)
-Focus follows mouse            masir
 Catppuccin Mocha               Catppuccin Mocha
 ```
 
@@ -155,6 +252,12 @@ Windows Desktop
 │
 └── OSD (geplant)
     └── eigenes Catppuccin OSD
+        ├── Volume
+        ├── Mute
+        ├── Brightness
+        ├── Media
+        ├── Caps Lock
+        └── Num Lock
 ```
 
 ## komorebi
@@ -171,15 +274,13 @@ Umgesetzt sind:
 - reproduzierbare Konfiguration unter `dotfiles/komorebi/`
 - Konfigurationsdateien als Hardlinks
 - Autostart über die Windows-Aufgabenplanung
-- Task läuft mit erhöhten Rechten, damit auch erhöhte Fenster getiled werden
+- erhöhte Ausführung, damit auch erhöhte Fenster getiled werden können
 
 ## Focus Follows Mouse mit masir
 
 `LGUG2Z.masir` ergänzt komorebi um Focus Follows Mouse.
 
-masir nutzt seine automatische komorebi-Integration und wird ohne zusätzliche Parameter gestartet.
-
-komorebi, whkd und masir starten gemeinsam über den Scheduled Task `komorebi Desktop`.
+masir nutzt seine automatische komorebi-Integration und wird gemeinsam mit komorebi/whkd über den Desktop-Scheduled-Task gestartet.
 
 ## Zebar
 
@@ -338,6 +439,67 @@ Der native File Explorer Styler über Windhawk wird nicht mehr verfolgt; OneComm
 
 ---
 
+# Software und Paketverwaltung
+
+Software wird deklarativ über `config/packages.psd1` verwaltet.
+
+Pakete können:
+
+- installiert werden,
+- automatisch aktualisiert werden,
+- von Updates ausgeschlossen werden,
+- auf eine bestimmte Version festgelegt werden.
+
+Die installierte Version gepinnter Pakete wird anhand der exakten Winget-Paket-ID ermittelt.
+
+OpenVPN ist bewusst auf Version `2.7.101` festgelegt.
+
+## Base
+
+Base enthält Voraussetzungen, die für das Repository bzw. den grundlegenden Workflow selbst wichtig sind.
+
+Aktuell unter anderem:
+
+- JetBrainsMono Nerd Font
+- Just (`Casey.Just`)
+
+## Tools
+
+Aktuell unter anderem:
+
+- Windows HDR Calibration
+- iCloud
+- OpenVPN
+- Logitech G HUB
+- komorebi
+- whkd
+- masir
+- Zebar
+- OneCommander
+
+Geplant:
+
+- NanaZip
+- PowerToys
+- Everything
+
+## Development
+
+Unter anderem:
+
+- fnm
+- Go
+- Bun
+- Git
+- GitHub CLI
+- GitHub Desktop
+- Visual Studio Code
+- PowerShell 7
+- Nushell
+- Starship
+
+---
+
 # Automatische wöchentliche Wartung
 
 Der Bootstrap richtet die Windows-Aufgabe:
@@ -349,6 +511,12 @@ Windows Setup Weekly Maintenance
 ein.
 
 Sie startet den vollständigen `bootstrap.ps1` jeden Sonntag um 12:00 Uhr.
+
+Auch der Scheduled Task startet PowerShell mit:
+
+```text
+-NoProfile -ExecutionPolicy Bypass -File bootstrap.ps1
+```
 
 Der Rechner wird nicht automatisch neu gestartet.
 
@@ -391,127 +559,80 @@ Benachrichtigt wird bei:
 
 ---
 
-# Software und Paketverwaltung
+# Sicherheit und Ausführungsrichtlinie
 
-Software wird deklarativ über `config/packages.psd1` verwaltet.
+Das Projekt verändert die globale PowerShell Execution Policy **nicht**.
 
-Pakete können:
+Für kontrollierte Bootstrap-Läufe wird `ExecutionPolicy Bypass` ausschließlich auf Prozessebene verwendet:
 
-- installiert werden
-- automatisch aktualisiert werden
-- von Updates ausgeschlossen werden
-- auf eine bestimmte Version festgelegt werden
+- beim Start durch `init.ps1`
+- bei `just update`
+- beim wöchentlichen Scheduled Task
 
-Die installierte Version gepinnter Pakete wird anhand des exakten Winget-Paket-IDs ermittelt.
+Damit können alle vom Repository nachgeladenen PowerShell-Module und Build-Skripte innerhalb des kontrollierten Setup-Prozesses ausgeführt werden, ohne `CurrentUser` oder `LocalMachine` dauerhaft aufzuweichen.
 
-OpenVPN ist bewusst auf Version `2.7.101` festgelegt.
-
-Zu den Desktop-Tools gehören aktuell unter anderem:
-
-- komorebi
-- whkd
-- masir
-- Zebar
-- OneCommander
-- Windows HDR Calibration
-- iCloud
-- OpenVPN
-- Logitech G HUB
-
-Geplant:
-
-- PowerToys
-- Everything
-- Windhawk
-
----
-
-# Development Storage
-
-Das Setup kann eine vollständig leere, geeignete interne SSD für Entwicklungs- und Spieldaten einrichten.
-
-| Laufwerk |  Größe | Dateisystem    | Label   | Zweck       |
-| -------- | -----: | -------------- | ------- | ----------- |
-| `D:`     | 100 GB | ReFS Dev Drive | `Dev`   | Entwicklung |
-| `G:`     |   Rest | NTFS           | `Games` | Spiele      |
-
-Die Entwicklungs-Caches werden auf das Dev Drive verschoben.
-
----
-
-# Entwicklerumgebung
-
-Unter anderem:
-
-- fnm + Node LTS
-- npm
-- pnpm
-- Yarn
-- Bun
-- Go
-- Git
-- GitHub CLI
-- GitHub Desktop
-- PowerShell 7
-- Nushell
-- Starship
-- Visual Studio Code
-- Codex CLI
-
-Konfigurationsdateien werden soweit sinnvoll als Hardlinks aus dem Repository eingebunden.
+Eine durch zentrale Windows-Gruppenrichtlinien gesetzte `MachinePolicy` oder `UserPolicy` wird nicht umgangen und bleibt maßgeblich.
 
 ---
 
 # Codequalität
 
-Am Ende jedes Bootstrap-Laufs wird `PSScriptAnalyzer` ausgeführt.
+PSScriptAnalyzer ist Teil des Setups.
 
-Das Setup unterscheidet:
+Manuell:
 
-- Fehler
-- Warnungen
-- Hinweise
-
-Informationsmeldungen verhindern den Setup-Durchlauf nicht.
-
----
-
-# Repository-Struktur
-
-```text
-windows-setup/
-├── assets/
-├── config/
-├── dotfiles/
-│   ├── git/
-│   ├── komorebi/
-│   ├── nushell/
-│   ├── onecommander/
-│   ├── powershell/
-│   ├── starship/
-│   ├── vscode/
-│   └── zebar/
-├── modules/
-├── scripts/
-│   ├── Build-OneCommanderFileIcons.ps1
-│   └── onecommander-file-icons/
-├── .generated/          # nicht versioniert
-├── bootstrap.ps1
-├── init.ps1
-├── README.md
-└── roadmap.md
+```powershell
+just check
 ```
 
+Der Bootstrap führt ebenfalls eine PowerShell-Codeprüfung aus.
+
+Geplant sind zusätzlich:
+
+- GitHub Actions für statische Prüfung
+- Pester-Tests für kritische Helper
+- Tests für Paket-Versionserkennung
+- Tests für Hardlink-/Junction-Migration
+- Tests für Reboot-Erkennung
+- Dry-Run / WhatIf
+
 ---
 
-# Offene große Themen
+# Wichtige Architekturentscheidungen
 
-- PowerToys Command Palette + Everything
-- Windhawk Taskbar Styler
-- Windhawk Start Menu Styler
-- Windhawk Notification Center Styler
-- eigenes Catppuccin OSD
-- weiterer Catppuccin-Polish
-- Logging
-- Dry-Run
-- CI/Pester
+Folgende Entscheidungen sind bewusst getroffen und sollen nicht ohne technischen Grund zurückgebaut werden:
+
+- ein zentraler `bootstrap.ps1` statt separater Setup-/Maintenance-Skripte
+- `init.ps1` als minimaler Erstinstallations-Einstieg
+- `Justfile` als Bedienoberfläche, nicht als Ort für Setup-Logik
+- `just update` als bevorzugter manueller Wartungs-/Setup-Aufruf
+- `just check` als bevorzugte manuelle statische Prüfung
+- Execution Policy nur auf Prozessebene setzen
+- keine dauerhafte Änderung der globalen PowerShell Execution Policy
+- Dateien per NTFS-Hardlink
+- Verzeichnisse per NTFS-Junction
+- keine Symbolic Links für verwaltete Dotfiles
+- generierte Inhalte ausschließlich unter `.generated/`
+- keine generierten OneCommander-Icons committen
+- OneCommander statt Windhawk File Explorer Styler
+- kein automatischer Git-Commit oder Push
+- kein automatischer Windows-Neustart
+- keine aggressiven pauschalen Service-/Debloat-Tweaks
+- Catppuccin Mocha als gemeinsame Designsprache
+- Funktionalität und Wartbarkeit vor rein optischem Styling
+
+---
+
+# Nächste Schritte
+
+Die ausführliche Priorisierung befindet sich in [`roadmap.md`](roadmap.md).
+
+Aktuell sind die nächsten Arbeitspakete:
+
+1. NanaZip
+2. Home Office Paketgruppe
+3. PowerToys Command Palette + Everything
+4. Windhawk Shell Styling
+5. eigenes Catppuccin OSD
+6. Gaming
+7. Logging, Tests und weitere Qualitätssicherung
