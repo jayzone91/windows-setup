@@ -4,7 +4,7 @@ Automatisiertes, reproduzierbares und weitgehend idempotentes Setup für meine W
 
 Das Repository dient sowohl zur Einrichtung eines frisch installierten Windows-Systems als auch zur regelmäßigen Wartung eines bereits eingerichteten Rechners. Derselbe `bootstrap.ps1` wird für Neuinstallation, manuelle Setup-Durchläufe und automatische Wartung verwendet.
 
-Ein zweites wichtiges Ziel ist eine Windows-Desktop-Umgebung, die sich funktional und optisch an meiner Arch-/Hyprland-Workstation orientiert. Dafür werden komorebi, whkd, masir und Zebar kombiniert und mit Catppuccin Mocha gestaltet.
+Ein zweites wichtiges Ziel ist eine Windows-Desktop-Umgebung, die sich funktional und optisch an meiner Arch-/Hyprland-Workstation orientiert. Dafür werden komorebi, whkd, masir, Zebar und OneCommander kombiniert und mit Catppuccin Mocha gestaltet.
 
 ## Aktueller Stand
 
@@ -13,6 +13,7 @@ Der Kern des Setups ist produktiv nutzbar und weitgehend reproduzierbar.
 Bereits umgesetzt sind unter anderem:
 
 - Paketinstallation und Updates über `winget` und Microsoft Store
+- Versions-Pinning einzelner Pakete
 - Windows-Debloat und Grundkonfiguration
 - Windows- und Microsoft-Updates
 - Treiberlogik für NVIDIA und Intel
@@ -30,9 +31,16 @@ Bereits umgesetzt sind unter anderem:
 - komorebi + whkd als Tiling Window Manager
 - masir für Focus Follows Mouse
 - Zebar als eigene interaktive Desktop-Bar
+- OneCommander als Explorer-Ersatz
+- Catppuccin-Mocha-Theme für OneCommander
+- Catppuccin-Mocha-Folder-Icons für OneCommander
+- automatisch generiertes Catppuccin-Mocha-File-Icon-Pack aus `catppuccin/vscode-icons`
+- Datei-Dotfiles werden als NTFS-Hardlinks eingebunden
+- Verzeichnis-Dotfiles werden als NTFS-Junctions eingebunden
 - Catppuccin Mocha als gemeinsame Designsprache
+- präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 
-Die nächsten größeren Desktop-Themen sind PowerToys Command Palette + Everything, Windhawk für die Windows-Shell, ein eigenes OSD sowie weiterer Catppuccin-Polish.
+Die nächsten größeren Desktop-Themen sind PowerToys Command Palette + Everything, Windhawk für Taskbar, Startmenü und Notification Center, ein eigenes OSD sowie weiterer Catppuccin-Polish.
 
 Siehe auch [`roadmap.md`](roadmap.md).
 
@@ -67,11 +75,45 @@ Bereits vorhandene Komponenten werden soweit vorgesehen erkannt, übersprungen o
 
 ---
 
+# Konfigurations-Synchronisierung
+
+Das Repository ist die Quelle der Wahrheit für verwaltete Konfigurationsdateien.
+
+Es gilt projektweit folgende Regel:
+
+- **Dateien** werden als NTFS-Hardlinks eingebunden.
+- **Verzeichnisse** werden als NTFS-Junctions eingebunden.
+- Symbolic Links werden nicht mehr verwendet.
+
+Dadurch bleiben die Konfigurationen direkt mit den Dateien im Repository verbunden, werden von Windows-Programmen aber als normale Dateien beziehungsweise Verzeichnisse behandelt.
+
+Beispiele für Hardlinks:
+
+```text
+%USERPROFILE%\komorebi.json
+%USERPROFILE%\komorebi.bar.json
+%USERPROFILE%\applications.json
+%USERPROFILE%\.config\whkdrc
+%USERPROFILE%\.config\starship.toml
+%APPDATA%\nushell\config.nu
+%APPDATA%\nushell\env.nu
+%APPDATA%\Code\User\settings.json
+%USERPROFILE%\.glzr\zebar\settings.json
+```
+
+Beispiel für eine Junction:
+
+```text
+%USERPROFILE%\.glzr\zebar\windows-setup-bar
+```
+
+Bestehende verwaltete Symbolic Links werden beim nächsten Setup-Durchlauf automatisch entfernt und durch Hardlinks beziehungsweise Junctions ersetzt.
+
+---
+
 # Desktop Experience
 
 ## Zielbild
-
-Die Windows-Desktop-Umgebung soll sich im täglichen Workflow möglichst ähnlich zur Arch-/Hyprland-Umgebung verhalten:
 
 ```text
 Arch                           Windows
@@ -79,6 +121,7 @@ Arch                           Windows
 Hyprland                       komorebi
 Waybar                         Zebar
 Fuzzel                         PowerToys Command Palette (geplant)
+Dolphin                        OneCommander
 SwayOSD                        eigenes OSD (geplant)
 Focus follows mouse            masir
 Catppuccin Mocha               Catppuccin Mocha
@@ -97,13 +140,15 @@ Windows Desktop
 ├── Desktop Bar
 │   └── Zebar
 │
+├── File Manager
+│   └── OneCommander
+│
 ├── Launcher / Search (geplant)
 │   ├── PowerToys Command Palette
 │   └── Everything
 │
 ├── Windows Shell Styling (geplant)
 │   └── Windhawk
-│       ├── File Explorer Styler
 │       ├── Taskbar Styler
 │       ├── Start Menu Styler
 │       └── Notification Center Styler
@@ -124,30 +169,13 @@ Umgesetzt sind:
 - `UltrawideVerticalStack` als bevorzugtes Layout
 - Fokus-, Move-, Resize-, Stack- und Workspace-Steuerung über whkd
 - reproduzierbare Konfiguration unter `dotfiles/komorebi/`
+- Konfigurationsdateien als Hardlinks
 - Autostart über die Windows-Aufgabenplanung
-
-Der Desktop-Task läuft mit erhöhten Rechten. Dadurch kann komorebi auch erhöhte Anwendungen verwalten. Beispielsweise wird ein als Administrator gestartetes Windows Terminal normal in das bestehende Tiling-Layout aufgenommen.
+- Task läuft mit erhöhten Rechten, damit auch erhöhte Fenster getiled werden
 
 ## Focus Follows Mouse mit masir
 
 `LGUG2Z.masir` ergänzt komorebi um Focus Follows Mouse.
-
-Dadurch reicht es aus, mit der Maus über ein Fenster zu fahren:
-
-```text
-Mauszeiger
-    │
-    ▼
-  masir
-    │
-    ▼
-Windows-Fokus
-    │
-    ▼
- komorebi
-```
-
-Ein Mausklick zum Fokussieren ist nicht notwendig.
 
 masir nutzt seine automatische komorebi-Integration und wird ohne zusätzliche Parameter gestartet.
 
@@ -165,44 +193,17 @@ dotfiles/zebar/windows-setup-bar/
 
 Sie wird mit TypeScript entwickelt und lokal mit esbuild gebündelt. Es bestehen keine CDN-Abhängigkeiten.
 
-### Linke Seite
+Die `settings.json` wird per Hardlink eingebunden; das Widget-Verzeichnis selbst wird per Junction verknüpft.
 
-- fünf komorebi-Workspaces
-- aktiver Workspace dynamisch hervorgehoben
-- Workspace-Wechsel per Mausklick
-- aktuelle Tiling-Methode
-- Layout-Pill vollständig klickbar
-- separates Layout-Popup
-- direkte Auswahl einer Tiling-Methode
-- aktuelles Layout im Popup hervorgehoben
-- Tooltips mit den Namen der Tiling-Methoden
-- Popup schließt nach Auswahl
-- Popup schließt bei Fokusverlust
+Umgesetzt sind unter anderem:
 
-### Mitte
-
-- Titel des fokussierten Fensters
-- echtes Windows-Anwendungsicon
-- Icon-Ermittlung über EXE und PowerShell
-- Base64-PNG und Icon-Cache
-- Schutz vor asynchronen Render-Races
-
-### Rechte Seite
-
-- CPU-Auslastung
-- RAM verwendet/gesamt
-- Storage-Auslastung
-- aktive Netzwerk-Schnittstelle
-- IPv4-Adresse
-- Download-/Upload-Durchsatz
-- Lautstärke
-- Mute-Status
-- Klick zum Muten/Entmuten
-- Mausrad zur Lautstärkeregelung
-- Media-Titel und Artist
-- Previous / Play-Pause / Next
-- deutsches Datum
-- 24-Stunden-Uhrzeit
+- fünf komorebi-Workspaces mit Klicksteuerung
+- Layout-Anzeige und Layout-Popup
+- Titel und echtes Windows-App-Icon des fokussierten Fensters
+- CPU-, RAM-, Storage- und Netzwerk-Anzeige
+- Lautstärke und Mute-Steuerung
+- Mediensteuerung
+- deutsches Datum und 24-Stunden-Uhrzeit
 
 Batterie und Systray sind bewusst nicht Bestandteil der Bar.
 
@@ -210,7 +211,6 @@ Batterie und Systray sind bewusst nicht Bestandteil der Bar.
 
 ```powershell
 cd ~/windows-setup/dotfiles/zebar/windows-setup-bar
-
 npm ci
 npm run build
 ```
@@ -221,36 +221,126 @@ Für Entwicklung und Neustart:
 npm run dev:reload
 ```
 
-Der Build führt zunächst einen TypeScript-Typecheck aus und erstellt anschließend die Browser-Bundles mit esbuild.
+---
 
-## Catppuccin Mocha
+# OneCommander
+
+OneCommander ersetzt den Windows Explorer im normalen Dateimanager-Workflow.
+
+Das Setup übernimmt:
+
+- Installation über `winget`
+- OOBE-/Lizenzstatus erkennen, aber nicht automatisiert bestätigen
+- `Win + E` auf OneCommander umbiegen
+- OneCommander als Standard-Dateimanager für Verzeichnisse und Laufwerke registrieren
+- Catppuccin-Mocha-Theme installieren
+- Catppuccin-Mocha-Accent konfigurieren
+- Main-Folder-Icon installieren
+- Catppuccin-Folder-Icon-Pack einbinden
+- Catppuccin-File-Icon-Pack einbinden
+- Datei-Alter-Farben für das dunkle Theme konfigurieren
+
+## Theme
+
+Das Theme liegt unter:
+
+```text
+dotfiles/onecommander/Themes/CatppuccinMocha/
+```
+
+Es wird per Junction nach:
+
+```text
+%LOCALAPPDATA%\OneCommander\Themes\CatppuccinMocha
+```
+
+eingebunden.
+
+## Folder Icons
+
+Manuell gepflegte OneCommander-Folder-Icons liegen unter:
+
+```text
+dotfiles/onecommander/Icons/
+├── MainFolderIcon/
+│   └── CatppuccinMocha.png
+└── FolderIcons/
+    └── CatppuccinMocha/
+```
+
+Das Main-Folder-Icon wird als echte Datei nach OneCommander kopiert. Das Folder-Icon-Theme wird per Junction eingebunden.
+
+## File Icons
+
+Die File-Icons werden aus dem offiziellen Projekt:
+
+```text
+catppuccin/vscode-icons
+```
+
+generiert.
+
+Der Build liegt unter:
+
+```text
+scripts/Build-OneCommanderFileIcons.ps1
+scripts/onecommander-file-icons/
+```
+
+Generierte Daten werden **nicht committed**. Sie landen unter:
+
+```text
+.generated/onecommander/
+├── Sources/
+│   └── vscode-icons/
+├── Rendered/
+│   └── CatppuccinMocha/
+└── FileIcons/
+    └── CatppuccinMocha/
+```
+
+`Rendered` enthält die gerenderten PNGs. `FileIcons` enthält OneCommander-kompatible Dateinamen als NTFS-Hardlinks auf diese PNGs.
+
+Das erzeugte `FileIcons/CatppuccinMocha` wird anschließend per Junction nach OneCommander eingebunden.
+
+Der Generator übernimmt:
+
+- sämtliche Catppuccin-Icon-Definitionen
+- Extension-Zuordnungen
+- exakte Dateinamen
+- Dotfiles
+- zusätzliche projektbezogene Aliase
+- SVG → PNG Rendering
+- Manifest mit Mapping, übersprungenen Einträgen und Kollisionen
+
+---
+
+# Catppuccin Mocha
 
 Catppuccin Mocha ist die gemeinsame Designsprache des Windows-Desktops.
 
 Es wird bewusst keine universelle CSS-Datei für alle Anwendungen erzwungen. Jedes Programm verwendet die für es sinnvollste und stabilste Theme-Methode.
 
-Beispiele:
-
 | Komponente          | Theme-Methode                                 |
 | ------------------- | --------------------------------------------- |
 | komorebi            | integriertes Catppuccin                       |
 | Zebar               | eigenes CSS                                   |
+| OneCommander        | eigenes XAML + Icon-Packs                     |
 | Windows Terminal    | Farbschema in `settings.json`                 |
 | VS Code             | Catppuccin Theme/Extension                    |
 | Zen Browser         | eigene CSS-/UI-Anpassungen                    |
-| Explorer            | Windhawk File Explorer Styler (geplant)       |
 | Taskbar             | Windhawk Taskbar Styler (geplant)             |
 | Startmenü           | Windhawk Start Menu Styler (geplant)          |
 | Notification Center | Windhawk Notification Center Styler (geplant) |
 | eigenes OSD         | eigene Styles (geplant)                       |
 
-GitHub Desktop wird nur soweit angepasst, wie es stabil unterstützt wird.
+Der native File Explorer Styler über Windhawk wird nicht mehr verfolgt; OneCommander übernimmt stattdessen den Dateimanager-Part.
 
 ---
 
 # Automatische wöchentliche Wartung
 
-Der Bootstrap richtet die Windows-Aufgabe
+Der Bootstrap richtet die Windows-Aufgabe:
 
 ```text
 Windows Setup Weekly Maintenance
@@ -258,11 +348,9 @@ Windows Setup Weekly Maintenance
 
 ein.
 
-Sie startet den vollständigen `bootstrap.ps1` **jeden Sonntag um 12:00 Uhr**.
+Sie startet den vollständigen `bootstrap.ps1` jeden Sonntag um 12:00 Uhr.
 
-Es existiert bewusst kein separater Maintenance-Workflow. Neuinstallation, manuelle Aktualisierung und automatische Wartung verwenden dieselbe Logik.
-
-Die Aufgabe läuft im interaktiven Benutzerkontext mit erhöhten Rechten.
+Der Rechner wird nicht automatisch neu gestartet.
 
 Der Wartungslauf umfasst unter anderem:
 
@@ -274,41 +362,32 @@ Der Wartungslauf umfasst unter anderem:
 - Logitech-G-HUB-Konfiguration synchronisieren
 - Windows- und Entwicklungs-Konfiguration erneut anwenden
 - Zebar-Abhängigkeiten und Build sicherstellen
+- OneCommander-Theme und Icons sicherstellen
+- Catppuccin-File-Icons bei Bedarf generieren
 - PSScriptAnalyzer ausführen
 - erforderlichen Neustart erkennen
 - lokale Git-Änderungen erkennen
 - noch nicht gepushte Commits erkennen
 
-Der Rechner wird **nicht automatisch neu gestartet**.
+## Reboot-Erkennung
+
+Die Neustartprüfung unterscheidet konkrete Ursachen:
+
+- Component Based Servicing
+- Windows Update
+- relevante `PendingFileRenameOperations`
+
+Reine temporäre Installer-Cleanup-Einträge, beispielsweise NSIS-Temp-Dateien unter `%TEMP%`, werden nicht als relevanter Neustartbedarf gewertet.
 
 ## Desktop-Benachrichtigungen
 
 Für Benachrichtigungen wird `BurntToast` verwendet.
 
-Nach einem Wartungslauf wird eine Benachrichtigung angezeigt, wenn:
+Benachrichtigt wird bei:
 
-- Windows oder ein Update einen Neustart benötigt
-- das Repository lokale Änderungen enthält
-- noch nicht gepushte Commits vorhanden sind
-
-Änderungen werden bewusst **nicht automatisch committed oder gepusht**.
-
----
-
-# Windows Updates
-
-Normale Windows- und Microsoft-Updates werden über `PSWindowsUpdate` installiert.
-
-Dazu gehören unter anderem:
-
-- kumulative Windows-Updates
-- Security Updates
-- .NET-Updates
-- Microsoft Defender Security Intelligence Updates
-
-Treiber werden separat durch die Treiberlogik behandelt.
-
-Ein erforderlicher Neustart wird erkannt, aber nicht automatisch durchgeführt.
+- relevantem ausstehenden Neustart
+- lokalen Repository-Änderungen
+- ungepushten Commits
 
 ---
 
@@ -323,22 +402,21 @@ Pakete können:
 - von Updates ausgeschlossen werden
 - auf eine bestimmte Version festgelegt werden
 
-OpenVPN ist beispielsweise bewusst auf Version `2.7.101` festgelegt.
+Die installierte Version gepinnter Pakete wird anhand des exakten Winget-Paket-IDs ermittelt.
 
-## Basis
+OpenVPN ist bewusst auf Version `2.7.101` festgelegt.
 
-- JetBrainsMono Nerd Font
+Zu den Desktop-Tools gehören aktuell unter anderem:
 
-## System- und Desktop-Tools
-
-- Windows HDR Calibration
-- iCloud
-- OpenVPN
-- Logitech G HUB
 - komorebi
 - whkd
 - masir
 - Zebar
+- OneCommander
+- Windows HDR Calibration
+- iCloud
+- OpenVPN
+- Logitech G HUB
 
 Geplant:
 
@@ -346,338 +424,94 @@ Geplant:
 - Everything
 - Windhawk
 
-## Browser
-
-- Zen Browser
-- Google Chrome Beta
-
-## Entwicklung
-
-- fnm
-- Go
-- Bun
-- Git
-- GitHub CLI
-- GitHub Desktop
-- Visual Studio Code
-- PowerShell 7
-- Nushell
-- Starship
-- Codex CLI
-
 ---
 
 # Development Storage
 
 Das Setup kann eine vollständig leere, geeignete interne SSD für Entwicklungs- und Spieldaten einrichten.
 
-System-/Bootdisk und ungeeignete Datenträger werden ausgeschlossen. Vor destruktiven Änderungen werden der erkannte Datenträger und die geplante Partitionierung angezeigt und müssen explizit bestätigt werden.
+| Laufwerk |  Größe | Dateisystem    | Label   | Zweck       |
+| -------- | -----: | -------------- | ------- | ----------- |
+| `D:`     | 100 GB | ReFS Dev Drive | `Dev`   | Entwicklung |
+| `G:`     |   Rest | NTFS           | `Games` | Spiele      |
 
-| Laufwerk |        Größe | Dateisystem    | Label   | Zweck       |
-| -------- | -----------: | -------------- | ------- | ----------- |
-| `D:`     |       100 GB | ReFS Dev Drive | `Dev`   | Entwicklung |
-| `G:`     | Rest der SSD | NTFS           | `Games` | Spiele      |
-
-Für das Games-Laufwerk müssen mindestens 100 GB zur Verfügung stehen.
-
-Existieren die Laufwerke bereits in der erwarteten Form, wird die Partitionierung nicht erneut durchgeführt.
-
-## Dev-Drive-Verzeichnisse
-
-```text
-D:\
-├── Projects\
-├── Build\
-└── Cache\
-    ├── npm\
-    ├── pnpm\
-    ├── yarn\
-    ├── bun\
-    └── go\
-        ├── build\
-        └── modules\
-```
-
-Die Entwicklungs-Caches werden auf das Dev Drive verschoben:
-
-| Tool            | Pfad                  |
-| --------------- | --------------------- |
-| npm             | `D:\Cache\npm`        |
-| pnpm            | `D:\Cache\pnpm`       |
-| Yarn            | `D:\Cache\yarn`       |
-| Bun             | `D:\Cache\bun`        |
-| Go Build Cache  | `D:\Cache\go\build`   |
-| Go Module Cache | `D:\Cache\go\modules` |
-
-Für das ReFS Dev Drive wird Microsoft Defender Dev Drive Performance Mode aktiviert. Der Echtzeitschutz bleibt grundsätzlich aktiv.
-
----
-
-# Windows Debloat
-
-Der Bootstrap entfernt beziehungsweise deprovisioniert eine definierte Auswahl nicht benötigter Windows-AppX-Pakete und deaktiviert verschiedene Consumer- und Content-Delivery-Funktionen.
-
-Die Debloat-Logik ist wiederholbar. Bereits entfernte Pakete werden erkannt und übersprungen.
-
-Gaming-, Entwicklungs- und für Windows Hello relevante Funktionen sollen erhalten bleiben.
-
-Windows Snap wird deaktiviert, da komorebi die Fensterverwaltung übernimmt.
+Die Entwicklungs-Caches werden auf das Dev Drive verschoben.
 
 ---
 
 # Entwicklerumgebung
 
-## Node.js
+Unter anderem:
 
-- Installation und Versionsverwaltung über fnm
-- Node LTS
+- fnm + Node LTS
 - npm
 - pnpm
 - Yarn
+- Bun
+- Go
+- Git
+- GitHub CLI
+- GitHub Desktop
+- PowerShell 7
+- Nushell
+- Starship
+- Visual Studio Code
+- Codex CLI
 
-## Bun
-
-- automatische Installation und Updates
-- Cache auf dem Dev Drive
-
-## Go
-
-- automatische Installation und Updates
-- Build- und Module-Cache auf dem Dev Drive
-
-## Git
-
-Das Setup konfiguriert unter anderem:
-
-- Benutzername
-- E-Mail
-- globale Git-Konfiguration
-- globale Gitignore
-- Editor
-- Git LFS
-- sinnvolle Default-Einstellungen
-
-Am Ende eines Wartungslaufs werden lokale Änderungen und ungepushte Commits erkannt.
-
-## Codex
-
-Die Codex CLI wird automatisch installiert.
+Konfigurationsdateien werden soweit sinnvoll als Hardlinks aus dem Repository eingebunden.
 
 ---
 
-# Browser
+# Codequalität
 
-## Zen Browser
+Am Ende jedes Bootstrap-Laufs wird `PSScriptAnalyzer` ausgeführt.
 
-Automatisiert werden unter anderem:
+Das Setup unterscheidet:
 
-- Installation und Updates
-- Erweiterungen
-- deutsche Sprache
-- deutsches Wörterbuch
-- Enterprise Policies
-- Session Restore
-- Google als Suchmaschine
-- Telemetrie deaktivieren
-- Firefox Studies deaktivieren
-- Pocket deaktivieren
-- Zen Mods installieren
-- Zen-Mod-Installation über Marionette
-- idempotente Mod-Installation
+- Fehler
+- Warnungen
+- Hinweise
 
-Weitere Catppuccin-CSS-Anpassungen sind geplant.
-
-## Google Chrome Beta
-
-- Installation
-- automatische Updates
-- Enterprise Policies
-- Extension Deployment
+Informationsmeldungen verhindern den Setup-Durchlauf nicht.
 
 ---
 
-# Logitech G HUB
-
-Logitech G HUB wird über `winget` installiert und automatisch aktuell gehalten.
-
-Die aktuelle Konfiguration wird als
-
-```text
-config/lghub/settings.db
-```
-
-im Repository gesichert.
-
-Auf einem frisch eingerichteten System wird die gespeicherte Konfiguration einmalig nach G HUB übernommen. Bei späteren Bootstrap-Durchläufen wird die aktuelle lokale G-HUB-Datenbank bei Änderungen zurück ins Repository kopiert.
-
-G HUB wird für den Datenbankzugriff kontrolliert beendet und anschließend wieder gestartet.
-
-Da G HUB die Datenbank intern verändern kann, kann `settings.db` nach einem Wartungslauf als Git-Änderung erscheinen. Der abschließende Repository-Check weist darauf hin.
-
----
-
-# PowerShell und Codequalität
-
-Folgende PowerShell-Module werden automatisch verwaltet:
-
-- `PSScriptAnalyzer`
-- `BurntToast`
-- `PSWindowsUpdate`
-
-Manuelle Codeprüfung:
-
-```powershell
-. .\modules\index.ps1
-Test-PowerShellCode .
-```
-
-Die Prüfung läuft außerdem am Ende des Bootstraps.
-
-Ziel:
-
-```text
-[OK] Keine PSScriptAnalyzer-Probleme gefunden.
-```
-
-CI und zusätzliche Pester-Tests sind für einen späteren Ausbau vorgesehen.
-
----
-
-# Projektstruktur
+# Repository-Struktur
 
 ```text
 windows-setup/
+├── assets/
+├── config/
+├── dotfiles/
+│   ├── git/
+│   ├── komorebi/
+│   ├── nushell/
+│   ├── onecommander/
+│   ├── powershell/
+│   ├── starship/
+│   ├── vscode/
+│   └── zebar/
+├── modules/
+├── scripts/
+│   ├── Build-OneCommanderFileIcons.ps1
+│   └── onecommander-file-icons/
+├── .generated/          # nicht versioniert
 ├── bootstrap.ps1
 ├── init.ps1
-├── roadmap.md
 ├── README.md
-│
-├── config/
-│   ├── browsers.psd1
-│   ├── debloat.psd1
-│   ├── packages.psd1
-│   ├── powershell.psd1
-│   ├── storage.psd1
-│   ├── vscode.psd1
-│   └── lghub/
-│       └── settings.db
-│
-├── modules/
-│   ├── Drivers/
-│   ├── Windows/
-│   ├── Browser.ps1
-│   ├── Debloat.ps1
-│   ├── Development.ps1
-│   ├── Git.ps1
-│   ├── Helpers.ps1
-│   ├── Languages.ps1
-│   ├── Logitech.ps1
-│   ├── Notifications.ps1
-│   ├── Nushell.ps1
-│   ├── Packages.ps1
-│   ├── PowerShell.ps1
-│   ├── ScheduledTasks.ps1
-│   ├── Security.ps1
-│   ├── Storage.ps1
-│   ├── Terminal.ps1
-│   ├── VSCode.ps1
-│   └── WindowsUpdate.ps1
-│
-├── dotfiles/
-│   ├── komorebi/
-│   └── zebar/
-│       └── windows-setup-bar/
-│           ├── src/
-│           ├── dist/
-│           ├── index.html
-│           ├── layout-menu.html
-│           ├── styles.css
-│           ├── layout-menu.css
-│           ├── package.json
-│           └── zpack.json
-│
-├── assets/
-├── AGENTS.md
-└── .codex/
+└── roadmap.md
 ```
 
-## `init.ps1`
-
-Minimaler Einstiegspunkt für ein frisch installiertes Windows. Installiert Voraussetzungen, lädt beziehungsweise aktualisiert das Repository und startet `bootstrap.ps1`.
-
-## `bootstrap.ps1`
-
-Zentrale Orchestrierung für:
-
-- Erstinstallation
-- manuelle erneute Setup-Durchläufe
-- automatische wöchentliche Wartung
-
-Die eigentliche Installations- und Konfigurationslogik befindet sich in den Modulen.
-
-## `config/`
-
-Deklarative Konfiguration für Pakete, Browser, VS-Code-Erweiterungen, PowerShell-Module, Debloat, Storage und weitere Komponenten.
-
-## `modules/`
-
-PowerShell-Implementierung des Setups. `modules/index.ps1` lädt die einzelnen Module zentral.
-
-## `dotfiles/`
-
-Versionierte Konfigurationen der Desktop- und Benutzeranwendungen, insbesondere komorebi und Zebar.
-
 ---
 
-# Geplante nächste Schritte
+# Offene große Themen
 
-Die Desktop-Basis ist inzwischen funktional. Die aktuelle Reihenfolge für den weiteren Ausbau ist:
-
-1. **PowerToys + Everything**
-   - Command Palette als App Launcher
-   - Everything-Integration
-   - bevorzugt `Win+Space` als Launcher-Hotkey
-
-2. **Windhawk**
-   - File Explorer Styler
-   - Taskbar Styler
-   - Start Menu Styler
-   - Notification Center Styler
-   - Catppuccin Mocha für die Windows-Shell
-
-3. **Eigenes OSD**
-   - Lautstärke
-   - Mute
-   - Mikrofon
-   - Caps Lock
-   - Num Lock
-
-4. **Desktop-Polish**
-   - Zen Browser
-   - Lock Screen
-   - verbleibende visuelle Inkonsistenzen
-
-5. **Gaming und Home Office**
-
-6. **Qualität und Wartbarkeit**
-   - vollständiges Lauf-Logging
-   - Clean-Install-Test
-   - CI
-   - Pester
-   - Security-Abschlussprüfungen
-
-Die detaillierte Planung befindet sich in [`roadmap.md`](roadmap.md).
-
----
-
-# Grundprinzipien
-
-- **Ein Bootstrap:** Keine getrennte Setup- und Maintenance-Logik.
-- **Idempotenz:** Bereits eingerichtete Komponenten werden erkannt und nicht unnötig neu erstellt.
-- **Konfiguration im Repository:** Relevante Einstellungen sollen reproduzierbar und nachvollziehbar sein.
-- **Keine automatischen Git-Pushes:** Änderungen werden gemeldet und vor Commit beziehungsweise Push geprüft.
-- **Keine automatischen Neustarts:** Ein erforderlicher Neustart wird gemeldet, aber nicht erzwungen.
-- **Sichere Storage-Einrichtung:** Destruktive Änderungen benötigen eine explizite Bestätigung.
-- **Automatische Wartung:** Derselbe Bootstrap hält das System regelmäßig aktuell.
-- **Desktop als Code:** Window Manager, Bar, Hotkeys und Desktop-Verhalten werden soweit sinnvoll reproduzierbar versioniert.
-- **Native Theme-Wege bevorzugen:** Catppuccin wird pro Anwendung über die jeweils stabilste unterstützte Methode umgesetzt.
+- PowerToys Command Palette + Everything
+- Windhawk Taskbar Styler
+- Windhawk Start Menu Styler
+- Windhawk Notification Center Styler
+- eigenes Catppuccin OSD
+- weiterer Catppuccin-Polish
+- Logging
+- Dry-Run
+- CI/Pester
