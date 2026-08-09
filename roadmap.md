@@ -1216,8 +1216,9 @@ Der erneute PowerToys-Neustart ist aktuell als bekannte, akzeptierte Einschränk
 ## Design
 
 - [ ] Command Palette mit Dark/Acrylic und Catppuccin-Mocha-Mauve konfigurieren
-- [ ] prüfen, welche Command-Palette-Theme-Einstellungen in der aktuellen Version tatsächlich wirksam sind
-- [ ] sichtbare Catppuccin-Mocha-Anpassung der Command Palette praktisch verifizieren
+- [x] wirksame Command-Palette-Theme-Einstellungen über die GUI gesetzt und aus `settings.json` verifiziert
+- [x] sichtbare Catppuccin-Mocha-Anpassung mit `#1E1E2E` bei 100 % Intensität praktisch verifiziert
+- [x] finaler CmdPal-Desired-State nach `just update` praktisch verifiziert: `Alt + Space`, Acrylic, `#1E1E2E`, App-Details, Backspace-Navigation und aktivierte Animationen bleiben erhalten
 - [ ] Workflow ähnlich zu Fuzzel
 - [x] keyboard-first mit `Alt + Space` als Launcher-Hotkey
 - [x] App-, Datei- und Command-Suche praktisch verfügbar

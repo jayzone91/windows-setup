@@ -289,7 +289,7 @@ FileZilla wird in komorebi vollständig ignoriert. Das ist erforderlich, weil Re
 
 PowerToys wird über die zentrale Paketverwaltung installiert. Der gewünschte PowerToys-Zustand liegt deklarativ in `config/powertoys.psd1` und wird vom Bootstrap angewendet.
 
-Als primärer Launcher dient die PowerToys Command Palette mit `Alt + Space`. Für die Datei- und Ordnersuche wird Everything über die Command-Palette-Erweiterung verwendet; der eingebaute Files-Provider ist deaktiviert, damit keine doppelten Suchergebnisse entstehen. Die sichtbare Catppuccin-Mocha-Anpassung der Command Palette ist noch nicht abgeschlossen und wird separat weiter untersucht.
+Als primärer Launcher dient die PowerToys Command Palette mit `Alt + Space`. Für die Datei- und Ordnersuche wird Everything über die Command-Palette-Erweiterung verwendet; der eingebaute Files-Provider ist deaktiviert, damit keine doppelten Suchergebnisse entstehen. Die Command Palette verwendet Acrylic mit der Catppuccin-Mocha-Base `#1E1E2E` bei 100 % Farbintensität.
 
 Aktiv bleiben gezielt:
 
@@ -442,9 +442,12 @@ Dadurch bleibt `just update` bei späteren Durchläufen nicht unnötig interakti
 
 ### Bekannte PowerToys-Einschränkung
 
-Der funktionale PowerToys-Desired-State ist auf dem aktuellen System praktisch getestet. Command Palette, Everything, Advanced Paste, File Locksmith, Find My Mouse und PowerRename funktionieren wie vorgesehen. Das sichtbare Command-Palette-Theme entspricht aktuell noch nicht dem gewünschten Catppuccin-Mocha-Look.
+Der funktionale PowerToys-Desired-State ist auf dem aktuellen System praktisch getestet. Command Palette, Everything, Advanced Paste, File Locksmith, Find My Mouse und PowerRename funktionieren wie vorgesehen. Die Command Palette verwendet Acrylic mit der Catppuccin-Mocha-Base `#1E1E2E` bei 100 % Farbintensität.
 
 Bei einem wiederholten `just update` erkennt die aktuelle PowerToys-Konfigurationslogik weiterhin einen verwalteten Drift und startet PowerToys deshalb erneut. Der gewünschte Zustand bleibt dabei korrekt erhalten. Diese Einschränkung wird vorerst akzeptiert und nur weiter untersucht, wenn der zusätzliche Neustart im Alltag tatsächlich stört.
+
+
+Der finale Command-Palette-Desired-State wurde nach `just update` praktisch verifiziert: `Alt + Space`, Acrylic, `#1E1E2E`, App-Details und Backspace-Navigation bleiben erhalten; Animationen sind aktiviert.
 
 ---
 

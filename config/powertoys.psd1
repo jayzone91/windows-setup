@@ -1,37 +1,37 @@
 @{
     EnabledModules = @{
-        AdvancedPaste             = $true
-        AlwaysOnTop               = $false
-        Awake                     = $false
-        CmdPal                    = $true
-        ColorPicker               = $true
-        CropAndLock               = $false
-        CursorWrap                = $false
-        EnvironmentVariables      = $false
-        FancyZones                = $false
-        "File Locksmith"          = $true
-        FindMyMouse               = $true
-        GrabAndMove               = $false
-        Hosts                     = $false
-        "Image Resizer"           = $false
-        "Keyboard Manager"        = $false
-        LightSwitch               = $false
-        "Measure Tool"            = $false
-        MouseHighlighter          = $false
-        MouseJump                 = $false
-        MousePointerCrosshairs    = $false
-        MouseWithoutBorders       = $false
-        NewPlus                   = $false
-        Peek                      = $false
-        PowerDisplay              = $false
-        PowerRename               = $true
-        "PowerToys Run"           = $false
-        QuickAccent               = $false
-        RegistryPreview           = $false
-        "Shortcut Guide"          = $false
-        TextExtractor             = $false
-        Workspaces                = $false
-        ZoomIt                    = $false
+        AdvancedPaste          = $true
+        AlwaysOnTop            = $false
+        Awake                  = $false
+        CmdPal                 = $true
+        ColorPicker            = $true
+        CropAndLock            = $false
+        CursorWrap             = $false
+        EnvironmentVariables   = $false
+        FancyZones             = $false
+        "File Locksmith"       = $true
+        FindMyMouse            = $true
+        GrabAndMove            = $false
+        Hosts                  = $false
+        "Image Resizer"        = $false
+        "Keyboard Manager"     = $false
+        LightSwitch            = $false
+        "Measure Tool"         = $false
+        MouseHighlighter       = $false
+        MouseJump              = $false
+        MousePointerCrosshairs = $false
+        MouseWithoutBorders    = $false
+        NewPlus                = $false
+        Peek                   = $false
+        PowerDisplay           = $false
+        PowerRename            = $true
+        "PowerToys Run"        = $false
+        QuickAccent            = $false
+        RegistryPreview        = $false
+        "Shortcut Guide"       = $false
+        TextExtractor          = $false
+        Workspaces             = $false
+        ZoomIt                 = $false
     }
 
     CommandPalette = @{
@@ -44,32 +44,32 @@
             key   = ""
         }
 
-        UseLowLevelGlobalHotkey       = $false
-        ShowAppDetails                = $false
-        BackspaceGoesBack             = $false
-        SingleClickActivates          = $false
-        HighlightSearchOnActivate     = $true
-        KeepPreviousQuery             = $false
-        ShowSystemTrayIcon            = $false
-        IgnoreShortcutWhenFullscreen  = $true
-        IgnoreShortcutWhenBusy        = $false
-        AllowBreakthroughShortcut     = $false
-        AllowExternalReload           = $true
-        SummonOn                      = "ToMouse"
-        DisableAnimations             = $false
-        EnableDock                    = $false
+        UseLowLevelGlobalHotkey      = $false
+        ShowAppDetails               = $true
+        BackspaceGoesBack            = $true
+        SingleClickActivates         = $false
+        HighlightSearchOnActivate    = $true
+        KeepPreviousQuery            = $false
+        ShowSystemTrayIcon           = $false
+        IgnoreShortcutWhenFullscreen = $true
+        IgnoreShortcutWhenBusy       = $false
+        AllowBreakthroughShortcut    = $false
+        AllowExternalReload          = $true
+        SummonOn                     = "ToMouse"
+        DisableAnimations            = $false
+        EnableDock                   = $false
 
-        Theme                         = "Dark"
-        ColorizationMode              = "Custom"
-        CustomThemeColor              = @{
+        Theme                     = "Default"
+        ColorizationMode          = "CustomColor"
+        CustomThemeColor          = @{
             A = 255
-            R = 203
-            G = 166
-            B = 247
+            R = 30
+            G = 30
+            B = 46
         }
-        CustomThemeColorIntensity     = 24
-        BackdropStyle                 = "Acrylic"
-        BackdropOpacity               = 95
+        CustomThemeColorIntensity = 100
+        BackdropStyle             = "Acrylic"
+        BackdropOpacity           = 100
 
         Providers = @{
             "VictorLin.EverythingCP_yazqh14evg2ve!App!ID" = $true
@@ -149,7 +149,7 @@
 
     FindMyMouse = @{
         # 0 = zweimal linke STRG-Taste drücken
-        ActivationMethod = 0
+        ActivationMethod        = 0
         DoNotActivateOnGameMode = $true
     }
 
