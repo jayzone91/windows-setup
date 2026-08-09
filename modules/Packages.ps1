@@ -454,10 +454,32 @@ function Install-Chocolatey {
             [Net.ServicePointManager]::SecurityProtocol -bor `
             [Net.SecurityProtocolType]::Tls12
 
-        $installScript = Invoke-RestMethod `
-            -Uri "https://community.chocolatey.org/install.ps1"
+        $installerPath = Join-Path `
+            ([System.IO.Path]::GetTempPath()) `
+            "chocolatey-install.ps1"
 
-        Invoke-Expression $installScript
+        try {
+            Invoke-WebRequest `
+                -Uri "https://community.chocolatey.org/install.ps1" `
+                -OutFile $installerPath
+
+            & $installerPath
+
+            if ($LASTEXITCODE -ne 0) {
+                throw (
+                    "Chocolatey-Installer meldet ExitCode {0}." `
+                        -f $LASTEXITCODE
+                )
+            }
+        }
+        finally {
+            if (Test-Path $installerPath) {
+                Remove-Item `
+                    -Path $installerPath `
+                    -Force `
+                    -ErrorAction SilentlyContinue
+            }
+        }
 
         Update-SessionPath
     }
