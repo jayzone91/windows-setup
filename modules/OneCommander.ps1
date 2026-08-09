@@ -661,8 +661,8 @@ function Install-OneCommanderIcons {
     # File Icon Theme
     #
     $fileIconsSource = Join-Path `
-        $iconsRoot `
-        "FileIcons\CatppuccinMocha"
+        $RepositoryPath `
+        ".generated\onecommander\FileIcons\CatppuccinMocha"
 
     $fileIconsManifest = Join-Path `
         $fileIconsSource `
