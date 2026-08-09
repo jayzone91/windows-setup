@@ -447,7 +447,24 @@ function Install-Chocolatey {
     Write-Host " Chocolatey"
     Write-Host "========================================"
 
-    if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+    $chocolateyInstall = if ($env:ChocolateyInstall) {
+        $env:ChocolateyInstall
+    }
+    else {
+        [Environment]::GetEnvironmentVariable(
+            "ChocolateyInstall",
+            "Machine"
+        )
+    }
+
+    $chocoExecutable = if ($chocolateyInstall) {
+        Join-Path $chocolateyInstall "bin\choco.exe"
+    }
+    else {
+        Join-Path $env:ProgramData "chocolatey\bin\choco.exe"
+    }
+
+    if (-not (Test-Path $chocoExecutable)) {
         Write-Host "[INSTALL] Chocolatey" -ForegroundColor Cyan
 
         [Net.ServicePointManager]::SecurityProtocol = `
@@ -488,13 +505,28 @@ function Install-Chocolatey {
             -ForegroundColor Green
     }
 
-    if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+    Update-SessionPath
+
+    if (-not (Test-Path $chocoExecutable)) {
+        $chocolateyInstall = [Environment]::GetEnvironmentVariable(
+            "ChocolateyInstall",
+            "Machine"
+        )
+
+        if ($chocolateyInstall) {
+            $chocoExecutable = Join-Path `
+                $chocolateyInstall `
+                "bin\choco.exe"
+        }
+    }
+
+    if (-not (Test-Path $chocoExecutable)) {
         throw "Chocolatey konnte nicht installiert oder gefunden werden."
     }
 
     Write-Host "[UPDATE] Chocolatey selbst aktualisieren..."
 
-    & choco upgrade `
+    & $chocoExecutable upgrade `
         chocolatey `
         --yes `
         --no-progress
