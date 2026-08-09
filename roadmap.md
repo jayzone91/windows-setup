@@ -261,7 +261,7 @@ Für Scoop muss zusätzlich der gewünschte `Bucket` direkt am Paket angegeben w
 - [x] Scoop-Pakete verlangen einen expliziten Bucket
 - [x] optionale `BucketUrl` für eigene Scoop-Buckets unterstützen
 - [x] benötigte Scoop-Buckets aus allen Paketgruppen ableiten
-- [ ] automatisches Hinzufügen eines zusätzlichen Scoop-Buckets praktisch mit einem realen Paket testen
+- [x] automatisches Hinzufügen/Erkennen eines zusätzlichen Scoop-Buckets praktisch mit `versions` + `neovim-nightly` getestet
 - [x] Chocolatey-Cache-Cleanup in den Bootstrap integrieren
 - [x] Scoop-Download-Cache nur bereinigen, wenn der Cache existiert
 - [x] alte Scoop-App-Versionen per Cleanup entfernen
@@ -328,6 +328,14 @@ Für Scoop muss zusätzlich der gewünschte `Bucket` direkt am Paket angegeben w
 - [x] PowerShell 7
 - [x] Nushell
 - [x] Starship
+- [x] Neovim Nightly über Scoop `versions`
+- [x] ripgrep (`rg`)
+- [x] eza
+- [x] fd
+- [x] bat
+- [x] fzf
+- [x] jq
+- [x] zoxide
 
 ### Browser
 
@@ -396,7 +404,7 @@ Der NanaZip-Workflow ist absichtlich generisch aufgebaut und soll für weitere P
 - [ ] bessere maschinenlesbare Update-Zusammenfassung
 - [ ] Paket-Fehler am Ende gesammelt ausgeben statt nur während des Laufs
 - [ ] optionale zentrale Paket-Logs
-- [ ] Scoop-Bucket-Autobereitstellung mit mindestens einem zusätzlichen Bucket praktisch testen
+- [x] Scoop-Bucket-Autobereitstellung mit `versions` + `neovim-nightly` praktisch getestet
 
 # 6. Phase 3 – Windows Debloat und Grundkonfiguration
 
@@ -624,27 +632,37 @@ Ziel ist ein schneller, komfortabler CLI-Workflow ähnlich zur Linux-Arbeitsumge
 
 Pflicht / bereits konkret gewünscht:
 
-- [ ] `ripgrep` (`rg`) installieren
-- [ ] `eza` als modernen Ersatz für klassische Verzeichnisauflistung installieren
-- [ ] PowerShell-Alias/Funktion für `ls` auf `eza` umstellen
-- [ ] sinnvolle Standardparameter für `eza` definieren, ohne Skript-Kompatibilität unnötig zu beschädigen
+- [x] `ripgrep` (`rg`) installieren
+- [x] `eza` als modernen Ersatz für klassische Verzeichnisauflistung installieren
+- [x] Fish-artige PowerShell-Abbreviation für `ls` auf `eza --icons --group-directories-first` umstellen
+- [x] `ls`, `ll`, `la` und `lt` als interaktive PSReadLine-Abbreviations mit sinnvollen `eza`-Defaults definieren
 
 Weitere Kandidaten prüfen und bei echtem Nutzen integrieren:
 
-- [ ] `fd` als schnellere Dateisuche
-- [ ] `bat` als moderner Datei-Viewer
-- [ ] `fzf` für fuzzy selection
-- [ ] `jq` für JSON-Verarbeitung
-- [ ] `zoxide` für schnelles Verzeichnis-Navigieren
+- [x] `fd` als schnellere Dateisuche
+- [x] `bat` als moderner Datei-Viewer
+- [x] `fzf` für fuzzy selection
+- [x] `jq` für JSON-Verarbeitung
+- [x] `zoxide` für schnelles Verzeichnis-Navigieren
 - [ ] weitere geeignete CLI-Tools anhand des tatsächlichen Workflows inventarisieren
 
 Integration:
 
-- [ ] für ausgewählte Tools passende PowerShell-Aliase/Funktionen im versionierten Profil hinterlegen
-- [ ] bestehende Windows-/PowerShell-Aliase nur bewusst überschreiben
-- [ ] Verhalten in interaktiver PowerShell testen
+- [x] Fish-artige PSReadLine-Abbreviations für CLI- und Git-Kommandos im versionierten PowerShell-Profil hinterlegen
+- [x] Abbreviations expandieren interaktiv über PSReadLine und verändern keine globalen Befehle für Skripte
+- [x] Abbreviation-Expansion in interaktiver PowerShell praktisch getestet
+- [x] `zoxide init powershell` im Profil integrieren
+- [x] Fish-`shellAbbrs` für `ls`, `ll`, `la`, `lt`, `cat`, `grep`, `find`, Verzeichnisnavigation und Git-Kommandos nach PowerShell übertragen
+- [x] Abbreviations beim Drücken von Space oder Enter sichtbar expandieren
+- [x] Git-Repository-Root für projektspezifische Commands ermitteln
+- [x] dynamisches Modul `WindowsSetupProjectCommands` nur innerhalb von `~/windows-setup` laden
+- [x] `update` → `just update`
+- [x] `check` → `just check`
+- [x] `desktop-restart` → `just desktop-restart`
+- [x] Projektcommands beim Verlassen des Repositories wieder vollständig entfernen
+- [x] dynamische Projektcommands mit `zoxide`-Verzeichniswechsel praktisch getestet
 - [ ] prüfen, welche Tools auch sinnvoll in Nushell eingebunden werden sollen
-- [ ] Installation und Wiederholung über `just update` testen
+- [x] CLI-Installation und Wiederholung über `just update` getestet
 - [ ] `just check` nach Profilanpassungen ausführen
 
 ## Nushell
@@ -1476,7 +1494,7 @@ Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende
 
 Noch offen aus dem Paketmanager-Umbau:
 
-- [ ] Scoop-Bucket-Autobereitstellung mit einem echten Zusatz-Bucket praktisch testen
+- [x] Scoop-Bucket-Autobereitstellung mit `versions` + `neovim-nightly` praktisch getestet
 - [ ] Retry-Mechanismus für temporäre Download-/Paketmanagerfehler
 - [ ] maschinenlesbare Paket-/Update-Zusammenfassung
 
@@ -1491,16 +1509,21 @@ Noch offen aus dem Paketmanager-Umbau:
 - [ ] Zebar bei echten Vollbild-Anwendungen ausblenden
 - [ ] Verhalten bei Browser-/YouTube-Vollbild und Fullscreen-Anwendungen testen
 
-## Priorität 1 – CLI Tools / Shell UX
+## Kürzlich abgeschlossen – CLI Tools / Shell UX
 
-1. [ ] `ripgrep` (`rg`) installieren
-2. [ ] `eza` installieren und `ls`-Workflow definieren
-3. [ ] `fd`, `bat`, `fzf`, `jq` und `zoxide` bewerten
-4. [ ] ausgewählte Tools in `packages.psd1` aufnehmen
-5. [ ] passende PowerShell-Aliase/Funktionen im versionierten Profil ergänzen
-6. [ ] Installation und Wiederholung per `just update` testen
-
-## Priorität 2 – Launcher
+- [x] `ripgrep` (`rg`) installiert
+- [x] `eza` installiert und `ls`-/`ll`-/`la`-/`lt`-Workflow umgesetzt
+- [x] `fd`, `bat`, `fzf`, `jq` und `zoxide` installiert
+- [x] Neovim Nightly über Scoop `versions` integriert
+- [x] Scoop-Zusatz-Bucket `versions` praktisch getestet
+- [x] Fish-artige PowerShell-Abbreviations über PSReadLine umgesetzt
+- [x] `zoxide` in PowerShell integriert
+- [x] Git-Root-basierte Projektcommands umgesetzt
+- [x] `update`, `check` und `desktop-restart` nur innerhalb von `windows-setup` verfügbar
+- [x] Projektcommands beim Verlassen des Repositories wieder entfernt
+- [x] Installation und Wiederholung über `just update` getestet
+- [x] `just check` nach dem Umbau ohne relevante Probleme
+## Priorität 1 – Launcher
 
 1. [ ] PowerToys installieren
 2. [ ] Command Palette konfigurieren
@@ -1508,14 +1531,14 @@ Noch offen aus dem Paketmanager-Umbau:
 4. [ ] Everything integrieren
 5. [ ] Workflow testen
 
-## Priorität 3 – Windows Shell
+## Priorität 2 – Windows Shell
 
 1. [ ] Windhawk Taskbar Styler
 2. [ ] Windhawk Start Menu Styler
 3. [ ] Windhawk Notification Center Styler
 4. [ ] alle Einstellungen per CLI reproduzierbar machen
 
-## Priorität 4 – eigenes OSD
+## Priorität 3 – eigenes OSD
 
 1. [ ] technische Architektur festlegen
 2. [ ] Volume/Mute
@@ -1527,14 +1550,14 @@ Noch offen aus dem Paketmanager-Umbau:
 8. [ ] Autostart/Bootstrap
 9. [ ] Windows-OSD-Doppelanzeige vermeiden
 
-## Priorität 5 – Gaming
+## Priorität 4 – Gaming
 
 1. [ ] Paketgruppe
 2. [ ] Steam
 3. [ ] Game-Library-Pfade
 4. [ ] sinnvolle Windows-Gaming-Einstellungen
 
-## Priorität 6 – Qualität
+## Priorität 5 – Qualität
 
 1. [ ] Logging
 2. [ ] GitHub Actions

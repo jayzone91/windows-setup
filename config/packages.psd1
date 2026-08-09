@@ -263,6 +263,62 @@
             Name   = "Starship"
             Source = "winget"
             Update = $true
+        },
+        @{
+            Name   = "Neovim Nightly"
+            Id     = "neovim-nightly"
+            Source = "scoop"
+            Bucket = "versions"
+            Update = $true
+        },
+
+        @{
+            Name   = "ripgrep"
+            Id     = "BurntSushi.ripgrep.MSVC"
+            Source = "winget"
+            Update = $true
+        },
+
+        @{
+            Name   = "eza"
+            Id     = "eza-community.eza"
+            Source = "winget"
+            Update = $true
+        },
+
+        @{
+            Name   = "fd"
+            Id     = "sharkdp.fd"
+            Source = "winget"
+            Update = $true
+        },
+
+        @{
+            Name   = "bat"
+            Id     = "sharkdp.bat"
+            Source = "winget"
+            Update = $true
+        },
+
+        @{
+            Name   = "fzf"
+            Id     = "junegunn.fzf"
+            Source = "winget"
+            Update = $true
+        },
+
+        @{
+            Name   = "jq"
+            Id     = "jqlang.jq"
+            Source = "winget"
+            Update = $true
+        },
+
+        @{
+            Name   = "zoxide"
+            Id     = "ajeetdsouza.zoxide"
+            Source = "winget"
+            Update = $true
         }
     )
 }

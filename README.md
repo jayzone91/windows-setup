@@ -26,6 +26,11 @@ Bereits umgesetzt sind unter anderem:
 - Git, GitHub CLI und GitHub Desktop
 - Visual Studio Code inklusive Extensions und Settings
 - Windows Terminal, Nushell und Starship
+- Neovim Nightly über Scoop `versions`
+- moderne CLI-Werkzeuge: ripgrep, eza, fd, bat, fzf, jq und zoxide
+- Fish-artige PowerShell-Abbreviations über PSReadLine
+- Zoxide-Integration für schnelle Verzeichnisnavigation
+- dynamische Git-Root-basierte Projektcommands für `windows-setup`
 - Zen Browser und Google Chrome Beta
 - Logitech G HUB mit einmaliger Initialisierung sowie bewusstem Backup/Restore
 - ReFS Dev Drive und separates Games-Laufwerk
@@ -60,7 +65,7 @@ Bereits umgesetzt sind unter anderem:
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 - Zen-Mod-Precheck: Browser-Neustart nur, wenn konfigurierte Mods tatsächlich fehlen
 
-Die nächsten größeren Arbeitspakete sind moderne CLI-Tools und PowerShell-Aliase, PowerToys Command Palette + Everything, Windhawk für Taskbar, Startmenü und Notification Center, ein eigenes OSD sowie weiterer Catppuccin-Polish.
+Die nächsten größeren Arbeitspakete sind PowerToys Command Palette + Everything, Windhawk für Taskbar, Startmenü und Notification Center, ein eigenes OSD sowie weiterer Catppuccin-Polish.
 
 Siehe auch [`roadmap.md`](roadmap.md).
 
@@ -280,6 +285,64 @@ FileZilla wird in komorebi vollständig ignoriert. Das ist erforderlich, weil Re
 
 ---
 
+# CLI-Tools und PowerShell-Workflow
+
+Die Windows-Shell orientiert sich an den Abbreviations der Fish-Konfiguration der Linux-Workstation.
+
+Installiert und über `config/packages.psd1` verwaltet werden:
+
+- Neovim Nightly über Scoop aus dem Bucket `versions`
+- ripgrep (`rg`)
+- eza
+- fd
+- bat
+- fzf
+- jq
+- zoxide
+
+Neovim Nightly dient gleichzeitig als realer Akzeptanztest für die Scoop-Bucket-Logik. Der Bootstrap erkennt den benötigten `versions`-Bucket und stellt ihn bei Bedarf bereit.
+
+## Fish-artige Abbreviations
+
+Das PowerShell-Profil verwendet PSReadLine, um kurze Eingaben beim Drücken von Space oder Enter sichtbar in ihre Langform zu expandieren. Dadurch bleibt die History verständlich und das Verhalten ähnelt Fish `shellAbbrs`.
+
+Beispiele:
+
+```text
+ls   -> eza --icons --group-directories-first
+ll   -> eza -lah --icons --group-directories-first
+la   -> eza -a --icons --group-directories-first
+lt   -> eza --tree --icons --group-directories-first
+
+cat  -> bat
+grep -> rg
+find -> fd
+
+gs   -> git status
+gaa  -> git add --all
+gcm  -> git commit -m
+glog -> git log --oneline --graph --decorate --all
+```
+
+Auch `..`, `...` und `....` werden wie in der Fish-Konfiguration expandiert.
+
+## Projektspezifische Commands
+
+Das PowerShell-Profil erkennt den Git-Root des aktuellen Arbeitsverzeichnisses. Innerhalb von `~/windows-setup` wird dynamisch das Modul `WindowsSetupProjectCommands` bereitgestellt.
+
+Dadurch stehen dort zusätzlich die kurzen Commands zur Verfügung:
+
+```text
+update          -> just update
+check           -> just check
+desktop-restart -> just desktop-restart
+```
+
+Beim Verlassen des Repositories wird das dynamische Modul wieder entfernt. Die Commands stehen damit nicht global in anderen Projekten zur Verfügung.
+
+Die Aktualisierung erfolgt über den Prompt-Zyklus und funktioniert dadurch unabhängig davon, ob das Verzeichnis über `z`, `cd`, `Set-Location` oder einen anderen Mechanismus gewechselt wurde.
+
+---
 # Standard-Apps und Dateizuordnungen
 
 Windows schützt benutzerspezifische Standard-App-Zuordnungen und erlaubt deren direkte Änderung durch normale Skripte nicht zuverlässig.
