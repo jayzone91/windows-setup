@@ -198,7 +198,7 @@ Restart-WindowsExplorer
 # Peripherie
 # ------------------------------------------------------------
 
-Sync-LogitechGHubConfiguration `
+Initialize-LogitechGHubConfiguration `
     -RepositoryPath "$Root\config\lghub"
 
 # ------------------------------------------------------------
