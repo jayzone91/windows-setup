@@ -121,6 +121,10 @@ Set-ZebarConfiguration `
 Set-OneCommanderConfiguration `
     -RepositoryPath $Root
 
+Initialize-NanaZipFileAssociations `
+    -RepositoryPath $Root
+
+
 # ------------------------------------------------------------
 # Treiber
 # ------------------------------------------------------------

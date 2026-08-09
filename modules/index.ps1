@@ -6,6 +6,7 @@ $modules = @(
     "Browser.ps1"
     "Debloat.ps1"
     "Development.ps1"
+    "FileAssociations.ps1"
     "Git.ps1"
     "Helpers.ps1"
     "Komorebi.ps1"
