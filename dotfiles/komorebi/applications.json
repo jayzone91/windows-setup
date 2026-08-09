@@ -767,6 +767,15 @@
       }
     ]
   },
+  "FileZilla": {
+    "ignore": [
+      {
+        "id": "filezilla.exe",
+        "kind": "Exe",
+        "matching_strategy": "Equals"
+      }
+    ]
+  },
   "Fork": {
     "ignore": [
       [
