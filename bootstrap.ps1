@@ -89,27 +89,38 @@ $Debloat = Import-PowerShellDataFile "$Root\config\debloat.psd1"
 $Storage = Import-PowerShellDataFile `
     "$Root\config\storage.psd1"
 
+
+# ------------------------------------------------------------
+# Paketmanager
+# ------------------------------------------------------------
+
+Initialize-PackageManagers `
+    -Packages $Packages
 # ------------------------------------------------------------
 # Software
 # ------------------------------------------------------------
 
 
-Install-PackageGroup -Packages $Packages.Base -GroupName "Basissoftware"
+try {
+    Install-PackageGroup -Packages $Packages.Base -GroupName "Basissoftware"
 
-Install-PackageGroup `
-    -Packages $Packages.Drivers `
-    -GroupName "Treiber-Tools"
+    Install-PackageGroup `
+        -Packages $Packages.Drivers `
+        -GroupName "Treiber-Tools"
 
-Install-PackageGroup -Packages $Packages.Tools -GroupName "System-Tools"
+    Install-PackageGroup -Packages $Packages.Tools -GroupName "System-Tools"
 
-Install-PackageGroup `
-    -Packages $Packages.HomeOffice `
-    -GroupName "Home Office"
+    Install-PackageGroup `
+        -Packages $Packages.HomeOffice `
+        -GroupName "Home Office"
 
-Install-PackageGroup -Packages $Packages.Development -GroupName "Dev-Tools"
+    Install-PackageGroup -Packages $Packages.Development -GroupName "Dev-Tools"
 
-Install-PackageGroup -Packages $Packages.Browser -GroupName "Browser"
-
+    Install-PackageGroup -Packages $Packages.Browser -GroupName "Browser"
+}
+finally {
+    Clear-PackageManagerCaches
+}
 Install-PcVisitSupporterModule
 
 Install-Windhawk

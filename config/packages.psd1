@@ -1,3 +1,69 @@
+# ============================================================
+# Paket-Konfiguration
+# ============================================================
+#
+# Unterstützte Paketquellen:
+#
+#   Winget
+#     Id     = Winget-Paket-ID
+#     Source = "winget"
+#
+#   Microsoft Store
+#     Id     = Store-Paket-ID
+#     Source = "msstore"
+#
+#   Chocolatey
+#     Id     = Chocolatey-Paketname
+#     Source = "chocolatey"
+#
+#   Scoop
+#     Id        = Scoop-Paketname
+#     Source    = "scoop"
+#     Bucket    = "extras"          # Pflichtfeld, auch "main" explizit angeben
+#     BucketUrl = "https://..."     # nur für eigene / unbekannte Buckets
+#
+# Gemeinsame Optionen:
+#
+#   Name   = Anzeigename
+#   Update = $true / $false
+#
+# Winget unterstützt zusätzlich:
+#
+#   Version = "1.2.3"               # feste Version
+#
+# Beispiele:
+#
+# @{
+#     Name   = "Git"
+#     Id     = "Git.Git"
+#     Source = "winget"
+#     Update = $true
+# }
+#
+# @{
+#     Name   = "FileZilla Client"
+#     Id     = "filezilla"
+#     Source = "chocolatey"
+#     Update = $true
+# }
+#
+# @{
+#     Name   = "Beispiel"
+#     Id     = "example"
+#     Source = "scoop"
+#     Bucket = "versions"
+#     Update = $true
+# }
+#
+# Benötigte Scoop-Buckets werden automatisch aus allen
+# Scoop-Paketdefinitionen ermittelt und vor der Paketinstallation
+# hinzugefügt. Für bekannte Buckets reicht "Bucket". Für eigene
+# Buckets zusätzlich "BucketUrl" angeben.
+#
+# Chocolatey und Scoop werden vom Bootstrap automatisch
+# installiert und bei jedem Lauf selbst aktualisiert.
+#
+# ============================================================
 @{
     Base        = @(
         @{
