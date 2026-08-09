@@ -211,15 +211,24 @@ function Set-OneCommanderSettings {
     }
 
     #
-    # File Icons erst aktivieren, wenn das Pack wirklich existiert.
+    # Catppuccin File Icons
     #
     $fileIconsSource = Join-Path `
         $RepositoryPath `
-        "dotfiles\onecommander\Icons\FileIcons\CatppuccinMocha"
+        ".generated\onecommander\FileIcons\CatppuccinMocha"
 
-    if (Test-Path $fileIconsSource) {
-        $roamingSettings.FileIconsTheme = "CatppuccinMocha"
+    $fileIconsManifest = Join-Path `
+        $fileIconsSource `
+        "_manifest.json"
+
+    if (-not (Test-Path $fileIconsManifest)) {
+        throw (
+            "Catppuccin File-Icon-Pack wurde nicht gefunden: " +
+            $fileIconsSource
+        )
     }
+
+    $roamingSettings.FileIconsTheme = "CatppuccinMocha"
 
     #
     # Datei-Alter-Farben
@@ -791,41 +800,3 @@ function Set-OneCommanderConfiguration {
     }
 }
 
-function Set-FileHardLink {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [string] $Path,
-
-        [Parameter(Mandatory)]
-        [string] $Target
-    )
-
-    if (-not (Test-Path $Target)) {
-        throw "Hardlink-Ziel existiert nicht: $Target"
-    }
-
-    $parent = Split-Path `
-        -Path $Path `
-        -Parent
-
-    if (-not (Test-Path $parent)) {
-        New-Item `
-            -ItemType Directory `
-            -Path $parent `
-            -Force |
-        Out-Null
-    }
-
-    if (Test-Path $Path) {
-        Remove-Item `
-            -Path $Path `
-            -Force
-    }
-
-    New-Item `
-        -ItemType HardLink `
-        -Path $Path `
-        -Target $Target |
-    Out-Null
-}
