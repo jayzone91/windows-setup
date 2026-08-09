@@ -1,10 +1,31 @@
 function Get-OneCommanderSettingsPath {
     [CmdletBinding()]
+    [OutputType([string])]
     param()
 
     return Join-Path `
         $env:LOCALAPPDATA `
         "OneCommander\Settings\OneCommanderV3.json"
+}
+
+
+function Get-OneCommanderExecutablePath {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param()
+
+    $paths = @(
+        "$env:ProgramFiles\OneCommander\OneCommander.exe"
+        "${env:ProgramFiles(x86)}\OneCommander\OneCommander.exe"
+    )
+
+    foreach ($path in $paths) {
+        if ($path -and (Test-Path $path)) {
+            return $path
+        }
+    }
+
+    return $null
 }
 
 
@@ -29,7 +50,8 @@ function Test-OneCommanderOobeCompleted {
         return $false
     }
 
-    $roaming = $settings.userSettings.roaming."Rapidrive.Properties.Settings"
+    $roaming =
+    $settings.userSettings.roaming."Rapidrive.Properties.Settings"
 
     if (-not $roaming) {
         return $false
@@ -41,6 +63,7 @@ function Test-OneCommanderOobeCompleted {
 
 function Get-OneCommanderSettings {
     [CmdletBinding()]
+    [OutputType([pscustomobject])]
     param()
 
     $settingsPath = Get-OneCommanderSettingsPath
@@ -76,27 +99,18 @@ function Save-OneCommanderSettings {
 }
 
 
-function Set-OneCommanderSettings {
+function Get-OneCommanderMachineSettings {
     [CmdletBinding()]
-    param()
-
-    Write-Host "[INFO] Konfiguriere OneCommander."
-
-    if (-not (Test-OneCommanderOobeCompleted)) {
-        Write-Warning (
-            "OneCommander-OOBE wurde noch nicht abgeschlossen. " +
-            "OneCommander einmal starten und die Ersteinrichtung abschließen."
-        )
-
-        return
-    }
-
-    $settings = Get-OneCommanderSettings
+    [OutputType([pscustomobject])]
+    param(
+        [Parameter(Mandatory)]
+        [object] $Settings
+    )
 
     $machineName = $env:COMPUTERNAME
 
     $machineKey = @(
-        $settings.userSettings.PSObject.Properties.Name |
+        $Settings.userSettings.PSObject.Properties.Name |
         Where-Object {
             $_ -eq $machineName -or
             $_ -eq "PC_$machineName" -or
@@ -113,10 +127,7 @@ function Set-OneCommanderSettings {
     }
 
     $machineSettings =
-    $settings.userSettings.$machineKey."Rapidrive.Properties.Settings"
-
-    $roamingSettings =
-    $settings.userSettings.roaming."Rapidrive.Properties.Settings"
+    $Settings.userSettings.$machineKey."Rapidrive.Properties.Settings"
 
     if (-not $machineSettings) {
         throw (
@@ -124,6 +135,32 @@ function Set-OneCommanderSettings {
             "für '$machineKey' wurden nicht gefunden."
         )
     }
+
+    return $machineSettings
+}
+
+
+function Set-OneCommanderSettings {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
+    )
+
+    Write-Host "[INFO] Konfiguriere OneCommander."
+
+    if (-not (Test-OneCommanderOobeCompleted)) {
+        throw (
+            "OneCommander-OOBE wurde noch nicht abgeschlossen. " +
+            "OneCommander einmal starten und die Ersteinrichtung abschließen."
+        )
+    }
+
+    $settings = Get-OneCommanderSettings
+    $machineSettings = Get-OneCommanderMachineSettings -Settings $settings
+
+    $roamingSettings =
+    $settings.userSettings.roaming."Rapidrive.Properties.Settings"
 
     if (-not $roamingSettings) {
         throw "Roaming-Einstellungen von OneCommander wurden nicht gefunden."
@@ -144,29 +181,48 @@ function Set-OneCommanderSettings {
     $roamingSettings.OpenRecycleBinInExplorer = "False"
 
     #
-    # Theme-Grundlagen
-    #
-    $roamingSettings.UseSystemTheme = "False"
-    $roamingSettings.UseSystemAccentColor = "False"
-
-    #
-    # Icon Pack
-    #
-    $roamingSettings.MainFolderIcon = "CatppuccinMocha.png"
-    $roamingSettings.FolderIconsTheme = "CatppuccinMocha"
-    $roamingSettings.FolderIconsTheme = "CatppuccinMocha"
-
-    #
-    # Catppuccin Mocha Accent
+    # Catppuccin Mocha Theme
     #
     $roamingSettings.ThemeName = "CatppuccinMocha"
     $roamingSettings.UseSystemTheme = "False"
     $roamingSettings.UseSystemAccentColor = "False"
     $roamingSettings.AccentColor = "#FFCBA6F7"
 
+    #
+    # Folder Icons
+    #
+    # OneCommander zeigt im Auswahlfeld den Dateinamen ohne .png an.
+    # Das PNG selbst liegt unter Resources\MainFolderIcon\CatppuccinMocha.png.
+    #
+    $mainFolderIconSource = Join-Path `
+        $RepositoryPath `
+        "dotfiles\onecommander\Icons\MainFolderIcon\CatppuccinMocha.png"
+
+    if (Test-Path $mainFolderIconSource) {
+        $roamingSettings.MainFolderIcon = "CatppuccinMocha"
+    }
+
+    $folderIconsSource = Join-Path `
+        $RepositoryPath `
+        "dotfiles\onecommander\Icons\FolderIcons\CatppuccinMocha"
+
+    if (Test-Path $folderIconsSource) {
+        $roamingSettings.FolderIconsTheme = "CatppuccinMocha"
+    }
 
     #
-    # Datei Alter Farben
+    # File Icons erst aktivieren, wenn das Pack wirklich existiert.
+    #
+    $fileIconsSource = Join-Path `
+        $RepositoryPath `
+        "dotfiles\onecommander\Icons\FileIcons\CatppuccinMocha"
+
+    if (Test-Path $fileIconsSource) {
+        $roamingSettings.FileIconsTheme = "CatppuccinMocha"
+    }
+
+    #
+    # Datei-Alter-Farben
     #
     $roamingSettings.UseFileAgeColor = "True"
     $roamingSettings.FileAgeType = "var"
@@ -179,25 +235,6 @@ function Set-OneCommanderSettings {
     Write-Host (
         "[OK] OneCommander-Einstellungen aktualisiert."
     ) -ForegroundColor Green
-}
-
-
-function Get-OneCommanderExecutablePath {
-    [CmdletBinding()]
-    param()
-
-    $paths = @(
-        "$env:ProgramFiles\OneCommander\OneCommander.exe"
-        "${env:ProgramFiles(x86)}\OneCommander\OneCommander.exe"
-    )
-
-    foreach ($path in $paths) {
-        if ($path -and (Test-Path $path)) {
-            return $path
-        }
-    }
-
-    return $null
 }
 
 
@@ -243,15 +280,19 @@ function Set-OneCommanderDefaultFileManager {
         -Path $directoryEntry `
         -Value "Öffnen in OneCommander"
 
+    Set-ItemProperty `
+        -Path $directoryEntry `
+        -Name "Icon" `
+        -Value $exe `
+        -Force
+
     Set-Item `
         -Path $directoryCommand `
         -Value "`"$exe`" -`"%1`""
 
-    Set-ItemProperty `
+    Set-Item `
         -Path $directoryShell `
-        -Name "(default)" `
-        -Value "OpenInOneCommander" `
-        -ErrorAction SilentlyContinue
+        -Value "OpenInOneCommander"
 
     #
     # Directory Background
@@ -277,6 +318,12 @@ function Set-OneCommanderDefaultFileManager {
     Set-Item `
         -Path $directoryBackgroundEntry `
         -Value "Öffnen in OneCommander"
+
+    Set-ItemProperty `
+        -Path $directoryBackgroundEntry `
+        -Name "Icon" `
+        -Value $exe `
+        -Force
 
     Set-Item `
         -Path $directoryBackgroundCommand `
@@ -312,15 +359,19 @@ function Set-OneCommanderDefaultFileManager {
         -Path $driveEntry `
         -Value "Öffnen in OneCommander"
 
+    Set-ItemProperty `
+        -Path $driveEntry `
+        -Name "Icon" `
+        -Value $exe `
+        -Force
+
     Set-Item `
         -Path $driveCommand `
         -Value "`"$exe`" -`"%1`""
 
-    Set-ItemProperty `
+    Set-Item `
         -Path $driveShell `
-        -Name "(default)" `
-        -Value "OpenInOneCommander" `
-        -ErrorAction SilentlyContinue
+        -Value "OpenInOneCommander"
 
     #
     # Drive Background
@@ -347,12 +398,18 @@ function Set-OneCommanderDefaultFileManager {
         -Path $driveBackgroundEntry `
         -Value "Öffnen in OneCommander"
 
+    Set-ItemProperty `
+        -Path $driveBackgroundEntry `
+        -Name "Icon" `
+        -Value $exe `
+        -Force
+
     Set-Item `
         -Path $driveBackgroundCommand `
         -Value "`"$exe`" -`"%W`""
 
     #
-    # Explorer OpenNewWindow / Win+E
+    # Explorer OpenNewWindow / Win + E
     #
     $clsidCommand =
     "HKCU:\Software\Classes\CLSID\{52205fd8-5dfb-447d-801a-d0b52f2e83e1}\shell\opennewwindow\command"
@@ -380,61 +437,6 @@ function Set-OneCommanderDefaultFileManager {
 }
 
 
-function Set-OneCommanderConfiguration {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [string] $RepositoryPath
-    )
-
-    Write-Host ""
-    Write-Host "========================================"
-    Write-Host " OneCommander"
-    Write-Host "========================================"
-    Write-Host ""
-
-    if (-not (Test-OneCommanderOobeCompleted)) {
-        Write-Warning (
-            "OneCommander ist installiert, aber die OOBE wurde noch nicht abgeschlossen."
-        )
-
-        Write-Host (
-            "[INFO] OneCommander einmal manuell starten und " +
-            "die Ersteinrichtung abschließen."
-        )
-
-        return
-    }
-
-    Install-OneCommanderTheme `
-        -RepositoryPath $RepositoryPath
-
-    Install-OneCommanderIcons `
-        -RepositoryPath $RepositoryPath
-
-    Set-OneCommanderSettings
-    Set-OneCommanderDefaultFileManager
-}
-
-function Install-OneCommanderTheme {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [string] $RepositoryPath
-    )
-
-    $source = Join-Path `
-        $RepositoryPath `
-        "dotfiles\onecommander\Themes\CatppuccinMocha"
-
-    $destination = Join-Path `
-        $env:LOCALAPPDATA `
-        "OneCommander\Themes\CatppuccinMocha"
-
-    Set-DirectoryJunction `
-        -Path $destination `
-        -Target $source
-}
 function Set-DirectoryJunction {
     [CmdletBinding()]
     param(
@@ -470,7 +472,7 @@ function Set-DirectoryJunction {
             $item.Attributes -band
             [System.IO.FileAttributes]::ReparsePoint
         ) {
-            $currentTarget = $item.Target
+            $currentTarget = [string] $item.Target
 
             if ($currentTarget -eq $Target) {
                 Write-Host "[OK] Junction bereits korrekt: $Path"
@@ -501,71 +503,60 @@ function Set-DirectoryJunction {
     ) -ForegroundColor Green
 }
 
-function Set-FileSymbolicLink {
+
+function Install-OneCommanderTheme {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [string] $Path,
-
-        [Parameter(Mandatory)]
-        [string] $Target
+        [string] $RepositoryPath
     )
 
-    if (-not (Test-Path $Target)) {
-        throw "Symlink-Ziel existiert nicht: $Target"
-    }
+    $source = Join-Path `
+        $RepositoryPath `
+        "dotfiles\onecommander\Themes\CatppuccinMocha"
 
-    $parent = Split-Path `
-        -Path $Path `
-        -Parent
+    $destination = Join-Path `
+        $env:LOCALAPPDATA `
+        "OneCommander\Themes\CatppuccinMocha"
 
-    if (-not (Test-Path $parent)) {
-        New-Item `
-            -ItemType Directory `
-            -Path $parent `
-            -Force |
-        Out-Null
-    }
-
-    if (Test-Path $Path) {
-        $item = Get-Item `
-            -Path $Path `
-            -Force
-
-        if (
-            $item.Attributes -band
-            [System.IO.FileAttributes]::ReparsePoint
-        ) {
-            $currentTarget = $item.Target
-
-            if ($currentTarget -eq $Target) {
-                Write-Host "[OK] Symlink bereits korrekt: $Path"
-                return
-            }
-
-            Remove-Item `
-                -Path $Path `
-                -Force
-        }
-        else {
-            throw (
-                "Pfad existiert bereits und ist kein Symlink: " +
-                $Path
-            )
-        }
-    }
-
-    New-Item `
-        -ItemType SymbolicLink `
-        -Path $Path `
-        -Target $Target |
-    Out-Null
-
-    Write-Host (
-        "[OK] Symlink erstellt: " +
-        "$Path -> $Target"
-    ) -ForegroundColor Green
+    Set-DirectoryJunction `
+        -Path $destination `
+        -Target $source
 }
+
+
+function Remove-OneCommanderGeneratedIconCache {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
+
+    if (-not (Test-Path $Path)) {
+        return
+    }
+
+    Get-ChildItem `
+        -Path $Path `
+        -Directory `
+        -Force `
+        -ErrorAction SilentlyContinue |
+    Where-Object {
+        $_.Name -match '^\d+$'
+    } |
+    ForEach-Object {
+        Write-Host (
+            "[INFO] Entferne generierten OneCommander-Icon-Cache: " +
+            $_.FullName
+        )
+
+        Remove-Item `
+            -Path $_.FullName `
+            -Recurse `
+            -Force
+    }
+}
+
 
 function Install-OneCommanderIcons {
     [CmdletBinding()]
@@ -581,25 +572,57 @@ function Install-OneCommanderIcons {
     #
     # Main Folder Icon
     #
+    # OneCommander erwartet diese Datei direkt im MainFolderIcon-Verzeichnis.
+    # Einzeldateien werden deshalb bewusst kopiert; Theme-Packs bleiben Junctions.
+    #
     $mainFolderIconSource = Join-Path `
         $iconsRoot `
         "MainFolderIcon\CatppuccinMocha.png"
 
-    if (Test-Path $mainFolderIconSource) {
-        Set-FileSymbolicLink `
-            -Path (
-            Join-Path `
-                $env:LOCALAPPDATA `
-                "OneCommander\Resources\MainFolderIcon\CatppuccinMocha.png"
-        ) `
-            -Target $mainFolderIconSource
-    }
-    else {
-        Write-Warning (
-            "Catppuccin Main Folder Icon noch nicht vorhanden: " +
+    if (-not (Test-Path $mainFolderIconSource)) {
+        throw (
+            "Catppuccin Main Folder Icon nicht vorhanden: " +
             $mainFolderIconSource
         )
     }
+
+    $mainFolderIconDirectory = Join-Path `
+        $env:LOCALAPPDATA `
+        "OneCommander\Resources\MainFolderIcon"
+
+    $mainFolderIconDestination = Join-Path `
+        $mainFolderIconDirectory `
+        "CatppuccinMocha.png"
+
+    New-Item `
+        -ItemType Directory `
+        -Path $mainFolderIconDirectory `
+        -Force |
+    Out-Null
+
+    if (Test-Path $mainFolderIconDestination) {
+        $item = Get-Item `
+            -Path $mainFolderIconDestination `
+            -Force
+
+        if (
+            $item.Attributes -band
+            [System.IO.FileAttributes]::ReparsePoint
+        ) {
+            Remove-Item `
+                -Path $mainFolderIconDestination `
+                -Force
+        }
+    }
+
+    Copy-Item `
+        -Path $mainFolderIconSource `
+        -Destination $mainFolderIconDestination `
+        -Force
+
+    Write-Host (
+        "[OK] Catppuccin Main Folder Icon installiert."
+    ) -ForegroundColor Green
 
     #
     # Folder Icon Theme
@@ -609,6 +632,9 @@ function Install-OneCommanderIcons {
         "FolderIcons\CatppuccinMocha"
 
     if (Test-Path $folderIconsSource) {
+        Remove-OneCommanderGeneratedIconCache `
+            -Path $folderIconsSource
+
         Set-DirectoryJunction `
             -Path (
             Join-Path `
@@ -631,6 +657,9 @@ function Install-OneCommanderIcons {
         "FileIcons\CatppuccinMocha"
 
     if (Test-Path $fileIconsSource) {
+        Remove-OneCommanderGeneratedIconCache `
+            -Path $fileIconsSource
+
         Set-DirectoryJunction `
             -Path (
             Join-Path `
@@ -643,5 +672,99 @@ function Install-OneCommanderIcons {
         Write-Host (
             "[INFO] Catppuccin File-Icon-Theme noch nicht vorhanden."
         )
+    }
+}
+
+
+function Stop-OneCommanderForConfiguration {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    $processes = @(
+        Get-Process `
+            -Name "OneCommander" `
+            -ErrorAction SilentlyContinue
+    )
+
+    if ($processes.Count -eq 0) {
+        return $false
+    }
+
+    Write-Host "[INFO] Beende OneCommander für die Konfiguration."
+
+    $processes |
+    Stop-Process `
+        -Force `
+        -ErrorAction Stop
+
+    $processes |
+    Wait-Process `
+        -ErrorAction SilentlyContinue
+
+    return $true
+}
+
+
+function Start-OneCommander {
+    [CmdletBinding()]
+    param()
+
+    $exe = Get-OneCommanderExecutablePath
+
+    if (-not $exe) {
+        throw "OneCommander.exe wurde nicht gefunden."
+    }
+
+    Start-Process `
+        -FilePath $exe
+}
+
+
+function Set-OneCommanderConfiguration {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
+    )
+
+    Write-Host ""
+    Write-Host "========================================"
+    Write-Host " OneCommander"
+    Write-Host "========================================"
+    Write-Host ""
+
+    if (-not (Test-OneCommanderOobeCompleted)) {
+        Write-Warning (
+            "OneCommander ist installiert, aber die OOBE wurde noch nicht abgeschlossen."
+        )
+
+        Write-Host (
+            "[INFO] OneCommander einmal manuell starten und " +
+            "die Ersteinrichtung abschließen."
+        )
+
+        return
+    }
+
+    $wasRunning = Stop-OneCommanderForConfiguration
+
+    try {
+        Install-OneCommanderTheme `
+            -RepositoryPath $RepositoryPath
+
+        Install-OneCommanderIcons `
+            -RepositoryPath $RepositoryPath
+
+        Set-OneCommanderSettings `
+            -RepositoryPath $RepositoryPath
+
+        Set-OneCommanderDefaultFileManager
+    }
+    finally {
+        if ($wasRunning) {
+            Write-Host "[INFO] Starte OneCommander neu."
+            Start-OneCommander
+        }
     }
 }
