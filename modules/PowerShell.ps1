@@ -153,18 +153,206 @@ function Test-PowerShellCode {
         "PSScriptAnalyzerSettings.psd1"
 
 
-    $issues = @(
-        Invoke-ScriptAnalyzer `
-            -Path $Path `
+    if (-not (Test-Path -LiteralPath $settingsPath -PathType Leaf)) {
+        throw "PSScriptAnalyzerSettings.psd1 nicht gefunden: $settingsPath"
+    }
+
+
+    $files = @(
+        Get-ChildItem `
+            -LiteralPath $Path `
             -Recurse `
-            -Settings $settingsPath
+            -File `
+            -Include *.ps1, *.psm1, *.psd1 `
+            -ErrorAction Stop |
+        Where-Object {
+            $_.FullName -notmatch '\\\.generated\\' -and
+            $_.FullName -notmatch '\\node_modules\\' -and
+            $_.FullName -notmatch '\\\.git\\'
+        } |
+        Sort-Object FullName
     )
+
+
+    $issues = @()
+    $analyzerFailures = @()
+
+
+    foreach ($file in $files) {
+
+        try {
+
+            $fileIssues = @(
+                Invoke-ScriptAnalyzer `
+                    -Path $file.FullName `
+                    -Settings $settingsPath `
+                    -ErrorAction Stop
+            )
+
+
+            if ($fileIssues.Count -gt 0) {
+                $issues += $fileIssues
+            }
+        }
+        catch {
+
+            $relativePath = $file.FullName
+
+            try {
+                $relativePath = [System.IO.Path]::GetRelativePath(
+                    $Path,
+                    $file.FullName
+                )
+            }
+            catch {
+                $relativePath = $file.FullName
+            }
+
+
+            Write-Host (
+                "[RETRY] PSScriptAnalyzer-Runtimefehler bei {0}. " +
+                "Erneuter Check in isoliertem PowerShell-Prozess." `
+                    -f $relativePath
+            ) -ForegroundColor Yellow
+
+
+            $isolatedScript = @"
+`$ErrorActionPreference = "Stop"
+
+Import-Module PSScriptAnalyzer -ErrorAction Stop
+
+try {
+    `$results = @(
+        Invoke-ScriptAnalyzer ``
+            -Path '$($file.FullName.Replace("'", "''"))' ``
+            -Settings '$($settingsPath.Replace("'", "''"))' ``
+            -ErrorAction Stop
+    )
+
+    @(`$results) |
+        Select-Object Severity, RuleName, ScriptName, Line, Message |
+        ConvertTo-Json -Depth 10 -Compress
+
+    exit 0
+}
+catch {
+    Write-Error `$_.Exception.Message
+    exit 2
+}
+"@
+
+
+            $encodedCommand = [Convert]::ToBase64String(
+                [Text.Encoding]::Unicode.GetBytes($isolatedScript)
+            )
+
+
+            $isolatedOutput = @(
+                & pwsh `
+                    -NoProfile `
+                    -EncodedCommand $encodedCommand `
+                    2>&1
+            )
+
+            $isolatedExitCode = $LASTEXITCODE
+
+
+            if ($isolatedExitCode -eq 0) {
+
+                $jsonOutput = (
+                    $isolatedOutput |
+                    ForEach-Object {
+                        [string]$_
+                    }
+                ) -join [Environment]::NewLine
+
+
+                if (-not [string]::IsNullOrWhiteSpace($jsonOutput)) {
+
+                    try {
+
+                        $isolatedIssues = @(
+                            $jsonOutput |
+                            ConvertFrom-Json -Depth 20
+                        )
+
+
+                        if ($isolatedIssues.Count -gt 0) {
+                            $issues += $isolatedIssues
+                        }
+                    }
+                    catch {
+
+                        $analyzerFailures += [pscustomobject]@{
+                            File = $relativePath
+                            Message = (
+                                "Isolierter Analyzer-Check lief durch, " +
+                                "aber die Ausgabe konnte nicht ausgewertet werden: " +
+                                $_.Exception.Message
+                            )
+                        }
+                    }
+                }
+
+
+                Write-Host (
+                    "[OK] Isolierter Analyzer-Check erfolgreich: {0}" `
+                        -f $relativePath
+                ) -ForegroundColor Green
+
+                continue
+            }
+
+
+            $failureMessage = (
+                $isolatedOutput |
+                ForEach-Object {
+                    [string]$_
+                }
+            ) -join " "
+
+
+            $analyzerFailures += [pscustomobject]@{
+                File = $relativePath
+                Message = (
+                    "Normaler Check: {0}; isolierter Check: {1}" `
+                        -f $_.Exception.Message, $failureMessage
+                )
+            }
+        }
+    }
+
+
+    if ($analyzerFailures.Count -gt 0) {
+
+        Write-Host ""
+        Write-Host "[ERROR] PSScriptAnalyzer konnte Dateien nicht prüfen:" `
+            -ForegroundColor Red
+
+
+        foreach ($failure in $analyzerFailures) {
+
+            Write-Host (
+                "  - {0}: {1}" `
+                    -f $failure.File, $failure.Message
+            ) -ForegroundColor Red
+        }
+
+
+        throw (
+            "PSScriptAnalyzer ist bei {0} Datei(en) fehlgeschlagen." `
+                -f $analyzerFailures.Count
+        )
+    }
 
 
     if ($issues.Count -eq 0) {
 
-        Write-Host "[OK] Keine PSScriptAnalyzer-Probleme gefunden." `
-            -ForegroundColor Green
+        Write-Host (
+            "[OK] Keine PSScriptAnalyzer-Probleme gefunden. " +
+            "Geprüfte Dateien: {0}" `
+                -f $files.Count
+        ) -ForegroundColor Green
 
         return
     }
@@ -189,11 +377,13 @@ function Test-PowerShellCode {
 
 
     Write-Host (
-        "[INFO] {0} Fehler, {1} Warnungen, {2} Hinweise gefunden." `
+        "[INFO] {0} Fehler, {1} Warnungen, {2} Hinweise gefunden. " +
+        "Geprüfte Dateien: {3}" `
             -f `
             $errors.Count,
         $warnings.Count,
-        $information.Count
+        $information.Count,
+        $files.Count
     )
 
 
@@ -209,6 +399,6 @@ function Test-PowerShellCode {
 
 
     if ($errors.Count -gt 0) {
-        Write-Warning "PSScriptAnalyzer hat Fehler gefunden."
+        throw "PSScriptAnalyzer hat Fehler gefunden."
     }
 }

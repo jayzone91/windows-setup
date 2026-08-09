@@ -85,6 +85,7 @@ $Packages = Import-PowerShellDataFile "$Root\config\packages.psd1"
 $VSCode = Import-PowerShellDataFile "$Root\config\vscode.psd1"
 $Browsers = Import-PowerShellDataFile "$Root\config\browsers.psd1"
 $PowerShell = Import-PowerShellDataFile "$Root\config\powershell.psd1"
+$PowerToys = Import-PowerShellDataFile "$Root\config\powertoys.psd1"
 $Debloat = Import-PowerShellDataFile "$Root\config\debloat.psd1"
 $Storage = Import-PowerShellDataFile `
     "$Root\config\storage.psd1"
@@ -128,6 +129,9 @@ Install-Windhawk
 # Pfade neu einlesen
 Update-SessionPath
 
+Set-PowerToysConfiguration `
+    -Config $PowerToys `
+    -RepositoryPath $Root
 Set-WindhawkConfiguration
 
 Set-KomorebiConfiguration `

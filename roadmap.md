@@ -129,7 +129,8 @@ Windows Desktop
 - [x] `just` als Base-Abhängigkeit über `Casey.Just`
 - [x] `just update` startet den vollständigen Bootstrap
 - [x] `just update` verwendet `-NoProfile -ExecutionPolicy Bypass`
-- [x] `just check` führt PSScriptAnalyzer rekursiv über das Repository aus
+- [x] `just check` und Bootstrap verwenden denselben zentralen `Test-PowerShellCode`-Workflow; Dateien werden wegen eines PSScriptAnalyzer-`-Recurse`-Crashes einzeln mit `PSScriptAnalyzerSettings.psd1` geprüft
+- [x] interne PSScriptAnalyzer-Runtimefehler einzelner Dateien werden einmal in einem frischen `pwsh -NoProfile`-Prozess erneut geprüft
 - [x] `just desktop-restart` startet die Desktop-Umgebung kontrolliert neu
 - [x] `just ghub-backup` sichert die G-HUB-Konfiguration bewusst ins Repository
 - [x] `just ghub-restore` stellt die G-HUB-Konfiguration bewusst wieder her
@@ -1168,26 +1169,58 @@ Das OSD soll sich unaufdringlich, schnell und modern verhalten.
 
 ## PowerToys
 
-- [ ] PowerToys installieren
-- [ ] Command Palette als primären Launcher einrichten
-- [ ] Start-Hotkey definieren
-- [ ] unnötige PowerToys-Module deaktivieren
-- [ ] Konfiguration soweit möglich automatisieren
+- [x] PowerToys installieren
+- [x] Command Palette als primären Launcher einrichten
+- [x] Start-Hotkey Win + Space definieren
+- [x] unnötige PowerToys-Module deaktivieren
+- [x] Konfiguration soweit möglich automatisieren
 
+## PowerToys Desired State
+
+- [x] PowerToys-Modulzustände deklarativ in `config/powertoys.psd1` verwalten
+- [x] Command Palette aktiv; PowerToys Run deaktiviert
+- [x] Command Palette über `Alt + Space` öffnen
+- [x] Everything als Dateisuche in Command Palette aktivieren
+- [x] eingebauten `Files`-Provider deaktivieren, um doppelte Dateitreffer zu vermeiden
+- [x] Advanced Paste aktivieren
+- [x] `Ctrl + Shift + V` für Nur-Text
+- [x] `Ctrl + Shift + M` für Markdown
+- [x] Advanced-Paste-Fenster und JSON-Hotkey deaktivieren
+- [x] Paste-as-File-Gruppe sichtbar; einzelne direkten Hotkeys deaktiviert
+- [x] Audio-/Video-Transcode-Gruppe sichtbar; einzelne direkten Hotkeys deaktiviert
+- [x] File Locksmith in allen Kontextmenüs anzeigen
+- [x] Find My Mouse über doppeltes linkes `Ctrl`
+- [x] PowerRename aktiv mit Standardwerten
+- [x] PowerToys nur bei tatsächlichem Konfigurations-Drift neu starten
+- [x] vollständigen Desired State auf dem aktuellen System praktisch getestet
+- [x] zweiten `just update` getestet; bekannte Einschränkung: PowerToys erkennt aktuell weiterhin Drift und wird erneut gestartet
+### Bekannte Einschränkung – PowerToys Desired State
+
+- [x] Der konfigurierte Zustand wurde auf dem aktuellen System vollständig praktisch getestet.
+- [x] `Alt + Space` öffnet die Command Palette zuverlässig.
+- [x] Everything-Suche, Advanced Paste, File Locksmith, Find My Mouse und PowerRename funktionieren wie vorgesehen.
+- [x] `just check` und `just update` laufen fehlerfrei.
+- [x] Wiederholter `just update` wurde getestet.
+- [ ] PowerToys meldet intern weiterhin verwalteten Drift und wird deshalb bei jedem `just update` neu gestartet.
+- [ ] Ursache nur weiter analysieren, wenn der zusätzliche Neustart im Alltag tatsächlich stört.
+
+Der erneute PowerToys-Neustart ist aktuell als bekannte, akzeptierte Einschränkung dokumentiert. Der gewünschte Zustand bleibt korrekt erhalten; funktional besteht kein Blocker für den weiteren Projektfortschritt.
 ## Everything
 
-- [ ] Everything installieren
-- [ ] Index konfigurieren
-- [ ] Everything in PowerToys Command Palette integrieren
-- [ ] schnelle Datei-/Ordnersuche sicherstellen
-- [ ] prüfen, ob Admin-/Service-Komponente benötigt wird
+- [x] Everything installieren
+- [x] Everything-Index / Service auf dem aktuellen System funktionsfähig
+- [x] Everything in PowerToys Command Palette integrieren
+- [x] schnelle Datei-/Ordnersuche über Everything in Command Palette praktisch getestet
+- [x] Everything-Service als automatische Hintergrundkomponente erkannt und verwendet
 
 ## Design
 
-- [ ] möglichst Catppuccin-orientierter Look
+- [ ] Command Palette mit Dark/Acrylic und Catppuccin-Mocha-Mauve konfigurieren
+- [ ] prüfen, welche Command-Palette-Theme-Einstellungen in der aktuellen Version tatsächlich wirksam sind
+- [ ] sichtbare Catppuccin-Mocha-Anpassung der Command Palette praktisch verifizieren
 - [ ] Workflow ähnlich zu Fuzzel
-- [ ] keyboard-first
-- [ ] schnelle App-, Datei- und Command-Suche
+- [x] keyboard-first mit `Alt + Space` als Launcher-Hotkey
+- [x] App-, Datei- und Command-Suche praktisch verfügbar
 
 ---
 
@@ -1525,11 +1558,11 @@ Noch offen aus dem Paketmanager-Umbau:
 - [x] `just check` nach dem Umbau ohne relevante Probleme
 ## Priorität 1 – Launcher
 
-1. [ ] PowerToys installieren
-2. [ ] Command Palette konfigurieren
-3. [ ] Everything installieren
-4. [ ] Everything integrieren
-5. [ ] Workflow testen
+1. [x] PowerToys installieren
+2. [x] Command Palette konfigurieren
+3. [x] Everything installieren
+4. [x] Everything integrieren
+5. [x] Workflow testen
 
 ## Priorität 2 – Windows Shell
 
@@ -1577,6 +1610,17 @@ Noch offen aus dem Paketmanager-Umbau:
 6. Keine Secrets in das Repository schreiben.
 7. `Justfile` nur als Bedienoberfläche behandeln; Implementierung gehört in PowerShell.
 
+## Bereitstellung von Repository-Änderungen
+
+Wenn eine KI Änderungen an bestehenden Repository-Dateien für den Benutzer vorbereitet:
+
+1. Änderungen sollen bevorzugt als **ausführbares PowerShell-Patch-Skript (`.ps1`)** bereitgestellt werden, statt den Benutzer mehrere bestehende Dateien manuell bearbeiten zu lassen.
+2. Das Patch-Skript soll vom Root des `windows-setup`-Repositories aus ausführbar sein.
+3. Das Patch-Skript muss den erwarteten Ausgangszustand prüfen und bei einem unerwarteten Zustand verständlich abbrechen, statt Dateien blind zu verändern.
+4. Patches sollen soweit sinnvoll **idempotent** sein und bei wiederholter Ausführung keine doppelten Einträge oder unerwarteten Änderungen erzeugen.
+5. Betroffene PowerShell-/PSD1-Dateien sollen nach der Änderung technisch validiert werden, sofern dies ohne zusätzliche Benutzerinteraktion möglich ist.
+6. Das Patch-Skript ist grundsätzlich ein Transportmittel für die Änderung und muss nicht selbst in das Repository übernommen werden.
+7. Nach erfolgreichem Patch gelten weiterhin die normalen Projektregeln: gezielt testen, `just check` ausführen, Git-Status prüfen und Roadmap/README bei Bedarf nachziehen.
 ## Während der Implementierung
 
 1. Änderungen idempotent gestalten.

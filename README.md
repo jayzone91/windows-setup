@@ -285,6 +285,26 @@ FileZilla wird in komorebi vollständig ignoriert. Das ist erforderlich, weil Re
 
 ---
 
+## PowerToys und Command Palette
+
+PowerToys wird über die zentrale Paketverwaltung installiert. Der gewünschte PowerToys-Zustand liegt deklarativ in `config/powertoys.psd1` und wird vom Bootstrap angewendet.
+
+Als primärer Launcher dient die PowerToys Command Palette mit `Alt + Space`. Für die Datei- und Ordnersuche wird Everything über die Command-Palette-Erweiterung verwendet; der eingebaute Files-Provider ist deaktiviert, damit keine doppelten Suchergebnisse entstehen. Die sichtbare Catppuccin-Mocha-Anpassung der Command Palette ist noch nicht abgeschlossen und wird separat weiter untersucht.
+
+Aktiv bleiben gezielt:
+
+- Command Palette
+- Advanced Paste
+- Color Picker
+- File Locksmith
+- Find My Mouse
+- PowerRename
+
+Advanced Paste verwendet `Ctrl + Shift + V` für Nur-Text und `Ctrl + Shift + M` für Markdown. Find My Mouse wird durch zweimaliges Drücken der linken `Ctrl`-Taste aktiviert.
+
+Nicht benötigte PowerToys-Module werden deklarativ deaktiviert. Bei wiederholten Bootstrap-Läufen wird PowerToys nur dann beendet und neu gestartet, wenn tatsächlich verwalteter Konfigurations-Drift vorliegt.
+
+---
 # CLI-Tools und PowerShell-Workflow
 
 Die Windows-Shell orientiert sich an den Abbreviations der Fish-Konfiguration der Linux-Workstation.
@@ -419,6 +439,12 @@ Nach erfolgreicher Initialisierung wird:
 angelegt.
 
 Dadurch bleibt `just update` bei späteren Durchläufen nicht unnötig interaktiv.
+
+### Bekannte PowerToys-Einschränkung
+
+Der funktionale PowerToys-Desired-State ist auf dem aktuellen System praktisch getestet. Command Palette, Everything, Advanced Paste, File Locksmith, Find My Mouse und PowerRename funktionieren wie vorgesehen. Das sichtbare Command-Palette-Theme entspricht aktuell noch nicht dem gewünschten Catppuccin-Mocha-Look.
+
+Bei einem wiederholten `just update` erkennt die aktuelle PowerToys-Konfigurationslogik weiterhin einen verwalteten Drift und startet PowerToys deshalb erneut. Der gewünschte Zustand bleibt dabei korrekt erhalten. Diese Einschränkung wird vorerst akzeptiert und nur weiter untersucht, wenn der zusätzliche Neustart im Alltag tatsächlich stört.
 
 ---
 
