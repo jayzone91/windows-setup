@@ -118,6 +118,9 @@ Set-KomorebiConfiguration `
 Set-ZebarConfiguration `
     -RepositoryPath $Root
 
+Set-OneCommanderConfiguration `
+    -RepositoryPath $Root
+
 # ------------------------------------------------------------
 # Treiber
 # ------------------------------------------------------------
