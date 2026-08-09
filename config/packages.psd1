@@ -87,6 +87,13 @@
             Source = "winget"
             Update = $true
         }
+
+        @{
+            Name   = "NanaZip"
+            Id     = "M2Team.NanaZip"
+            Source = "winget"
+            Update = $true
+        }
     )
 
     Browser     = @(
