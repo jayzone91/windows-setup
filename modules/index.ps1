@@ -9,6 +9,7 @@ $modules = @(
     "FileAssociations.ps1"
     "Git.ps1"
     "Helpers.ps1"
+    "HomeOffice.ps1"
     "Komorebi.ps1"
     "Languages.ps1"
     "Logitech.ps1"
