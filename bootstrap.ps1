@@ -217,6 +217,8 @@ Register-KomorebiStartupTask
 
 Register-ZebarStartupTask
 
+Restart-WindowsDesktopEnvironment
+
 Register-WindowsSetupScheduledTask `
     -BootstrapPath "$Root\bootstrap.ps1"
 

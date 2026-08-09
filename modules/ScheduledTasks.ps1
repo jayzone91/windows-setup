@@ -115,22 +115,12 @@ function Register-KomorebiStartupTask {
             -Name "pwsh" `
             -ErrorAction Stop
     ).Source
-
-    $masir = (
-        Get-Command `
-            -Name "masir" `
-            -ErrorAction Stop
-    ).Source
-
     $action = New-ScheduledTaskAction `
         -Execute $pwsh `
         -Argument (
         '-NoProfile -WindowStyle Hidden ' +
         '-Command "' +
-        'komorebic start --whkd; ' +
-        'Start-Process -FilePath ''' +
-        $masir +
-        ''' -WindowStyle Hidden' +
+        'komorebic start --whkd --masir' +
         '"'
     )
 
@@ -281,5 +271,161 @@ function Register-ZebarStartupTask {
         "[OK] Aufgabe '{0}' eingerichtet." `
             -f $taskName
     ) `
+        -ForegroundColor Green
+}
+
+function Stop-WindowsDesktopEnvironment {
+    [CmdletBinding()]
+    param()
+
+    Write-Host ""
+    Write-Host "========================================"
+    Write-Host " Desktop Environment stoppen"
+    Write-Host "========================================"
+
+    $zebarTask = Get-ScheduledTask `
+        -TaskName "Zebar Desktop" `
+        -ErrorAction SilentlyContinue
+
+    if ($zebarTask) {
+        Stop-ScheduledTask `
+            -TaskName "Zebar Desktop" `
+            -ErrorAction SilentlyContinue
+    }
+
+    $zebarProcesses = @(
+        Get-Process `
+            -Name "zebar" `
+            -ErrorAction SilentlyContinue
+    )
+
+    if ($zebarProcesses.Count -gt 0) {
+        $zebarProcesses |
+        Stop-Process `
+            -Force `
+            -ErrorAction SilentlyContinue
+
+        $zebarProcesses |
+        Wait-Process `
+            -Timeout 5 `
+            -ErrorAction SilentlyContinue
+    }
+
+    Write-Host "[OK] Zebar beendet." -ForegroundColor Green
+
+    $komorebiProcess = Get-Process `
+        -Name "komorebi" `
+        -ErrorAction SilentlyContinue
+
+    if ($komorebiProcess) {
+        & komorebic stop --whkd --masir
+
+        if ($LASTEXITCODE -ne 0) {
+            throw (
+                "komorebi konnte nicht sauber beendet werden. " +
+                "Exit-Code: $LASTEXITCODE"
+            )
+        }
+
+        try {
+            $komorebiProcess |
+            Wait-Process `
+                -Timeout 10 `
+                -ErrorAction Stop
+        }
+        catch {
+            throw "komorebi wurde nicht innerhalb von 10 Sekunden beendet."
+        }
+    }
+    else {
+        Get-Process `
+            -Name "whkd", "masir" `
+            -ErrorAction SilentlyContinue |
+        Stop-Process `
+            -Force `
+            -ErrorAction SilentlyContinue
+    }
+
+    Write-Host "[OK] komorebi, whkd und masir beendet." `
+        -ForegroundColor Green
+}
+
+
+function Start-WindowsDesktopEnvironment {
+    [CmdletBinding()]
+    param()
+
+    Write-Host ""
+    Write-Host "========================================"
+    Write-Host " Desktop Environment starten"
+    Write-Host "========================================"
+
+    foreach ($taskName in @("komorebi Desktop", "Zebar Desktop")) {
+        if (-not (
+            Get-ScheduledTask `
+                -TaskName $taskName `
+                -ErrorAction SilentlyContinue
+        )) {
+            throw "Scheduled Task nicht gefunden: $taskName"
+        }
+    }
+
+    Start-ScheduledTask `
+        -TaskName "komorebi Desktop"
+
+    $komorebiReady = $false
+
+    for ($attempt = 0; $attempt -lt 20; $attempt++) {
+        if (
+            (Get-Process -Name "komorebi" -ErrorAction SilentlyContinue) -and
+            (Get-Process -Name "whkd" -ErrorAction SilentlyContinue)
+        ) {
+            $komorebiReady = $true
+            break
+        }
+
+        Start-Sleep -Milliseconds 250
+    }
+
+    if (-not $komorebiReady) {
+        throw "komorebi/whkd wurden nach dem Start nicht rechtzeitig erkannt."
+    }
+
+    Write-Host "[OK] komorebi und whkd laufen." `
+        -ForegroundColor Green
+
+    Start-ScheduledTask `
+        -TaskName "Zebar Desktop"
+
+    $zebarReady = $false
+
+    for ($attempt = 0; $attempt -lt 20; $attempt++) {
+        if (Get-Process -Name "zebar" -ErrorAction SilentlyContinue) {
+            $zebarReady = $true
+            break
+        }
+
+        Start-Sleep -Milliseconds 250
+    }
+
+    if (-not $zebarReady) {
+        throw "Zebar wurde nach dem Start nicht rechtzeitig erkannt."
+    }
+
+    Write-Host "[OK] Zebar läuft." `
+        -ForegroundColor Green
+}
+
+
+function Restart-WindowsDesktopEnvironment {
+    [CmdletBinding()]
+    param()
+
+    Stop-WindowsDesktopEnvironment
+    Start-Sleep -Milliseconds 500
+    Start-WindowsDesktopEnvironment
+
+    Write-Host ""
+    Write-Host "[OK] Desktop Environment neu gestartet." `
         -ForegroundColor Green
 }
