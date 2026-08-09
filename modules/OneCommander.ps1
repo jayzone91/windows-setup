@@ -565,6 +565,14 @@ function Install-OneCommanderIcons {
         [string] $RepositoryPath
     )
 
+    $buildFileIconsScript = Join-Path `
+    (Split-Path -Path $PSScriptRoot -Parent) `
+        "scripts\Build-OneCommanderFileIcons.ps1"
+
+    if (Test-Path $buildFileIconsScript) {
+        . $buildFileIconsScript
+    }
+
     $iconsRoot = Join-Path `
         $RepositoryPath `
         "dotfiles\onecommander\Icons"
@@ -656,23 +664,37 @@ function Install-OneCommanderIcons {
         $iconsRoot `
         "FileIcons\CatppuccinMocha"
 
-    if (Test-Path $fileIconsSource) {
-        Remove-OneCommanderGeneratedIconCache `
-            -Path $fileIconsSource
+    $fileIconsManifest = Join-Path `
+        $fileIconsSource `
+        "_manifest.json"
 
-        Set-DirectoryJunction `
-            -Path (
-            Join-Path `
-                $env:LOCALAPPDATA `
-                "OneCommander\Resources\FileIcons\CatppuccinMocha"
-        ) `
-            -Target $fileIconsSource
-    }
-    else {
+    if (-not (Test-Path $fileIconsManifest)) {
         Write-Host (
-            "[INFO] Catppuccin File-Icon-Theme noch nicht vorhanden."
+            "[INFO] Catppuccin File-Icons fehlen. " +
+            "Erzeuge vollständiges Icon-Pack."
+        )
+
+        Build-OneCommanderFileIcons `
+            -RepositoryPath $RepositoryPath
+    }
+
+    if (-not (Test-Path $fileIconsManifest)) {
+        throw (
+            "Catppuccin File-Icon-Pack konnte nicht erzeugt werden: " +
+            $fileIconsSource
         )
     }
+
+    Remove-OneCommanderGeneratedIconCache `
+        -Path $fileIconsSource
+
+    Set-DirectoryJunction `
+        -Path (
+        Join-Path `
+            $env:LOCALAPPDATA `
+            "OneCommander\Resources\FileIcons\CatppuccinMocha"
+    ) `
+        -Target $fileIconsSource
 }
 
 
@@ -767,4 +789,43 @@ function Set-OneCommanderConfiguration {
             Start-OneCommander
         }
     }
+}
+
+function Set-FileHardLink {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path,
+
+        [Parameter(Mandatory)]
+        [string] $Target
+    )
+
+    if (-not (Test-Path $Target)) {
+        throw "Hardlink-Ziel existiert nicht: $Target"
+    }
+
+    $parent = Split-Path `
+        -Path $Path `
+        -Parent
+
+    if (-not (Test-Path $parent)) {
+        New-Item `
+            -ItemType Directory `
+            -Path $parent `
+            -Force |
+        Out-Null
+    }
+
+    if (Test-Path $Path) {
+        Remove-Item `
+            -Path $Path `
+            -Force
+    }
+
+    New-Item `
+        -ItemType HardLink `
+        -Path $Path `
+        -Target $Target |
+    Out-Null
 }

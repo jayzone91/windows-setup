@@ -1,1 +1,6 @@
 dotfiles/onecommander/Icons/FolderIcons/CatppuccinMocha/16/
+
+node_modules/
+
+# Generated OneCommander assets
+.generated/
