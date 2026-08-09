@@ -22,7 +22,7 @@ Bereits umgesetzt sind unter anderem:
 - Visual Studio Code inklusive Extensions und Settings
 - Windows Terminal, Nushell und Starship
 - Zen Browser und Google Chrome Beta
-- Logitech G HUB inklusive Konfigurationssynchronisierung
+- Logitech G HUB mit einmaliger Initialisierung sowie bewusstem Backup/Restore
 - ReFS Dev Drive und separates Games-Laufwerk
 - Microsoft Defender Dev Drive Performance Mode
 - automatische wöchentliche Wartung
@@ -31,11 +31,15 @@ Bereits umgesetzt sind unter anderem:
 - `just` als einheitliche Bedienoberfläche für manuelle Projektaktionen
 - `just update` für den vollständigen manuellen Wartungs-/Setup-Lauf
 - `just check` für die rekursive PSScriptAnalyzer-Prüfung
+- `just desktop-restart` für einen definierten Neustart von komorebi, whkd, masir und Zebar
+- `just ghub-backup` und `just ghub-restore` für bewusste G-HUB-Konfigurations-Snapshots
 - Bootstrap-Ausführung mit `ExecutionPolicy Bypass` ausschließlich auf Prozessebene
 - komorebi + whkd als Tiling Window Manager
 - masir für Focus Follows Mouse
 - Zebar als eigene interaktive Desktop-Bar
+- definierter Desktop-Neustart nach dem Bootstrap zur Wiederherstellung der korrekten Zebar-Z-Order
 - OneCommander als Explorer-Ersatz
+- OneCommander-Desired-State-Precheck: Neustart nur bei tatsächlichem Konfigurations-Drift
 - Catppuccin-Mocha-Theme für OneCommander
 - Catppuccin-Mocha-Folder-Icons für OneCommander
 - automatisch generiertes Catppuccin-Mocha-File-Icon-Pack aus `catppuccin/vscode-icons`
@@ -43,6 +47,7 @@ Bereits umgesetzt sind unter anderem:
 - Verzeichnis-Dotfiles werden als NTFS-Junctions eingebunden
 - Catppuccin Mocha als gemeinsame Designsprache
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
+- Zen-Mod-Precheck: Browser-Neustart nur, wenn konfigurierte Mods tatsächlich fehlen
 
 Die nächsten größeren Arbeitspakete sind NanaZip, Home-Office-Werkzeuge, PowerToys Command Palette + Everything, Windhawk für Taskbar, Startmenü und Notification Center, ein eigenes OSD sowie weiterer Catppuccin-Polish.
 
@@ -117,6 +122,25 @@ just check
 ```powershell
 Invoke-ScriptAnalyzer -Path . -Recurse
 ```
+
+## Desktop-Umgebung neu starten
+
+```powershell
+just desktop-restart
+```
+
+Die Recipe beendet Zebar und die komorebi-Komponenten kontrolliert. Anschließend werden komorebi, whkd und masir gestartet; erst danach startet Zebar. Derselbe Ablauf wird am Ende des Bootstrap verwendet, damit die Bar nach Änderungen wieder zuverlässig in der korrekten Z-Order liegt.
+
+## Logitech G HUB sichern und wiederherstellen
+
+```powershell
+just ghub-backup
+just ghub-restore
+```
+
+Die G-HUB-`settings.db` wird nicht mehr bei jedem Bootstrap automatisch synchronisiert. G HUB verändert die SQLite-Datenbank auch ohne bewusste Konfigurationsänderungen laufend. Auf einem neuen System erfolgt deshalb nur eine einmalige Initialisierung.
+
+Danach bleibt G HUB bei normalen `just update`-Läufen unangetastet. Ein Backup oder Restore wird bewusst über die beiden Recipes ausgelöst; dafür darf G HUB kontrolliert beendet und anschließend wieder gestartet werden.
 
 ## Direkter Bootstrap-Aufruf
 
@@ -280,7 +304,9 @@ Umgesetzt sind:
 
 `LGUG2Z.masir` ergänzt komorebi um Focus Follows Mouse.
 
-masir nutzt seine automatische komorebi-Integration und wird gemeinsam mit komorebi/whkd über den Desktop-Scheduled-Task gestartet.
+masir nutzt seine automatische komorebi-Integration und wird gemeinsam mit komorebi/whkd über den erhöhten Desktop-Scheduled-Task gestartet.
+
+Der Desktop-Neustart ist zentral über `Stop-WindowsDesktopEnvironment`, `Start-WindowsDesktopEnvironment` und `Restart-WindowsDesktopEnvironment` orchestriert. Zebar besitzt weiterhin einen separaten, nicht erhöhten Scheduled Task.
 
 ## Zebar
 
@@ -340,6 +366,8 @@ Das Setup übernimmt:
 - Catppuccin-Folder-Icon-Pack einbinden
 - Catppuccin-File-Icon-Pack einbinden
 - Datei-Alter-Farben für das dunkle Theme konfigurieren
+- vollständigen Desired-State vor Änderungen prüfen
+- OneCommander bei unverändertem Zustand geöffnet lassen
 
 ## Theme
 
@@ -527,10 +555,10 @@ Der Wartungslauf umfasst unter anderem:
 - Entwicklungswerkzeuge aktualisieren
 - Treiber prüfen und aktualisieren
 - Windows- und Microsoft-Updates installieren
-- Logitech-G-HUB-Konfiguration synchronisieren
+- Logitech G HUB auf einem neuen System einmalig initialisieren; danach keine automatische DB-Synchronisierung
 - Windows- und Entwicklungs-Konfiguration erneut anwenden
 - Zebar-Abhängigkeiten und Build sicherstellen
-- OneCommander-Theme und Icons sicherstellen
+- OneCommander-Desired-State prüfen und nur bei tatsächlichem Drift anwenden
 - Catppuccin-File-Icons bei Bedarf generieren
 - PSScriptAnalyzer ausführen
 - erforderlichen Neustart erkennen
@@ -607,6 +635,9 @@ Folgende Entscheidungen sind bewusst getroffen und sollen nicht ohne technischen
 - `Justfile` als Bedienoberfläche, nicht als Ort für Setup-Logik
 - `just update` als bevorzugter manueller Wartungs-/Setup-Aufruf
 - `just check` als bevorzugte manuelle statische Prüfung
+- `just desktop-restart` als manueller Einstiegspunkt für die Desktop-Orchestrierung
+- G-HUB-Datenbank nach der Erstinitialisierung nur bewusst über `just ghub-backup` / `just ghub-restore` behandeln
+- laufende Anwendungen nur schließen, wenn eine tatsächliche Änderung dies erfordert
 - Execution Policy nur auf Prozessebene setzen
 - keine dauerhafte Änderung der globalen PowerShell Execution Policy
 - Dateien per NTFS-Hardlink
