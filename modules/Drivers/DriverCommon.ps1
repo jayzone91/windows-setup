@@ -14,34 +14,76 @@ function Test-Administrator {
     )
 }
 
-function Test-PendingReboot {
-    $rebootRequired = $false
+function Get-PendingRebootStatus {
+    [CmdletBinding()]
+    [OutputType([pscustomobject])]
+    param()
 
-    $registryPaths = @(
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending"
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired"
-    )
+    $reasons = @()
 
-    foreach ($path in $registryPaths) {
-        if (Test-Path $path) {
-            $rebootRequired = $true
-        }
+    $cbsPath =
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\" +
+    "Component Based Servicing\RebootPending"
+
+    if (Test-Path $cbsPath) {
+        $reasons += "ComponentBasedServicing"
     }
 
 
+    $windowsUpdatePath =
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\" +
+    "WindowsUpdate\Auto Update\RebootRequired"
+
+    if (Test-Path $windowsUpdatePath) {
+        $reasons += "WindowsUpdate"
+    }
+
+
+    $sessionManagerPath =
+    "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager"
+
     $sessionManager = Get-ItemProperty `
-        "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" `
+        -Path $sessionManagerPath `
         -Name PendingFileRenameOperations `
         -ErrorAction SilentlyContinue
 
+    $pendingFileRenames = @()
 
     if (
         $sessionManager -and
         $sessionManager.PendingFileRenameOperations
     ) {
-        $rebootRequired = $true
+        $pendingFileRenames = @(
+            $sessionManager.PendingFileRenameOperations
+        )
+
+        $reasons += "PendingFileRenameOperations"
     }
 
 
-    return $rebootRequired
+    return [PSCustomObject]@{
+        RebootRequired          = $reasons.Count -gt 0
+        Reasons                 = $reasons
+        PendingFileRenames      = $pendingFileRenames
+        ComponentBasedServicing = (
+            $reasons -contains "ComponentBasedServicing"
+        )
+        WindowsUpdate           = (
+            $reasons -contains "WindowsUpdate"
+        )
+        FileRenameOperations    = (
+            $reasons -contains "PendingFileRenameOperations"
+        )
+    }
+}
+
+
+function Test-PendingReboot {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    return (
+        Get-PendingRebootStatus
+    ).RebootRequired
 }

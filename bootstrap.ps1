@@ -243,18 +243,56 @@ Write-Host ""
 # Wartungsstatus
 # ------------------------------------------------------------
 
-$pendingReboot =
-Test-PendingReboot
+$rebootStatus =
+Get-PendingRebootStatus
 
+$rebootRequired =
+$rebootStatus.RebootRequired
+
+if ($rebootStatus.RebootRequired) {
+
+    Write-Host ""
+    Write-Host "[INFO] Neustartstatus:"
+
+    foreach ($reason in $rebootStatus.Reasons) {
+        Write-Host "  - $reason"
+    }
+
+    if ($rebootStatus.PendingFileRenames.Count -gt 0) {
+
+        Write-Host ""
+        Write-Host "[INFO] PendingFileRenameOperations:"
+
+        foreach ($entry in $rebootStatus.PendingFileRenames) {
+            Write-Host "  - $entry"
+        }
+    }
+}
 
 $repositoryStatus =
 Get-WindowsSetupRepositoryStatus `
     -RepositoryPath $Root
 
+if ($repositoryStatus.HasChanges) {
+
+    Write-Host ""
+    Write-Host "[INFO] Lokale Repository-Änderungen:"
+
+    foreach ($file in $repositoryStatus.ChangedFiles) {
+        Write-Host "  - $file"
+    }
+}
+
+if ($repositoryStatus.UnpushedCommits -gt 0) {
+    Write-Host (
+        "[INFO] Ungepushte Commits: {0}" `
+            -f $repositoryStatus.UnpushedCommits
+    )
+}
 
 Send-WindowsSetupNotifications `
     -WindowsUpdateRebootRequired $windowsUpdateStatus.RebootRequired `
     -DriverRebootRequired $script:DriverRebootRequired `
-    -PendingReboot $pendingReboot `
+    -PendingReboot $rebootRequired `
     -RepositoryStatus $repositoryStatus `
     -RepositoryPath $Root
