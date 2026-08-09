@@ -237,6 +237,40 @@ Nach der Erstinstallation sollen wiederkehrende manuelle Aktionen über kurze, d
 
 # 5. Phase 2 – Paketverwaltung
 
+## Gemeinsame Paketarchitektur
+
+`config/packages.psd1` bleibt die zentrale deklarative Paketliste. Paketgruppen sind weiterhin fachlich organisiert; die Eigenschaft `Source` entscheidet über den Installationsweg.
+
+Unterstützte Quellen:
+
+- `winget`
+- `msstore`
+- `chocolatey`
+- `scoop`
+
+Für Scoop muss zusätzlich der gewünschte `Bucket` direkt am Paket angegeben werden. Für eigene Buckets kann optional `BucketUrl` hinterlegt werden.
+
+- [x] `Source` als zentraler Dispatcher für mehrere Paketmanager
+- [x] Winget-Pakete nur für `Source = winget` oder `Source = msstore` an Winget übergeben
+- [x] Chocolatey als generisches Paket-Backend
+- [x] Scoop als generisches Paket-Backend
+- [x] Chocolatey bei Bedarf automatisch installieren
+- [x] Chocolatey bei jedem Bootstrap selbst aktualisieren
+- [x] Scoop bei Bedarf automatisch installieren
+- [x] Scoop bei jedem Bootstrap selbst und seine Manifeste aktualisieren
+- [x] Scoop-Pakete verlangen einen expliziten Bucket
+- [x] optionale `BucketUrl` für eigene Scoop-Buckets unterstützen
+- [x] benötigte Scoop-Buckets aus allen Paketgruppen ableiten
+- [ ] automatisches Hinzufügen eines zusätzlichen Scoop-Buckets praktisch mit einem realen Paket testen
+- [x] Chocolatey-Cache-Cleanup in den Bootstrap integrieren
+- [x] Scoop-Download-Cache nur bereinigen, wenn der Cache existiert
+- [x] alte Scoop-App-Versionen per Cleanup entfernen
+- [x] Paketmanager-Cleanup auch bei Fehlern innerhalb der Paketphase über `finally` ausführen
+- [x] Winget-Cache nicht durch inoffizielles Löschen interner Verzeichnisse manipulieren
+- [x] Paketkonfiguration in `config/packages.psd1` mit Beispielen und unterstützten Quellen dokumentieren
+- [x] `just check` nach dem Paketmanager-Umbau ohne relevante Analyzer-Warnungen
+- [x] wiederholter `just update` mit Chocolatey/Scoop ohne erneute Installation der Paketmanager
+
 ## Generische Winget-Logik
 
 - [x] Paketgruppen über `config/packages.psd1`
@@ -250,6 +284,8 @@ Nach der Erstinstallation sollen wiederkehrende manuelle Aktionen über kurze, d
 - [x] Winget-Ausgabe robust anhand der Paket-ID auswerten
 - [x] gepinnte Version gezielt installieren
 - [x] OpenVPN als realer Test für Versions-Pinning
+- [x] direkte Winget-Aufrufe außerhalb der Paketgruppen müssen `Source` explizit angeben
+- [x] Intel Driver & Support Assistant an die explizite Winget-Source angepasst
 
 ## Aktuelle Paketgruppen
 
@@ -272,6 +308,13 @@ Nach der Erstinstallation sollen wiederkehrende manuelle Aktionen über kurze, d
 - [x] **NanaZip**
 - [ ] PowerToys
 - [ ] Everything
+
+### HomeOffice
+
+- [x] Remote Desktop Manager über Winget
+- [x] FileZilla Client über Chocolatey
+- [x] PCVisit Supporter Modul über eigenen Installationsworkflow
+- [x] OpenVPN als vorhandene Abhängigkeit verfügbar
 
 ### Development
 
@@ -349,12 +392,11 @@ Der NanaZip-Workflow ist absichtlich generisch aufgebaut und soll für weitere P
 
 ## Noch offen in der Paketlogik
 
-- [ ] Retry-Mechanismus bei temporären Winget-/Download-Fehlern
+- [ ] Retry-Mechanismus bei temporären Paketmanager-/Download-Fehlern
 - [ ] bessere maschinenlesbare Update-Zusammenfassung
 - [ ] Paket-Fehler am Ende gesammelt ausgeben statt nur während des Laufs
 - [ ] optionale zentrale Paket-Logs
-
----
+- [ ] Scoop-Bucket-Autobereitstellung mit mindestens einem zusätzlichen Bucket praktisch testen
 
 # 6. Phase 3 – Windows Debloat und Grundkonfiguration
 
@@ -576,6 +618,35 @@ Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games 
 - [x] Profil im Repository
 - [x] Profil als Hardlink eingebunden
 
+## CLI-Tools / moderne Shell-Werkzeuge
+
+Ziel ist ein schneller, komfortabler CLI-Workflow ähnlich zur Linux-Arbeitsumgebung. Geeignete moderne CLI-Tools sollen reproduzierbar über die Paketverwaltung installiert und sinnvoll in das PowerShell-Profil integriert werden.
+
+Pflicht / bereits konkret gewünscht:
+
+- [ ] `ripgrep` (`rg`) installieren
+- [ ] `eza` als modernen Ersatz für klassische Verzeichnisauflistung installieren
+- [ ] PowerShell-Alias/Funktion für `ls` auf `eza` umstellen
+- [ ] sinnvolle Standardparameter für `eza` definieren, ohne Skript-Kompatibilität unnötig zu beschädigen
+
+Weitere Kandidaten prüfen und bei echtem Nutzen integrieren:
+
+- [ ] `fd` als schnellere Dateisuche
+- [ ] `bat` als moderner Datei-Viewer
+- [ ] `fzf` für fuzzy selection
+- [ ] `jq` für JSON-Verarbeitung
+- [ ] `zoxide` für schnelles Verzeichnis-Navigieren
+- [ ] weitere geeignete CLI-Tools anhand des tatsächlichen Workflows inventarisieren
+
+Integration:
+
+- [ ] für ausgewählte Tools passende PowerShell-Aliase/Funktionen im versionierten Profil hinterlegen
+- [ ] bestehende Windows-/PowerShell-Aliase nur bewusst überschreiben
+- [ ] Verhalten in interaktiver PowerShell testen
+- [ ] prüfen, welche Tools auch sinnvoll in Nushell eingebunden werden sollen
+- [ ] Installation und Wiederholung über `just update` testen
+- [ ] `just check` nach Profilanpassungen ausführen
+
 ## Nushell
 
 - [x] Installation
@@ -593,8 +664,6 @@ Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games 
 
 - [ ] weiterer UX-Feinschliff
 - [ ] Keybindings/Profiles vollständig dokumentieren, falls weitere Anpassungen dazukommen
-
----
 
 # 15. Phase 12 – Visual Studio Code
 
@@ -741,7 +810,7 @@ Grund:
 
 ### Akzeptanzkriterien für Desktop-Stabilität
 
-- Microsoft Kurznotizen werden nicht getiled. **Noch offen.**
+- Microsoft Kurznotizen werden nicht getiled.
 - Nach `just update` funktioniert die komorebi-/Zebar-Erkennung ohne manuelle Nacharbeit.
 - Normale Fenster landen nicht hinter Zebar.
 - Fenster lassen sich nach dem Bootstrap weiterhin normal verschieben und schließen.
@@ -1106,73 +1175,79 @@ Das OSD soll sich unaufdringlich, schnell und modern verhalten.
 
 # 25. Phase 22 – Home Office
 
-Diese Phase wurde bewusst als eigener Bereich eingeplant und darf nicht mit allgemeinen Tools oder Development vermischt werden.
+Diese Phase ist als eigener Bereich umgesetzt und wird nicht mit allgemeinen Tools oder Development vermischt.
 
 ## Ziel
 
-Alle Anwendungen und Einstellungen, die für Firmenzugriff/Home Office benötigt werden, sollen als eigene Paketgruppe reproduzierbar installiert werden können.
-
-## Remote Desktop Manager
-
-- [ ] Remote Desktop Manager installieren
-- [ ] passende Winget-Paket-ID prüfen
-- [ ] Update-Verhalten testen
-- [ ] benötigte Konfigurationen identifizieren
-- [ ] prüfen, welche Einstellungen exportierbar/versionierbar sind
-- [ ] RDP-Verbindungen mit aktivem VPN testen
-- [ ] RDP-Verbindungen ohne VPN testen
-- [ ] keine Passwörter/Credentials im öffentlichen Repository speichern
-
-## FileZilla
-
-- [ ] FileZilla installieren
-- [ ] passende Winget-Paket-ID prüfen
-- [ ] FTP/FTPS/SFTP-Nutzung testen
-- [ ] Site-Manager nur automatisieren, wenn Secrets sauber getrennt werden können
-- [ ] keine Zugangsdaten committen
-
-## VPN / Zertifikate
-
-Aus Phase 7 übernehmen:
-
-- [ ] VPN-Profile bei Bedarf vervollständigen
-- [ ] Firmen-/Privat-VPN trennen
-- [ ] Zertifikate automatisiert bereitstellen, falls sicher möglich
-- [ ] Secrets-Konzept festlegen
-
-## Weitere Firmen-/Homeoffice-Tools
-
-- [ ] weitere Firmen-/Homeoffice-Tools bei Bedarf als **eigene Paketgruppe**
-- [ ] PCVisit Supporter Modul prüfen / integrieren, falls automatisierbar
-- [ ] Agfeo Dashboard / Softphone prüfen, falls Windows-Setup dies benötigt
-- [ ] sonstige interne Tools nur ergänzen, wenn tatsächlich benötigt
-- [ ] interne URLs/Portale nicht als Secrets behandeln, Zugangsdaten aber niemals committen
+Alle für Firmenzugriff/Home Office benötigten Programme werden reproduzierbar installiert. Die eigentlichen RDP-, VPN-, FTP-/SFTP- und sonstigen Zieldefinitionen liegen nicht im öffentlichen Repository, sondern werden zentral über die Datenbank von Remote Desktop Manager bereitgestellt.
 
 ## Paketgruppe
 
-Langfristig:
+- [x] eigene Paketgruppe `HomeOffice`
+- [x] Home-Office-Paketgruppe im Bootstrap separat aufrufen
+- [x] wiederholte Installation über `just update` erfolgreich getestet
 
-```powershell
-HomeOffice = @(
-    # Remote Desktop Manager
-    # FileZilla
-    # weitere Firmen-Tools
-)
-```
+## Remote Desktop Manager
 
-und im Bootstrap separat:
+- [x] Remote Desktop Manager installieren
+- [x] Winget-Paket `Devolutions.RemoteDesktopManager`
+- [x] Update-Verhalten über den generischen Paketworkflow getestet
+- [x] RDM als zentrale Quelle für RDP-, VPN-, FTP-/SFTP- und weitere Verbindungsziele verwenden
+- [x] keine Verbindungsziele oder Credentials im öffentlichen Repository speichern
+- [x] vorhandene RDM-Datenbank wird außerhalb dieses Setups verbunden
 
-```powershell
-Install-PackageGroup `
-    -Packages $Packages.HomeOffice `
-    -GroupName "Home Office"
-```
+## FileZilla
+
+- [x] FileZilla Client installieren
+- [x] Winget als Quelle verworfen, da das Paket in der aktuellen Winget-Quelle nicht verfügbar ist
+- [x] FileZilla über Chocolatey installieren
+- [x] Installation über `just update` praktisch getestet
+- [x] wiederholter Lauf führt nur die Chocolatey-Update-Prüfung aus
+- [x] FTP-Nutzung über Remote Desktop Manager getestet
+- [x] FileZilla vollständig von komorebi ignorieren
+- [x] FileZilla kann von RDM in einen Tab eingebettet werden, ohne einen verwaisten Tiling-Slot zurückzulassen
+
+## PCVisit Supporter Modul
+
+- [x] PCVisit **Supporter Modul** als Pflichtbestandteil festgelegt
+- [x] normales PCVisit-Kundenmodul ausdrücklich nicht verwenden
+- [x] vorhandene Installation erkennen
+- [x] offizielles Supporter-Setup nur installieren, wenn das Modul fehlt
+- [x] PCVisit-eigene automatische Update-Funktion verwenden
+- [x] keine zusätzliche Versions-/Update-Logik im Bootstrap
+- [x] Installation/Erkennung im Bootstrap praktisch getestet
+
+## OpenVPN und Verbindungsdaten
+
+- [x] OpenVPN ist bereits als benötigter Client installiert und versionsgepinnt
+- [x] keine eigene VPN-Profilverwaltung im Repository erforderlich
+- [x] keine Trennung von Firmen-/Privatprofilen durch dieses Setup erforderlich
+- [x] keine eigene Zertifikatsverwaltung durch dieses Setup erforderlich
+- [x] keine RDM-/FileZilla-Verbindungsdaten im Repository erforderlich
+- [x] Secrets bleiben vollständig außerhalb des öffentlichen Repositories
+
+Begründung:
+
+Remote Desktop Manager verwendet eine externe Datenbank als zentrale Quelle der Verbindungsdefinitionen. Sobald RDM mit dieser Datenbank verbunden ist und die benötigten Clients wie OpenVPN und FileZilla installiert sind, stehen die gepflegten VPN-, FTP-/SFTP- und RDP-Ziele zur Verfügung.
+
+## Weitere Firmen-/Homeoffice-Tools
+
+- [x] Remote Desktop Manager
+- [x] FileZilla
+- [x] PCVisit Supporter Modul
+- [ ] Agfeo Dashboard / Softphone nur ergänzen, falls es für dieses Windows-Setup tatsächlich benötigt wird
+- [ ] sonstige interne Tools nur ergänzen, wenn ein konkreter Bedarf entsteht
 
 ## Akzeptanzkriterien
 
-Nach einer Neuinstallation sollen die benötigten Home-Office-Programme mit einem Bootstrap-Lauf verfügbar sein; sensible Verbindungsdaten bleiben außerhalb des öffentlichen Repositories.
-
----
+- [x] Remote Desktop Manager ist nach einem Bootstrap-Lauf verfügbar
+- [x] FileZilla ist nach einem Bootstrap-Lauf verfügbar
+- [x] PCVisit Supporter Modul ist vorhanden bzw. wird bei Bedarf installiert
+- [x] OpenVPN ist verfügbar
+- [x] RDM kann FileZilla für FTP-Verbindungen starten und in einen Tab einbetten
+- [x] komorebi hinterlässt dabei keinen leeren Tiling-Slot
+- [x] wiederholter `just update` verursacht keine unerwartete Neuinstallation
+- [x] sensible Verbindungsdaten bleiben außerhalb des Repositories
 
 # 26. Phase 23 – Gaming
 
@@ -1384,43 +1459,46 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
 
 Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende Reihenfolge verwenden, sofern der Benutzer nichts anderes vorgibt.
 
-## Bereits gelöste Desktop-Stabilität
+## Kürzlich abgeschlossen – Home Office / Paketmanager
+
+- [x] `HomeOffice`-Paketgruppe angelegt
+- [x] Remote Desktop Manager über Winget integriert und getestet
+- [x] FileZilla über Chocolatey integriert und getestet
+- [x] PCVisit Supporter Modul integriert und getestet
+- [x] RDM-Datenbank als zentrale Quelle für Verbindungsziele festgelegt
+- [x] eigene VPN-/Zertifikats-/Secrets-Verwaltung als nicht erforderlich bewertet
+- [x] Chocolatey als Paketbackend integriert
+- [x] Scoop als Paketbackend integriert
+- [x] Chocolatey- und Scoop-Self-Update integriert
+- [x] Paketmanager-Cleanup integriert
+- [x] FileZilla in komorebi ignoriert und RDM-Embedding getestet
+- [x] Sticky Notes waren bereits korrekt vom Tiling ausgeschlossen; Dokumentation nachgezogen
+
+Noch offen aus dem Paketmanager-Umbau:
+
+- [ ] Scoop-Bucket-Autobereitstellung mit einem echten Zusatz-Bucket praktisch testen
+- [ ] Retry-Mechanismus für temporäre Download-/Paketmanagerfehler
+- [ ] maschinenlesbare Paket-/Update-Zusammenfassung
+
+## Desktop-Stabilität
 
 - [x] fehlerhafte komorebi-/Zebar-Z-Order nach `just update` analysiert
 - [x] kontrollierten Desktop-Neustart implementiert
 - [x] Startreihenfolge komorebi/whkd/masir → Zebar umgesetzt
 - [x] `just desktop-restart` ergänzt
-- [x] `just update` mit der Neustartlogik getestet
-- [x] Zen bei unverändertem Mod-Zustand geöffnet lassen
-- [x] OneCommander bei unverändertem Desired-State geöffnet lassen
-- [x] G HUB bei normalen Wartungsläufen geöffnet lassen
-
-Folgende Desktop-Stabilitätspunkte bleiben unabhängig davon offen:
-
-- [ ] Microsoft Kurznotizen vom Tiling ausschließen
+- [x] Sticky Notes vom Tiling ausgeschlossen
+- [x] FileZilla vom Tiling ausgeschlossen
 - [ ] Zebar bei echten Vollbild-Anwendungen ausblenden
 - [ ] Verhalten bei Browser-/YouTube-Vollbild und Fullscreen-Anwendungen testen
 
-## Kürzlich abgeschlossen – NanaZip / Standard-Apps
+## Priorität 1 – CLI Tools / Shell UX
 
-- [x] passende NanaZip-Paket-ID verifiziert
-- [x] NanaZip in Paketverwaltung aufgenommen
-- [x] Installation und Wiederholung über `just update` getestet
-- [x] generischen interaktiven Standard-App-Workflow implementiert
-- [x] direkte NanaZip-Standard-App-Seite mit Fallback
-- [x] zuverlässiges Warten auf das Schließen von Windows Settings
-- [x] Marker `.generated/state/default-apps/nanazip.initialized`
-- [x] zweiter `just update`-Lauf ohne erneute Benutzerinteraktion
-- [x] README und Roadmap aktualisiert
-- [ ] Kontextmenü-Integration bei Bedarf noch separat als Akzeptanztest dokumentieren
-
-## Priorität 1 – Home Office Paketgruppe
-
-1. [ ] `HomeOffice` in `packages.psd1` anlegen
-2. [ ] Remote Desktop Manager integrieren
-3. [ ] FileZilla integrieren
-4. [ ] weitere benötigte Firmen-Tools inventarisieren
-5. [ ] VPN-/Zertifikat-Konzept getrennt und sicher planen
+1. [ ] `ripgrep` (`rg`) installieren
+2. [ ] `eza` installieren und `ls`-Workflow definieren
+3. [ ] `fd`, `bat`, `fzf`, `jq` und `zoxide` bewerten
+4. [ ] ausgewählte Tools in `packages.psd1` aufnehmen
+5. [ ] passende PowerShell-Aliase/Funktionen im versionierten Profil ergänzen
+6. [ ] Installation und Wiederholung per `just update` testen
 
 ## Priorität 2 – Launcher
 
@@ -1463,8 +1541,6 @@ Folgende Desktop-Stabilitätspunkte bleiben unabhängig davon offen:
 3. [ ] Pester
 4. [ ] Dry-Run
 5. [ ] maschinenlesbarer Abschlussreport
-
----
 
 # 33. Regeln für eine KI, die diese Roadmap bearbeitet
 

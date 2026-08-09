@@ -12,7 +12,12 @@ Der Kern des Setups ist produktiv nutzbar und weitgehend reproduzierbar.
 
 Bereits umgesetzt sind unter anderem:
 
-- Paketinstallation und Updates über `winget` und Microsoft Store
+- Paketinstallation und Updates über `winget`, Microsoft Store, Chocolatey und Scoop
+- Chocolatey und Scoop werden bei Bedarf automatisch installiert und bei jedem Bootstrap selbst aktualisiert
+- Scoop-Buckets werden aus den Paketdefinitionen abgeleitet; pro Scoop-Paket ist der gewünschte Bucket explizit definiert
+- Paketmanager-Cleanup für Chocolatey und Scoop bei jedem Bootstrap-Lauf
+- eigene Home-Office-Paketgruppe mit Remote Desktop Manager und FileZilla
+- PCVisit Supporter Modul mit Installation-bei-Bedarf und PCVisit-eigenem Auto-Update
 - Versions-Pinning einzelner Pakete
 - Windows-Debloat und Grundkonfiguration
 - Windows- und Microsoft-Updates
@@ -55,7 +60,7 @@ Bereits umgesetzt sind unter anderem:
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 - Zen-Mod-Precheck: Browser-Neustart nur, wenn konfigurierte Mods tatsächlich fehlen
 
-Die nächsten größeren Arbeitspakete sind Home-Office-Werkzeuge, PowerToys Command Palette + Everything, Windhawk für Taskbar, Startmenü und Notification Center, ein eigenes OSD sowie weiterer Catppuccin-Polish.
+Die nächsten größeren Arbeitspakete sind moderne CLI-Tools und PowerShell-Aliase, PowerToys Command Palette + Everything, Windhawk für Taskbar, Startmenü und Notification Center, ein eigenes OSD sowie weiterer Catppuccin-Polish.
 
 Siehe auch [`roadmap.md`](roadmap.md).
 
@@ -238,6 +243,40 @@ Bestehende verwaltete Symbolic Links werden beim nächsten Setup-Durchlauf autom
 Generierte Inhalte liegen unter `.generated/` und werden nicht committed. Generator-Code selbst bleibt versioniert.
 
 Neben tatsächlich generierten Dateien enthält `.generated/state/` lokale Zustandsmarker für einmalige oder bewusst interaktive Initialisierungsschritte. Diese Marker verhindern, dass bereits abgeschlossene Benutzerinteraktionen bei jedem `just update` erneut ausgeführt werden.
+
+---
+
+# Paketverwaltung
+
+Die deklarative Paketliste liegt in `config/packages.psd1`. Paketgruppen bleiben nach ihrem fachlichen Zweck organisiert; `Source` bestimmt, welcher Paketmanager verwendet wird.
+
+Unterstützt werden:
+
+- `winget`
+- `msstore`
+- `chocolatey`
+- `scoop`
+
+Chocolatey und Scoop werden vom Bootstrap bei Bedarf automatisch installiert und bei jedem Lauf selbst aktualisiert.
+
+Für Scoop wird der Bucket direkt am Paket angegeben. Dadurch ist auch bei Paketen, die in mehreren Buckets vorkommen, eindeutig definiert, welche Variante verwendet werden soll. Eigene Buckets können zusätzlich eine `BucketUrl` angeben. Benötigte Buckets werden aus allen Scoop-Paketen der Konfiguration abgeleitet und vor der Paketinstallation bereitgestellt.
+
+Nach der Paketphase bereinigt der Bootstrap unterstützte Paketmanager-Caches. Bei Scoop werden außerdem alte App-Versionen entfernt. Die Cleanup-Logik läuft in einem `finally`-Block und wird damit auch ausgeführt, wenn innerhalb der Paketphase ein Fehler auftritt.
+
+## Home Office
+
+Die Home-Office-Paketgruppe stellt die benötigten lokalen Clients bereit:
+
+- Remote Desktop Manager über Winget
+- FileZilla Client über Chocolatey
+- PCVisit Supporter Modul über einen eigenen Installationsworkflow
+- OpenVPN als bereits vorhandene Abhängigkeit
+
+Remote Desktop Manager verwendet eine externe Datenbank als zentrale Quelle für RDP-, VPN-, FTP-/SFTP- und weitere Verbindungsziele. Diese Verbindungsdaten und Credentials werden deshalb nicht im Repository verwaltet.
+
+PCVisit wird nur installiert, wenn das Supporter Modul fehlt. Updates werden vollständig dem eingebauten PCVisit-Updater überlassen.
+
+FileZilla wird in komorebi vollständig ignoriert. Das ist erforderlich, weil Remote Desktop Manager FileZilla zunächst als externes Fenster startet und anschließend in einen RDM-Tab einbettet. Ohne die Ignore-Regel würde komorebi einen verwaisten Tiling-Slot zurücklassen.
 
 ---
 
