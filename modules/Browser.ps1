@@ -224,6 +224,199 @@ function Send-ZenMarionettePacket {
     $Stream.Flush()
 }
 
+
+
+function Get-ZenProfilePath {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param()
+
+    $zenRoot = Join-Path `
+        $env:APPDATA `
+        "zen"
+
+    if (-not (Test-Path $zenRoot)) {
+        return $null
+    }
+
+    #
+    # 1. Aktives Installationsprofil aus installs.ini
+    #
+    $installsIni = Join-Path `
+        $zenRoot `
+        "installs.ini"
+
+    if (Test-Path $installsIni) {
+
+        $defaultPath = Get-Content `
+            -Path $installsIni `
+            -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_ -match '^Default=(.+)$'
+        } |
+        Select-Object -First 1
+
+        if ($defaultPath -match '^Default=(.+)$') {
+
+            $profilePath = Join-Path `
+                $zenRoot `
+                $Matches[1]
+
+            if (Test-Path $profilePath) {
+                return $profilePath
+            }
+        }
+    }
+
+    #
+    # 2. Install-Sektion aus profiles.ini
+    #
+    $profilesIni = Join-Path `
+        $zenRoot `
+        "profiles.ini"
+
+    if (Test-Path $profilesIni) {
+
+        $lines = @(
+            Get-Content `
+                -Path $profilesIni `
+                -ErrorAction SilentlyContinue
+        )
+
+        $insideInstallSection = $false
+
+        foreach ($line in $lines) {
+
+            $trimmed = $line.Trim()
+
+            if ($trimmed -match '^\[Install.+\]$') {
+                $insideInstallSection = $true
+                continue
+            }
+
+            if ($trimmed -match '^\[.+\]$') {
+                $insideInstallSection = $false
+                continue
+            }
+
+            if (
+                $insideInstallSection -and
+                $trimmed -match '^Default=(.+)$'
+            ) {
+
+                $profilePath = Join-Path `
+                    $zenRoot `
+                    $Matches[1]
+
+                if (Test-Path $profilePath) {
+                    return $profilePath
+                }
+            }
+        }
+    }
+
+    #
+    # 3. Fallback:
+    # Wenn genau ein Profil eine zen-themes.json besitzt,
+    # ist dieses Profil für unsere Mod-Prüfung eindeutig.
+    #
+    $modFiles = @(
+        Get-ChildItem `
+            -Path $zenRoot `
+            -Filter "zen-themes.json" `
+            -Recurse `
+            -File `
+            -Force `
+            -ErrorAction SilentlyContinue
+    )
+
+    if ($modFiles.Count -eq 1) {
+        return $modFiles[0].Directory.FullName
+    }
+
+    Write-Warning (
+        "Aktives Zen-Profil konnte nicht eindeutig ermittelt werden."
+    )
+
+    return $null
+}
+
+
+function Get-MissingZenMods {
+    [CmdletBinding()]
+    [OutputType([object[]])]
+    param(
+        [Parameter(Mandatory)]
+        $Mods
+    )
+
+    $profilePath = Get-ZenProfilePath
+
+    if (-not $profilePath) {
+        Write-Host (
+            "[INFO] Zen-Profil konnte für die lokale Mod-Prüfung " +
+            "nicht eindeutig ermittelt werden."
+        )
+
+        return @($Mods)
+    }
+
+    $modsFile = Join-Path `
+        $profilePath `
+        "zen-themes.json"
+
+    if (-not (Test-Path $modsFile)) {
+        Write-Host (
+            "[INFO] zen-themes.json ist noch nicht vorhanden. " +
+            "Mods müssen konfiguriert werden."
+        )
+
+        return @($Mods)
+    }
+
+    try {
+        $installedMods = Get-Content `
+            -Path $modsFile `
+            -Raw `
+            -ErrorAction Stop |
+        ConvertFrom-Json `
+            -AsHashtable `
+            -ErrorAction Stop
+    }
+    catch {
+        Write-Warning (
+            "zen-themes.json konnte nicht gelesen werden. " +
+            "Die Mod-Konfiguration wird sicherheitshalber ausgeführt. " +
+            "Fehler: {0}" `
+                -f $_.Exception.Message
+        )
+
+        return @($Mods)
+    }
+
+    $missingMods = @()
+
+    foreach ($mod in $Mods) {
+        if ($installedMods.ContainsKey($mod.Id)) {
+            Write-Host (
+                "[OK] Zen Mod vorhanden: {0}" `
+                    -f $mod.Name
+            ) -ForegroundColor Green
+
+            continue
+        }
+
+        Write-Host (
+            "[MISSING] Zen Mod: {0}" `
+                -f $mod.Name
+        ) -ForegroundColor Yellow
+
+        $missingMods += $mod
+    }
+
+    return $missingMods
+}
+
 function Set-ZenMods {
 
     param(
@@ -238,6 +431,27 @@ function Set-ZenMods {
         Write-Host "[SKIP] Keine Zen Mods konfiguriert."
         return
     }
+    $missingMods = @(
+        Get-MissingZenMods `
+            -Mods $Mods
+    )
+
+    if ($missingMods.Count -eq 0) {
+        Write-Host (
+            "[SKIP] Alle {0} konfigurierten Zen Mods sind vorhanden. " +
+            "Zen bleibt geöffnet." `
+                -f $Mods.Count
+        ) -ForegroundColor Green
+
+        return
+    }
+
+    Write-Host (
+        "[INFO] {0} von {1} Zen Mods müssen installiert werden." `
+            -f `
+            $missingMods.Count,
+        $Mods.Count
+    )
 
     $zenPath = Get-ZenInstallPath
 
@@ -422,7 +636,7 @@ function Set-ZenMods {
         $messageId = 3
 
 
-        foreach ($mod in $Mods) {
+        foreach ($mod in $missingMods) {
 
             Install-ZenMod `
                 -Stream $stream `
