@@ -91,26 +91,8 @@ Für nvim:
 tree-sitter-cli
 zusätzlich repo jayzone91/nvim in windows-Setup einbinden!
 
-Für Windows:
-- Programme:
-  - Applauncher von Powertoys deaktivieren, Raycast für Windows (ID: 9PFXXSHC64H3) installieren und auf ALT+Space oder WIN+Space legen! schauen ob man die paywall für themes umgehen kann und dann catppuccin theme drauf
-
 Für Zebar:
 Neues Widget: Aktueller Akku Stand der Logitech Maus (falls auslesbar)
 
-
 Divers:
 - Prüfen ob man iMessage unter Windows gescheit zum laufen bekommt. Keine Bastelei, die Windows Phone App sagt zwar, das es gehen würde, die verliert jedoch regelmäßig die Verbindung zum telefon und dann geht gar nichts mehr.
-
-Monitor:
-- HDR nur für Spiele und Video (Direkte Videofiles sowie Webseiten im Vollbild) aktivieren, nicht auf normaler Dekstop oberfläche, ist sonst viel zu Hell.
-
-Raycast Extensions:
-  - Everything
-  - Visual Studio Code
-  - ChatGPT
-  - GitHub
-  - Google Search
-  - Shell
-  - Zen Browser
-  - Lucide Icons Search
