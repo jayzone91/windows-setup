@@ -1,2 +1,20 @@
 Moin, lies bitte https://github.com/jayzone91/windows-setup und vor allem die roadmap.md.
 Entscheide dann selbstständig, wie wir mit dem projekt weiter machen.
+
+
+Windows 11 Start Menu Styler => Theme Rosepine als Standard und nur noch Farben anpassen
+Windows 11 Notification Center Styler => Theme Matter als Standard und nur noch Farben anpassen
+Taskbar auto-hide speed
+Lock Keys Notifier
+
+
+
+Für nvim:
+tree-sitter-cli
+zusätzlich repo jayzone91/nvim in windows-Setup einbinden!
+
+Für Windows:
+Wir versuchen die Treiber Updates über Armory Crate von ASUS. Prüfen wir überhaupt, ob armory crate installiert ist? falls ja: installieren wir es, falls es noch nicht da ist? was ist mit updates von armory crate
+
+Für Zebar:
+Neues Widget: Aktueller Akku Stand der Logitech Maus (falls auslesbar)
