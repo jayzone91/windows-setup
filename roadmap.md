@@ -303,6 +303,7 @@ Für Scoop muss zusätzlich der gewünschte `Bucket` direkt am Paket angegeben w
 
 - [x] Windows HDR Calibration
 - [x] iCloud
+- [x] ChatGPT Desktop-App (`9PLM9XGG6VKS`) über Microsoft Store
 - [x] OpenVPN
 - [x] Logitech G HUB
 - [x] komorebi
@@ -313,6 +314,17 @@ Für Scoop muss zusätzlich der gewünschte `Bucket` direkt am Paket angegeben w
 - [x] **NanaZip**
 - [ ] PowerToys
 - [ ] Everything
+
+#### ChatGPT Desktop-App
+
+- [x] neue ChatGPT Desktop-App über den bestehenden generischen `msstore`-Paketworkflow installieren
+- [x] Microsoft-Store-ID `9PLM9XGG6VKS` verwenden
+- [x] Paketupdates über `Update = $true` verwalten
+- [x] ChatGPT Classic (`9NT1R1C2HH7J`) wird bewusst nicht verwendet
+- [x] `winget show --id 9PLM9XGG6VKS --exact --source msstore` praktisch verifiziert: Publisher OpenAI, Installer-Typ `msstore`
+- [x] Installation über `just update` praktisch erfolgreich getestet
+- [x] `just check` nach der Integration erfolgreich getestet
+- [x] Anwendung praktisch gestartet und als funktionsfähig bestätigt
 
 ### HomeOffice
 
