@@ -87,7 +87,7 @@ Arbeite selbstständig nach den Regeln der Roadmap weiter.
 ---
 
 Taskbar auto-hide speed
-Lock Keys Notifier
+Lock Keys Notifier => Keine Themes verfügbar, prüfen ob umstellung auf Catppuccin möglich
 
 
 
