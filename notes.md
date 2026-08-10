@@ -89,7 +89,7 @@ Arbeite selbstständig nach den Regeln der Roadmap weiter.
 
 Für nvim:
 tree-sitter-cli
-zusätzlich repo jayzone91/nvim in windows-Setup einbinden!
+zusätzlich repo jayzone91/nvim in windows-Setup als submodule einbinden!
 
 Für Zebar:
 Neues Widget: Aktueller Akku Stand der Logitech Maus (falls auslesbar)
