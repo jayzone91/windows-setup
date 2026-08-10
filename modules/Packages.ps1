@@ -1,4 +1,4 @@
-function Test-WingetPackage {
+﻿function Test-WingetPackage {
     param(
         [Parameter(Mandatory)]
         [string]$Id
@@ -205,31 +205,31 @@ function Get-WingetInstalledVersion {
         return $null
     }
 
-    foreach ($line in $output) {
-        if ($line -notmatch [regex]::Escape($Id)) {
-            continue
-        }
+    $escapedId = [regex]::Escape($Id)
+    $packagePattern = (
+        '(?i)(?<!\S)' +
+        $escapedId +
+        '(?!\S)\s+(\S+)'
+    )
 
-        $columns = @(
-            $line -split "\s{2,}" |
-            ForEach-Object {
-                $_.Trim()
-            } |
-            Where-Object {
-                -not [string]::IsNullOrWhiteSpace($_)
-            }
+    foreach ($rawLine in $output) {
+        $line = [string]$rawLine
+
+        # Winget kann ANSI-Steuersequenzen in die Terminalausgabe
+        # einbetten. Diese dürfen die Paket-ID-Erkennung nicht stören.
+        $line = [regex]::Replace(
+            $line,
+            "$([char]27)\[[0-?]*[ -/]*[@-~]",
+            ""
         )
 
-        $idIndex = [Array]::IndexOf(
-            $columns,
-            $Id
+        $match = [regex]::Match(
+            $line,
+            $packagePattern
         )
 
-        if (
-            $idIndex -ge 0 -and
-            $columns.Count -gt ($idIndex + 1)
-        ) {
-            return $columns[$idIndex + 1]
+        if ($match.Success) {
+            return $match.Groups[1].Value.Trim()
         }
     }
 
@@ -900,31 +900,31 @@ function Get-WingetInstalledVersion {
         return $null
     }
 
-    foreach ($line in $output) {
-        if ($line -notmatch [regex]::Escape($Id)) {
-            continue
-        }
+    $escapedId = [regex]::Escape($Id)
+    $packagePattern = (
+        '(?i)(?<!\S)' +
+        $escapedId +
+        '(?!\S)\s+(\S+)'
+    )
 
-        $columns = @(
-            $line -split "\s{2,}" |
-            ForEach-Object {
-                $_.Trim()
-            } |
-            Where-Object {
-                -not [string]::IsNullOrWhiteSpace($_)
-            }
+    foreach ($rawLine in $output) {
+        $line = [string]$rawLine
+
+        # Winget kann ANSI-Steuersequenzen in die Terminalausgabe
+        # einbetten. Diese dürfen die Paket-ID-Erkennung nicht stören.
+        $line = [regex]::Replace(
+            $line,
+            "$([char]27)\[[0-?]*[ -/]*[@-~]",
+            ""
         )
 
-        $idIndex = [Array]::IndexOf(
-            $columns,
-            $Id
+        $match = [regex]::Match(
+            $line,
+            $packagePattern
         )
 
-        if (
-            $idIndex -ge 0 -and
-            $columns.Count -gt ($idIndex + 1)
-        ) {
-            return $columns[$idIndex + 1]
+        if ($match.Success) {
+            return $match.Groups[1].Value.Trim()
         }
     }
 

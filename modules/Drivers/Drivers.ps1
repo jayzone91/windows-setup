@@ -21,8 +21,12 @@
 
     Install-WindowsDriverUpdates
 
+    Install-AsusArmouryCrate
+
     Install-IntelDriverSupport
     Install-IntelDsaUpdates
+
+    Show-AsusArmouryCrateUpdates
 
     Write-Step "Fehlende Geräte nach Installation"
 

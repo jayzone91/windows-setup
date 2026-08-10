@@ -472,8 +472,66 @@ Der NanaZip-Workflow ist absichtlich generisch aufgebaut und soll für weitere P
 - [x] Neustartbedarf aus Treiberinstallationen erkennen
 - [x] Treiber nicht unkontrolliert über normalen Windows-Update-Pfad behandeln
 - [ ] kompakte Hardware-Zusammenfassung am Ende des Setup-Laufs
-- [ ] BIOS-/Firmware-Update-Konzept prüfen
+- [x] BIOS-/Firmware-Update-Konzept für ASUS festgelegt: erkennen und melden, nicht automatisch über den ASUS-Statuspfad installieren
 - [ ] Monitor-/Peripherie-Firmware nur automatisieren, wenn zuverlässig möglich
+
+## ASUS / Armoury Crate
+
+Feste Zuständigkeit:
+
+- Intel Driver & Support Assistant bleibt die zuständige Quelle für Intel-Treiber. Der Intel-Autoinstallationspfad bleibt absichtlich auf bereits verifizierte Installationsregeln beschränkt; weitere Intel-Pakete werden erst automatisiert, wenn deren Installationsverhalten verifiziert wurde.
+- ASUS-/Mainboard-spezifische Komponenten sowie Drittanbieter-Treiber wie Realtek werden über den offiziellen ASUS-Pfad in Armoury Crate bewertet.
+- Intel-Angebote werden im automatischen ASUS-Statuspfad bewusst herausgefiltert und nicht über ASUS installiert.
+- Der vorhandene direkte ASUS-`file.idx`-Download-/Installationscode wird nicht zusätzlich in `Install-Drivers` aktiviert. Damit existiert kein konkurrierender zweiter Updatepfad neben Armoury Crate.
+- BIOS-/UEFI-/Firmware wird separat erkannt und gemeldet, aber nicht automatisch über den ASUS-Statuspfad installiert oder geflasht.
+- Ein offizieller Übergang zu ASUS DriverHub bleibt grundsätzlich zulässig; bei der bisherigen praktischen Prüfung blieb der Workflow jedoch vollständig in Armoury Crate.
+
+Armoury-Crate-Installation und -Updates:
+
+- Armoury Crate wird nicht über die generische `Drivers`-Paketgruppe verwaltet, weil eine von ASUS selbst aktualisierte Installation nicht zuverlässig der Winget-Paket-ID `Asus.ArmouryCrate` zugeordnet wird.
+- Bestehende Installationen werden unabhängig von Winget über AppX, Registry, Start-Apps und als letzten Fallback den Armoury-Crate-Service erkannt.
+- Wenn Armoury Crate fehlt, bleibt Winget mit `Asus.ArmouryCrate` der ausschließlich vorgesehene Installationsweg. Es gibt bewusst keinen direkten ASUS-Installer-Fallback.
+- Scheitert die Winget-Erstinstallation, wird dies als Warnung ausgegeben und der restliche Bootstrap darf weiterlaufen; ein späterer `just update` versucht die Installation erneut.
+- Updates der Armoury-Crate-Anwendung selbst werden über deren nativen Update-Mechanismus verwaltet.
+- Ein normaler `just update` öffnet die interaktive Armoury-Crate-Oberfläche nicht ungefragt.
+- Der normale `just update` wertet den lokal von Armoury Crate / ROG Live Service gepflegten Update-Zustand read-only aus.
+- Für Softwarezustände zählt ausschließlich der zuletzt beobachtete vollständige RLS-Komponenten-Snapshot; historische Vor-Update-Snapshots dürfen keine False Positives erzeugen.
+- Die Aktualität der ausgewerteten ASUS-/RLS-Daten wird mit Zeitstempel ausgegeben; alte Metadaten werden als möglicherweise veraltet kenntlich gemacht.
+- Nicht-Intel-Softwareupdates werden erkannt und gemeldet. Eine automatische Installation wird erst ergänzt, wenn ein offizieller ASUS-/RLS-Installationsweg praktisch verifiziert ist und BIOS/Firmware sicher ausgeschlossen werden kann.
+
+Praktisch festgestellter Upstream-Zustand am 2026-08-10:
+
+- [x] Auf dem aktuellen System ist Armoury Crate `6.5.7.0` bereits installiert.
+- [x] `winget list --id Asus.ArmouryCrate --exact` erkennt diese vorhandene Installation nicht.
+- [x] Winget bietet aktuell nur Manifest-Version `6.2.11.0` an.
+- [x] Die Installation dieses Manifests scheitert aktuell mit `Installer hash does not match`, weil der ASUS-Download nicht mehr zum im Winget-Manifest hinterlegten SHA256 passt.
+- [x] Der generische Winget-Paketworkflow ist damit für Armoury Crate als Desired-State-Erkennung ungeeignet.
+
+Praktisch bestätigt:
+
+- [x] AppX-/Registry-Erkennung erkennt die vorhandene Armoury-Crate-Version `6.5.7.0`.
+- [x] `just update` versucht bei vorhandener Armoury-Crate-Installation keine erneute Winget-Installation und kein Downgrade.
+- [x] Armoury Crate Update Center einschließlich Geräte-/Komponentenbereich auf ASUS-/Drittanbieter-Treiber und Firmware geprüft.
+- [x] Intel-Angebote werden im automatischen ASUS-Statuspfad herausgefiltert.
+- [x] aktuell keine Realtek-Updates angeboten.
+- [x] aktuell keine BIOS-/Firmware-Updates angeboten.
+- [x] bei der bisherigen Prüfung keine Weiterleitung zu ASUS DriverHub; der Workflow blieb in Armoury Crate.
+- [x] ASUS-RLS-Metadaten und Logs als read-only Quelle für den Update-Status praktisch verifiziert.
+- [x] historische Vor-Update-Snapshots als False-Positive-Quelle erkannt und die Auswertung auf den letzten vollständigen Komponenten-Snapshot beschränkt.
+- [x] Firmware-Markierungen werden separat erkannt und nicht als Softwareupdate behandelt.
+- [x] `just update` meldet auf dem aktuellen Stand korrekt keine Nicht-Intel-ASUS-Softwareupdates.
+- [x] `just update` meldet auf dem aktuellen Stand korrekt keine aktive Firmware-Markierung.
+- [x] wiederholter `just update` auf störungsarme Wiederholung des Armoury-Crate-/ASUS-Statuspfads getestet.
+- [x] finaler `just check` erfolgreich.
+- [x] finaler kompletter `just update` erfolgreich.
+
+Offen / zu testen:
+
+- [ ] Verhalten einer Winget-Erstinstallation auf einem System ohne Armoury Crate testen, sobald das Upstream-Manifest wieder funktionsfähig ist.
+- [ ] automatische Installation erkannter Nicht-Intel-ASUS-Softwareupdates nur ergänzen, wenn der offizielle ASUS-/RLS-Installationsweg zuverlässig und firmwarefrei angesteuert werden kann.
+- [ ] Verhalten bei einem zukünftig tatsächlich angebotenen BIOS-/Firmware-Update erneut praktisch prüfen; weiterhin nur melden, nicht automatisch installieren.
+- [ ] Verhalten bei einer zukünftig tatsächlich auftretenden Weiterleitung zu ASUS DriverHub erneut praktisch prüfen.
+- [ ] `just asus-updates` als manuellen Armoury-Crate-Einstieg separat praktisch testen und nur beibehalten, wenn er neben dem automatischen read-only Statuscheck weiterhin echten Nutzen hat.
 
 ---
 

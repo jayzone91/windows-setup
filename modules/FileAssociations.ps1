@@ -1,4 +1,4 @@
-function Get-AppxApplicationProgId {
+﻿function Get-AppxApplicationProgId {
     param(
         [Parameter(Mandatory)]
         [string]$PackageName
@@ -336,11 +336,11 @@ function Initialize-DefaultAppConfiguration {
         [string]$RegisteredAppMachine
     )
 
-    if (Test-Path $StatePath) {
-        Write-Host (
-            "[OK] Standard-App-Konfiguration für {0} " +
-            "wurde bereits initialisiert." `
-                -f $Name
+    if (Test-Path $StatePath) {        Write-Host (
+            (
+                "[OK] Standard-App-Konfiguration für {0} " +
+                "wurde bereits initialisiert."
+            ) -f $Name
         ) -ForegroundColor Green
 
         return

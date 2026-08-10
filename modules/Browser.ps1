@@ -1,4 +1,4 @@
-function Set-BrowserConfiguration {
+﻿function Set-BrowserConfiguration {
 
     param(
         [Parameter(Mandatory)]
@@ -436,11 +436,11 @@ function Set-ZenMods {
             -Mods $Mods
     )
 
-    if ($missingMods.Count -eq 0) {
-        Write-Host (
-            "[SKIP] Alle {0} konfigurierten Zen Mods sind vorhanden. " +
-            "Zen bleibt geöffnet." `
-                -f $Mods.Count
+    if ($missingMods.Count -eq 0) {        Write-Host (
+            (
+                "[SKIP] Alle {0} konfigurierten Zen Mods sind vorhanden. " +
+                "Zen bleibt geöffnet."
+            ) -f $Mods.Count
         ) -ForegroundColor Green
 
         return

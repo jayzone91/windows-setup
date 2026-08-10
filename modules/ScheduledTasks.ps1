@@ -1,4 +1,4 @@
-function Register-WindowsSetupScheduledTask {
+﻿function Register-WindowsSetupScheduledTask {
 
     param(
         [Parameter(Mandatory)]
@@ -318,12 +318,16 @@ function Stop-WindowsDesktopEnvironment {
         -ErrorAction SilentlyContinue
 
     if ($komorebiProcess) {
-        & komorebic stop --whkd --masir
+        $komorebiStopOutput = @(
+            & komorebic stop --whkd --masir 2>&1
+        )
+        $komorebiStopExitCode = $LASTEXITCODE
 
-        if ($LASTEXITCODE -ne 0) {
+        if ($komorebiStopExitCode -ne 0) {
             throw (
                 "komorebi konnte nicht sauber beendet werden. " +
-                "Exit-Code: $LASTEXITCODE"
+                "Exit-Code: $komorebiStopExitCode. Ausgabe: " +
+                ($komorebiStopOutput -join " | ")
             )
         }
 
