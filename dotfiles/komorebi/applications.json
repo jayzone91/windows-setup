@@ -1128,6 +1128,15 @@
       }
     ]
   },
+  "iCloud Passwords": {
+    "ignore": [
+      {
+        "id": "iCloudPasswords.exe",
+        "kind": "Exe",
+        "matching_strategy": "Equals"
+      }
+    ]
+  },
   "IDA": {
     "floating": [
       [

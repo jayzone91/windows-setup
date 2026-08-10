@@ -880,6 +880,15 @@ Grund:
 
 ## Anwendungsregeln / Floating-Verhalten
 
+### iCloud Passwords
+
+- [x] iCloud Passwords (`iCloudPasswords.exe`) grundsätzlich vom Tiling ausschließen
+- [x] Ignore-Regel reproduzierbar in `dotfiles/komorebi/applications.json` hinterlegen
+- [x] stabilen Match über `Exe = iCloudPasswords.exe` mit `matching_strategy = Equals` verwenden; lokalisierten Fenstertitel nicht als dauerhaften Identifier verwenden
+- [x] iCloud Passwords behält normales Windows-Fensterverhalten und bleibt frei beweglich/resizbar
+- [x] Bedienbarkeit der App nach dem Ausschluss praktisch bestätigt
+- [x] `just check` und `just update` mit der Regel erfolgreich ausgeführt
+
 - [ ] Microsoft Kurznotizen / Sticky Notes grundsätzlich vom Tiling ausschließen
 - [ ] für Kurznotizen normales Windows-Fensterverhalten verwenden
 - [ ] Regel reproduzierbar in der vorgesehenen komorebi-Anwendungskonfiguration hinterlegen
