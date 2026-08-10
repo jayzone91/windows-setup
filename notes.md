@@ -40,18 +40,7 @@ Codeblöcke zum manuellen Copy-&-Paste in einzelne Projektdateien sind **nicht d
 
 ## Aktuelle Aufgabe
 
-Als Nächstes ist dran:
-
-**Windows 11 Notification Center Styler**
-
-Vorgabe:
-
-* `Matter` als Standardtheme verwenden.
-* Das bestehende Matter-Design und Layout möglichst unangetastet lassen.
-* Nur die notwendigen Farben auf unsere Catppuccin-Mocha-Farben anpassen.
-* Vor der Implementierung die tatsächlichen aktuellen Einstellungen und Möglichkeiten des Windhawk-Mods bzw. des Matter-Themes verifizieren.
-
-Arbeite von dort aus selbstständig nach den Regeln der Roadmap weiter.
+Arbeite selbstständig nach den Regeln der Roadmap weiter.
 
 
 ---
