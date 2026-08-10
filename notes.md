@@ -86,7 +86,6 @@ Arbeite selbstständig nach den Regeln der Roadmap weiter.
 
 ---
 
-Windows 11 Notification Center Styler => Theme Matter als Standard und nur noch Farben anpassen
 Taskbar auto-hide speed
 Lock Keys Notifier
 
