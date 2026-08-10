@@ -59,8 +59,9 @@ Bereits umgesetzt sind unter anderem:
 - Fallback auf die allgemeine Windows-Standard-App-Seite
 - Bootstrap wartet bei interaktiver Standard-App-Konfiguration auf das Schließen der Windows-Einstellungen
 - persistenter Initialisierungsstatus unter `.generated/state/default-apps/`
-- Datei-Dotfiles werden als NTFS-Hardlinks eingebunden
+- Datei-Dotfiles werden standardmäßig als NTFS-Hardlinks eingebunden
 - Verzeichnis-Dotfiles werden als NTFS-Junctions eingebunden
+- Symbolic Links werden nur als dokumentierter Kompatibilitäts-Fallback verwendet; VS Code settings.json nutzt diese Ausnahme
 - Catppuccin Mocha als gemeinsame Designsprache
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 - Zen-Mod-Precheck: Browser-Neustart nur, wenn konfigurierte Mods tatsächlich fehlen
@@ -217,9 +218,10 @@ Das Repository ist die Quelle der Wahrheit für verwaltete Konfigurationsdateien
 
 Es gilt projektweit folgende Regel:
 
-- **Dateien** werden als NTFS-Hardlinks eingebunden.
+- **Dateien** werden standardmäßig als NTFS-Hardlinks eingebunden.
 - **Verzeichnisse** werden als NTFS-Junctions eingebunden.
-- Symbolic Links werden nicht mehr verwendet.
+- **Symbolic Links** sind ausschließlich als expliziter Kompatibilitäts-Fallback erlaubt, wenn eine Anwendung Hardlinks technisch nicht zuverlässig unterstützt.
+- VS Code settings.json verwendet bewusst einen Symbolic Link, weil VS Code die Datei beim Speichern ersetzt und dadurch einen Hardlink auftrennt.
 
 Dadurch bleiben die Konfigurationen direkt mit den Dateien im Repository verbunden, werden von Windows-Programmen aber als normale Dateien beziehungsweise Verzeichnisse behandelt.
 
@@ -233,7 +235,6 @@ Beispiele für Hardlinks:
 %USERPROFILE%\.config\starship.toml
 %APPDATA%\nushell\config.nu
 %APPDATA%\nushell\env.nu
-%APPDATA%\Code\User\settings.json
 %USERPROFILE%\.glzr\zebar\settings.json
 ```
 
@@ -243,7 +244,16 @@ Beispiel für eine Junction:
 %USERPROFILE%\.glzr\zebar\windows-setup-bar
 ```
 
-Bestehende verwaltete Symbolic Links werden beim nächsten Setup-Durchlauf automatisch entfernt und durch Hardlinks beziehungsweise Junctions ersetzt.
+Kompatibilitätsausnahme für VS Code:
+
+```text
+%APPDATA%\Code\User\settings.json
+    -> %USERPROFILE%\windows-setup\dotfiles\vscode\settings.json
+```
+
+Änderungen an den VS-Code-User-Settings werden dadurch direkt in der versionierten Repository-Datei gespeichert. Der Symbolic Link wurde gewählt, weil VS Code einen NTFS-Hardlink beim Speichern der Settings durch das Ersetzen der Datei auftrennt.
+
+Bestehende verwaltete Verknüpfungen werden beim nächsten Setup-Durchlauf auf die für die jeweilige Anwendung vorgesehene Link-Art migriert. Standardmäßig sind das Hardlinks für Dateien und Junctions für Verzeichnisse; dokumentierte Kompatibilitätsausnahmen wie VS Code verwenden einen Symbolic Link.
 
 Generierte Inhalte liegen unter `.generated/` und werden nicht committed. Generator-Code selbst bleibt versioniert.
 

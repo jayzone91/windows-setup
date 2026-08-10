@@ -126,6 +126,90 @@ function Set-FileHardLink {
 }
 
 
+function Set-FileSymbolicLink {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path,
+
+        [Parameter(Mandatory)]
+        [string] $Target,
+
+        [switch] $ReplaceExistingFile
+    )
+
+    if (-not (Test-Path -LiteralPath $Target -PathType Leaf)) {
+        throw "Symlink-Ziel existiert nicht oder ist keine Datei: $Target"
+    }
+
+    $parent = Split-Path `
+        -Path $Path `
+        -Parent
+
+    if (-not (Test-Path -LiteralPath $parent)) {
+        New-Item `
+            -ItemType Directory `
+            -Path $parent `
+            -Force |
+        Out-Null
+    }
+
+    $existingItem = Get-Item `
+        -LiteralPath $Path `
+        -Force `
+        -ErrorAction SilentlyContinue
+
+    if ($existingItem) {
+        if ($existingItem.PSIsContainer) {
+            throw "Symlink-Zielpfad ist ein Verzeichnis: $Path"
+        }
+
+        if ($existingItem.LinkType -eq "SymbolicLink") {
+            $currentTarget = [string] $existingItem.Target
+
+            if ($currentTarget -eq $Target) {
+                Write-Host "[OK] Symlink bereits korrekt: $Path"
+                return
+            }
+
+            Write-Host "[REMOVE] Bestehender Symlink: $Path"
+
+            Remove-Item `
+                -LiteralPath $Path `
+                -Force
+        }
+        elseif (
+            $existingItem.Attributes -band
+            [System.IO.FileAttributes]::ReparsePoint
+        ) {
+            throw "Nicht unterstützte ReparsePoint-Datei vorhanden: $Path"
+        }
+        elseif ($ReplaceExistingFile) {
+            Write-Host "[REMOVE] Bestehende Datei: $Path"
+
+            Remove-Item `
+                -LiteralPath $Path `
+                -Force
+        }
+        else {
+            throw (
+                "Pfad existiert bereits als normale Datei: " +
+                $Path
+            )
+        }
+    }
+
+    New-Item `
+        -ItemType SymbolicLink `
+        -Path $Path `
+        -Target $Target |
+    Out-Null
+
+    Write-Host (
+        "[LINK] Symlink: $Path -> $Target"
+    ) -ForegroundColor Green
+}
+
 function Set-DirectoryJunction {
     [CmdletBinding()]
     param(

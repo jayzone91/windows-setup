@@ -123,25 +123,22 @@ function Set-VSCodeSettings {
 
     if (
         $existingItem -and
-        -not $existingItem.LinkType
+        $existingItem.LinkType -ne "SymbolicLink"
     ) {
         $backup = "$destination.backup"
 
         Write-Host "[BACKUP] $destination -> $backup"
 
         Copy-Item `
-            -Path $destination `
-            -Destination $backup `
-            -Force
-
-        Remove-Item `
             -LiteralPath $destination `
+            -Destination $backup `
             -Force
     }
 
-    Set-FileHardLink `
+    Set-FileSymbolicLink `
         -Path $destination `
-        -Target $Source
+        -Target $Source `
+        -ReplaceExistingFile
 
     Write-Host "[OK] VS Code Settings verlinkt." `
         -ForegroundColor Green

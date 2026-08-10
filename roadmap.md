@@ -144,11 +144,12 @@ Windows Desktop
 
 Projektweite Regel:
 
-- [x] **Dateien werden als NTFS-Hardlinks eingebunden**
+- [x] **Dateien werden standardmäßig als NTFS-Hardlinks eingebunden**
 - [x] **Verzeichnisse werden als NTFS-Junctions eingebunden**
-- [x] Keine Symbolic Links mehr für verwaltete Dotfiles
-- [x] Alte verwaltete Symbolic Links werden bei einem Setup-Lauf entfernt und migriert
-- [x] `Set-FileHardLink` zentral als Helper
+- [x] Symbolic Links sind ausschließlich als expliziter Kompatibilitäts-Fallback erlaubt, wenn eine Anwendung Hardlinks technisch nicht zuverlässig unterstützt
+- [x] VS Code `settings.json` verwendet einen Symbolic Link, da VS Code beim Speichern die Datei ersetzt und dadurch einen NTFS-Hardlink auftrennt
+- [x] `Set-FileHardLink` zentral als Standard-Helper
+- [x] `Set-FileSymbolicLink` zentral als Kompatibilitäts-Helper
 - [x] `Set-DirectoryJunction` zentral als Helper
 
 Begründung:
@@ -157,6 +158,9 @@ Begründung:
 - Änderungen auf beiden Seiten wirken sofort auf dieselben Dateidaten.
 - Das Repository liegt durch `init.ps1` immer unter dem Benutzerprofil auf `C:`.
 - Verzeichnis-Hardlinks existieren unter NTFS nicht; dafür werden Junctions verwendet.
+- Hardlinks bleiben der Standard für einzelne Dateien.
+- Symbolic Links werden nur verwendet, wenn das Verhalten einer Anwendung praktisch als inkompatibel mit Hardlinks bestätigt wurde.
+- VS Code ersetzt `settings.json` beim Speichern und trennt dadurch einen Hardlink auf; ein Symbolic Link bleibt dagegen erhalten und Änderungen landen direkt in der Repository-Datei.
 
 ## Generierte Inhalte und lokaler Zustand
 
@@ -1632,7 +1636,7 @@ Wenn eine KI Änderungen an bestehenden Repository-Dateien für den Benutzer vor
 2. Bestehende Installationen erkennen.
 3. manuelle Eingriffe nur dort verlangen, wo sie technisch oder rechtlich erforderlich sind.
 4. neue generierte Inhalte unter `.generated/` ablegen.
-5. Dateien per Hardlink, Verzeichnisse per Junction integrieren.
+5. Dateien standardmäßig per Hardlink und Verzeichnisse per Junction integrieren; Symbolic Links nur als expliziten, dokumentierten Kompatibilitäts-Fallback verwenden, wenn eine Anwendung Hardlinks nachweislich nicht zuverlässig unterstützt.
 6. Fehler verständlich ausgeben.
 7. bestehende Konfiguration nicht ohne Backup überschreiben, wenn sie nicht bereits verwaltet wird.
 8. PowerShell-Code mit PSScriptAnalyzer kompatibel halten.
