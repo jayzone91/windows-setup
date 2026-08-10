@@ -1090,8 +1090,14 @@ Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwalte
 
 - [x] Taskbar Styler
 - [x] Start Menu Styler
-- [ ] Notification Center Styler
-- [ ] alle drei optisch an Catppuccin Mocha anpassen
+- [x] Notification Center Styler
+  - integriertes `Matter`-Theme als Basis
+  - Matter-Layout und -Geometrie bleiben unverändert; angepasst werden nur Farben
+  - Catppuccin-Mocha-Flächen verwenden dezente `surface1`-/`surface2`-Töne statt Mauve als große Flächenfarbe
+  - Mauve bleibt für kleine Highlights und Borders reserviert
+  - Konfiguration deklarativ in `config/windhawk.psd1` und reproduzierbar über den bestehenden Windhawk-CLI-Workflow
+  - Installation, `just check`, `just update` und optische Sichtprüfung auf dem aktuellen System erfolgreich getestet
+- [x] alle drei optisch an Catppuccin Mocha anpassen
 - [x] bisherige Konfiguration reproduzierbar über Windhawk CLI
 - [x] keine manuelle Mod-Konfiguration, wenn CLI-Automatisierung möglich ist
 - [ ] Änderungen auf weiteren Windows-/Windhawk-Versionen testen
@@ -1628,8 +1634,8 @@ Noch offen aus dem Paketmanager-Umbau:
 ## Priorität 2 – Windows Shell
 
 1. [x] Windhawk Taskbar Styler
-2. [ ] Windhawk Start Menu Styler
-3. [ ] Windhawk Notification Center Styler
+2. [x] Windhawk Start Menu Styler
+3. [x] Windhawk Notification Center Styler
 4. [x] alle bisherigen Windhawk-Einstellungen per CLI reproduzierbar machen
 
 ## Priorität 3 – eigenes OSD
