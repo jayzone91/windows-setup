@@ -625,6 +625,61 @@ Offen / zu testen:
 - [x] lokale Änderungen erkennen
 - [x] ungepushte Commits erkennen
 
+## Neovim
+
+### Installation und Konfiguration
+
+- [x] Neovim Nightly über Scoop-Bucket `versions`
+- [x] Neovim `0.12.0` oder neuer erzwingen
+- [x] extern gepflegtes Repository `jayzone91/nvim` als Git-Submodule unter `external/nvim`
+- [x] Submodule auf Branch `main`
+- [x] `%LOCALAPPDATA%\nvim` per Junction auf `external/nvim`
+- [x] Submodule bei jedem Bootstrap synchronisieren und initialisieren
+- [x] externes Neovim-Repository bei jedem Bootstrap per `git pull --ff-only origin main` aktualisieren
+- [x] neue Commits des extern verwalteten Submodules durch `ignore = all` nicht als lokale Änderung von `windows-setup` behandeln
+- [x] Änderungen am extern verwalteten Neovim-Repository nicht automatisch in die Git-History von `windows-setup` übernehmen
+
+### Lokale Änderungen im Neovim-Submodule
+
+- [x] lokale Änderungen einschließlich untracked Dateien vor dem Pull automatisch stagen
+- [x] Bootstrap-Stash mit eindeutiger Nachricht erzeugen
+- [x] Stash nach erfolgreichem Pull per `stash pop --index` wiederherstellen
+- [x] fehlgeschlagene Stash-Wiederherstellung nicht automatisch zurücksetzen
+- [x] bei Stash-Konflikten den Stash erhalten
+- [x] bei Stash-Konflikten am Ende des Bootstrap Repository-Pfad, Stash-Referenz, Stash-Commit, Nachricht, ursprünglichen und aktuellen Git-Status sowie Diagnosebefehle ausgeben
+
+### Tree-sitter Toolchain
+
+- [x] `tree-sitter-cli` über Scoop-Bucket `main`
+- [x] mindestens `tree-sitter-cli 0.26.1`
+- [x] kein npm-Installationsweg für `tree-sitter-cli`
+- [x] Zig über Scoop-Bucket `main` als C/C++-Toolchain
+- [x] Scoop-Shim `cc` auf `zig cc`
+- [x] Scoop-Shim `c++` auf `zig c++`
+- [x] `CC=cc` als persistente Benutzer-Umgebungsvariable und im Bootstrap-Prozess
+- [x] `CXX=c++` als persistente Benutzer-Umgebungsvariable und im Bootstrap-Prozess
+- [x] `CRATE_CC_NO_DEFAULTS=1`, damit `cc-rs` Zig nicht automatisch das inkompatible Target `x86_64-pc-windows-msvc` übergibt
+- [x] `tar`, `curl`, `tree-sitter`, `zig`, `cc` und `c++` im Bootstrap prüfen
+
+### Praktisch bestätigt
+
+- [x] `just check` nach der Neovim-Integration fehlerfrei
+- [x] vollständiger `just update` nach der Neovim-Integration fehlerfrei
+- [x] `external/nvim` auf `main` und aktuell zu `origin/main`
+- [x] `cc.exe` wird aus dem Scoop-Shim-Verzeichnis aufgelöst
+- [x] Zig/Clang über `cc --version` praktisch verifiziert
+- [x] alle in der Neovim-Konfiguration angeforderten Tree-sitter-Parser erfolgreich kompiliert
+
+### Feste Entscheidung
+
+Das Repository `jayzone91/nvim` wird **extern** gepflegt. `windows-setup` stellt lediglich Installation, Aktualisierung, Toolchain und Junction bereit.
+
+Der Gitlink des Submodules gehört zur initialen Repository-Struktur von `windows-setup`. Laufende neue Commits und lokale Änderungen innerhalb von `external/nvim` sollen dagegen nicht als normale Änderungen des Superprojekts auftauchen oder automatisch in dessen Git-History übernommen werden.
+
+Für Tree-sitter unter Windows bleibt Zig die vorgesehene Compiler-Toolchain. Der getestete Pfad verwendet reale `cc`-/`c++`-Scoop-Shims und die Umgebungsvariablen `CC=cc`, `CXX=c++` sowie `CRATE_CC_NO_DEFAULTS=1`. Ein zusätzlicher Visual-Studio-/MSVC-Compiler ist für diesen Workflow nicht erforderlich.
+
+---
+
 ## Codex
 
 - [x] Codex CLI installieren

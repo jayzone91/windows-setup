@@ -1,4 +1,4 @@
-﻿# ============================================================
+# ============================================================
 # Paket-Konfiguration
 # ============================================================
 #
@@ -300,6 +300,21 @@
             Update = $true
         },
 
+        @{
+            Name   = "tree-sitter CLI"
+            Id     = "tree-sitter"
+            Source = "scoop"
+            Bucket = "main"
+            Update = $true
+        },
+
+        @{
+            Name   = "Zig"
+            Id     = "zig"
+            Source = "scoop"
+            Bucket = "main"
+            Update = $true
+        },
         @{
             Name   = "ripgrep"
             Id     = "BurntSushi.ripgrep.MSVC"

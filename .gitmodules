@@ -1,0 +1,5 @@
+[submodule "nvim"]
+	path = external/nvim
+	url = https://github.com/jayzone91/nvim.git
+	branch = main
+	ignore = all

@@ -27,6 +27,10 @@ Bereits umgesetzt sind unter anderem:
 - Visual Studio Code inklusive Extensions und Settings
 - Windows Terminal, Nushell und Starship
 - Neovim Nightly über Scoop `versions`
+- extern gepflegte Neovim-Konfiguration aus `jayzone91/nvim` als Submodule unter `external/nvim`
+- automatische Aktualisierung des Neovim-Submodules auf `main` bei jedem Bootstrap
+- automatische Stash/Pull/Restore-Behandlung für lokale Änderungen im Neovim-Submodule
+- `tree-sitter-cli` über Scoop und Zig als C/C++-Toolchain für `nvim-treesitter`
 - moderne CLI-Werkzeuge: ripgrep, eza, fd, bat, fzf, jq und zoxide
 - Fish-artige PowerShell-Abbreviations über PSReadLine
 - Zoxide-Integration für schnelle Verzeichnisnavigation
@@ -181,6 +185,75 @@ Der direkte PowerShell-Aufruf bleibt der technische Fallback. Für normale manue
 
 ---
 
+# Neovim
+
+Neovim selbst wird als Nightly-Version über den Scoop-Bucket `versions` installiert. Die eigentliche Neovim-Konfiguration wird dagegen in einem eigenen Repository gepflegt:
+
+```text
+https://github.com/jayzone91/nvim
+```
+
+Dieses Repository ist als Git-Submodule unter folgendem Pfad eingebunden:
+
+```text
+external/nvim
+```
+
+Der Bootstrap verbindet anschließend:
+
+```text
+%LOCALAPPDATA%\nvim
+```
+
+per NTFS-Junction mit `external/nvim`.
+
+Das Neovim-Repository wird bewusst **extern** gepflegt. Neue Commits oder lokale Änderungen innerhalb dieses Submodules sollen nicht als normale Änderungen von `windows-setup` behandelt oder automatisch in dessen Git-History übernommen werden. Das Submodule verwendet deshalb `branch = main` und `ignore = all`.
+
+Bei jedem Bootstrap wird das Submodule synchronisiert und bei Bedarf initialisiert. Danach wird das externe Repository mit:
+
+```powershell
+git pull --ff-only origin main
+```
+
+aktualisiert.
+
+Enthält `external/nvim` lokale Änderungen, sichert der Bootstrap diese vor dem Pull automatisch per Git-Stash einschließlich untracked Dateien. Nach dem Pull wird der Stash wiederhergestellt. Scheitert die Wiederherstellung wegen eines Konflikts, wird der Zustand nicht automatisch verworfen. Der Stash bleibt erhalten und am Ende des Bootstrap werden die relevanten Stash- und Git-Informationen sowie Diagnosebefehle ausgegeben.
+
+## Tree-sitter unter Windows
+
+Für `nvim-treesitter` werden folgende Abhängigkeiten reproduzierbar über den Bootstrap bereitgestellt:
+
+- Neovim `0.12.0` oder neuer
+- `tar`
+- `curl`
+- `tree-sitter-cli` `0.26.1` oder neuer über Scoop `main`
+- Zig über Scoop `main`
+- C-Compiler-Kommando `cc`
+- C++-Compiler-Kommando `c++`
+
+`tree-sitter-cli` wird bewusst **nicht über npm** installiert.
+
+Zig stellt die eigentliche Compiler-Toolchain bereit. Der Bootstrap erzeugt dafür Scoop-Shims:
+
+```text
+cc  -> zig cc
+c++ -> zig c++
+```
+
+Zusätzlich werden folgende Benutzer-Umgebungsvariablen verwaltet:
+
+```text
+CC=cc
+CXX=c++
+CRATE_CC_NO_DEFAULTS=1
+```
+
+`CRATE_CC_NO_DEFAULTS=1` ist unter Windows notwendig, weil der von Tree-sitter verwendete `cc-rs`-Buildpfad andernfalls für den Windows-Host automatisch das Target `x86_64-pc-windows-msvc` an den Compiler übergibt. Dieses Target wird von Zig in diesem Aufrufpfad nicht akzeptiert.
+
+Die Kombination aus Scoop-Shims und diesen Umgebungsvariablen wurde praktisch mit der vollständigen Parser-Liste der verwendeten Neovim-Konfiguration getestet; alle angeforderten Tree-sitter-Parser wurden erfolgreich kompiliert.
+
+---
+
 # Projektstruktur
 
 ```text
@@ -196,6 +269,8 @@ windows-setup/
 ├── scripts/
 ├── dotfiles/
 ├── assets/
+├── external/
+│   └── nvim/        # Git-Submodule: jayzone91/nvim
 └── .generated/
 ```
 

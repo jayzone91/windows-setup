@@ -95,7 +95,7 @@ function Set-WindowsTerminalPreferences {
 
     $settings | Add-Member `
         -NotePropertyName "useAcrylicInTabRow" `
-        -NotePropertyValue $true `
+        -NotePropertyValue $false `
         -Force
 
     # ------------------------------------------------------------

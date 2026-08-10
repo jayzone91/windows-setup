@@ -231,6 +231,12 @@ Set-WindowsWallpaperSlideshow
 
 Set-GitPreferences
 
+Update-NeovimConfiguration `
+    -RepositoryPath $Root
+
+Set-NeovimCompilerEnvironment
+
+Test-NeovimRequirements
 Set-WindowsTerminalPreferences `
     -Theme $Theme
 
@@ -361,6 +367,8 @@ if ($repositoryStatus.UnpushedCommits -gt 0) {
             -f $repositoryStatus.UnpushedCommits
     )
 }
+
+Show-NeovimMaintenanceStatus
 
 Send-WindowsSetupNotifications `
     -WindowsUpdateRebootRequired $windowsUpdateStatus.RebootRequired `
