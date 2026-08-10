@@ -1,4 +1,10 @@
-﻿function Set-TaskbarPreferences {
+function Set-TaskbarPreferences {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Config
+    )
+
     Write-Host ""
     Write-Host "========================================"
     Write-Host " Taskleiste"
@@ -36,57 +42,7 @@
         -Name "ShowTaskViewButton" `
         -Value 0
 
-    # Widgets
-    Write-Host "[CONFIG] Widgets ausblenden"
-
-    try {
-        Set-RegistryDword `
-            -Path $advancedPath `
-            -Name "TaskbarDa" `
-            -Value 0
-
-    }
-    catch {
-        Write-Warning (
-            "Widgets konnten nicht automatisch ausgeblendet werden: {0}" `
-                -f $_.Exception.Message
-        )
-    }
-
-    $widgetsPolicyPath = "HKLM:\SOFTWARE\Policies\Microsoft\Dsh"
-    try {
-
-        if (-not (Test-Path $widgetsPolicyPath)) {
-            New-Item `
-                -Path $widgetsPolicyPath `
-                -Force `
-                -ErrorAction Stop | Out-Null
-        }
-    }
-    catch {
-        Write-Warning (
-            "Widgets konnten nicht automatisch ausgeblendet werden: {0}" `
-                -f $_.Exception.Message
-        )
-    }
-
-    try {
-
-        Set-RegistryDword `
-            -Path $widgetsPolicyPath `
-            -Name "AllowNewsAndInterests" `
-            -Value 0
-    }
-    catch {
-        Write-Warning (
-            "Widgets konnten nicht automatisch ausgeblendet werden: {0}" `
-                -f $_.Exception.Message
-        )
-    }
-
-    Write-Host "[OK] Widgets ausgeblendet."
-
-    # Fortsetzen
+# Fortsetzen
     Write-Host "[CONFIG] Fortsetzen ausblenden"
 
     Set-RegistryDword `
@@ -94,11 +50,60 @@
         -Name "TaskbarResume" `
         -Value 0
 
+
+    # Automatisches Ausblenden
+    Write-Host "[CONFIG] Taskleiste automatisch ausblenden"
+
+    $stuckRectsPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StuckRects3"
+
+    if (-not (Test-Path $stuckRectsPath)) {
+        throw "StuckRects3 wurde nicht gefunden: $stuckRectsPath"
+    }
+
+    $stuckRects = Get-ItemProperty `
+        -Path $stuckRectsPath `
+        -Name "Settings" `
+        -ErrorAction Stop
+
+    [byte[]] $taskbarSettings = $stuckRects.Settings
+
+    if ($taskbarSettings.Length -le 8) {
+        throw "StuckRects3\Settings hat ein unerwartetes Format."
+    }
+
+    $currentAutoHide = ($taskbarSettings[8] -band 0x01) -eq 0x01
+    $desiredAutoHide = [bool] $Config.Taskbar.AutoHide
+
+    if ($currentAutoHide -eq $desiredAutoHide) {
+        Write-Host "[OK] Taskleisten-Autohide bereits korrekt."
+    }
+    else {
+        if ($desiredAutoHide) {
+            $taskbarSettings[8] = $taskbarSettings[8] -bor 0x01
+        }
+        else {
+            $taskbarSettings[8] = $taskbarSettings[8] -band 0xFE
+        }
+
+        Set-ItemProperty `
+            -Path $stuckRectsPath `
+            -Name "Settings" `
+            -Value $taskbarSettings `
+            -ErrorAction Stop
+
+        Write-Host "[OK] Taskleisten-Autohide aktualisiert."
+    }
     Write-Host "[OK] Taskleisten-Einstellungen gesetzt." `
         -ForegroundColor Green
 }
 
 function Set-StartMenuPreferences {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Config
+    )
+
     Write-Host ""
     Write-Host "========================================"
     Write-Host " Startmenü & Suche"
@@ -123,6 +128,35 @@ function Set-StartMenuPreferences {
         -Force `
         -ErrorAction Stop | Out-Null
 
+
+    # ------------------------------------------------------------
+    # Personalisierung > Start
+    # ------------------------------------------------------------
+
+    $advancedPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+    $startPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Start"
+
+    Write-Host "[CONFIG] Startmenü-Personalisierung setzen"
+
+    Set-RegistryDword `
+        -Path $advancedPath `
+        -Name "Start_TrackDocs" `
+        -Value ([int] [bool] $Config.StartMenu.ShowRecentlyAddedApps)
+
+    Set-RegistryDword `
+        -Path $startPath `
+        -Name "ShowRecentList" `
+        -Value ([int] [bool] $Config.StartMenu.ShowRecentItems)
+
+    Set-RegistryDword `
+        -Path $advancedPath `
+        -Name "Start_IrisRecommendations" `
+        -Value ([int] [bool] $Config.StartMenu.ShowRecommendations)
+
+    Set-RegistryDword `
+        -Path $startPath `
+        -Name "ShowFrequentList" `
+        -Value ([int] [bool] $Config.StartMenu.ShowMostUsedApps)
     Write-Host "[OK] Startmenü-Einstellungen gesetzt." `
         -ForegroundColor Green
 }

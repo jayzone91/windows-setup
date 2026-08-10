@@ -2,7 +2,6 @@ Moin, lies bitte https://github.com/jayzone91/windows-setup und vor allem die ro
 Entscheide dann selbstständig, wie wir mit dem projekt weiter machen.
 
 
-Windows 11 Start Menu Styler => Theme Rosepine als Standard und nur noch Farben anpassen
 Windows 11 Notification Center Styler => Theme Matter als Standard und nur noch Farben anpassen
 Taskbar auto-hide speed
 Lock Keys Notifier

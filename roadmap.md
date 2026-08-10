@@ -1088,16 +1088,29 @@ Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwalte
 
 ## Noch offen
 
-- [ ] Taskbar Styler
-- [ ] Start Menu Styler
+- [x] Taskbar Styler
+- [x] Start Menu Styler
 - [ ] Notification Center Styler
 - [ ] alle drei optisch an Catppuccin Mocha anpassen
-- [ ] Konfiguration reproduzierbar über Windhawk CLI
-- [ ] keine manuelle Mod-Konfiguration, wenn CLI-Automatisierung möglich ist
-- [ ] Änderungen auf Windows-/Windhawk-Versionen testen
+- [x] bisherige Konfiguration reproduzierbar über Windhawk CLI
+- [x] keine manuelle Mod-Konfiguration, wenn CLI-Automatisierung möglich ist
+- [ ] Änderungen auf weiteren Windows-/Windhawk-Versionen testen
 
 ---
 
+## Windows-Shell-Personalisierung
+
+- [x] `config/windows.psd1` als deklarativen Desired State für verwaltete Taskleisten-/Start-Schalter angelegt
+- [x] Taskleisten-Autohide durch gezieltes Setzen von Bit `0x01` in `StuckRects3\Settings[8]` umgesetzt
+- [x] übrige Bits und der restliche `StuckRects3`-Blob bleiben unangetastet
+- [x] Zuletzt hinzugefügte Apps deaktiviert
+- [x] zuletzt verwendete/empfohlene Dateien und Sprunglisten deaktiviert
+- [x] Tipps, Verknüpfungen und App-Empfehlungen deaktiviert
+- [x] meistverwendete Apps aktiviert
+- [x] Windows-Shell-Desired-State über `just update` praktisch getestet
+- [x] wiederholten `just update` auf Idempotenz geprüft
+
+---
 ## Windhawk Desired State
 
 - [x] `config/windhawk.psd1` als deklarative Mod-Liste vorgesehen
@@ -1111,6 +1124,14 @@ Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwalte
 - [x] wiederholten `just update` mit installiertem Taskbar Styler erfolgreich getestet
 - [x] Catppuccin-Mocha-Farboverrides für RosePine definiert
 - [x] Catppuccin-Mocha-Farboverrides auf dem aktuellen System praktisch getestet
+- [x] Windows 11 Start Menu Styler als zweiten deklarativen Mod ergänzt
+- [x] RosePine als Layout-Basis für das Startmenü verwendet
+- [x] Catppuccin-Mocha-Farboverrides für Startmenü und Suchansicht definiert
+- [x] Startmenü-Außenrahmen auf `Surface1 #45475a` abgestimmt
+- [x] Suchansicht-Außenrahmen auf `Surface1 #45475a` abgestimmt
+- [x] fokussiertes Suchfeld mit `Mauve #cba6f7` als Akzent beibehalten
+- [x] normales Startmenü und Suchansicht optisch praktisch verifiziert
+- [x] wiederholten `just update` mit installiertem Start Menu Styler erfolgreich getestet
 - [ ] Settings-Drift vor dem Schreiben erkennen und unveränderte Mod-Settings unangetastet lassen
 
 ### Zentrale Catppuccin-Palette
@@ -1680,6 +1701,8 @@ Wenn eine KI Änderungen an bestehenden Repository-Dateien für den Benutzer vor
 14. erforderliche Standard-App-Benutzerinteraktionen über den generischen Settings-Workflow ausführen.
 15. einmalige interaktive Schritte erst nach erfolgreichem Abschluss mit einem Marker unter `.generated/state/` als erledigt markieren.
 16. bei einem Fallback ohne direkte App-ID die allgemeine Standard-App-Seite öffnen, den Benutzer zur manuellen Suche auffordern und auf das Schließen von Settings warten.
+
+- [x] `bootstrap.ps1` führt vor der Setup-Logik einen strikten PowerShell-Code-Preflight aus und bricht bei Error, Warning oder Information ab
 
 ## Nach einer Implementierung
 

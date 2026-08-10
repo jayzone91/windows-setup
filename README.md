@@ -67,10 +67,12 @@ Bereits umgesetzt sind unter anderem:
 - gemeinsame Desktop-Hauptfläche `Base #1e1e2e` für VS Code, Windows Terminal, Zebar und die Windhawk-Taskbar
 - Windows 11 Taskbar Styler über Windhawk mit RosePine als Basis und Catppuccin-Mocha-Farboverrides
 - kompakter Mauve-Punkt unter dem aktiven Taskbar-Fenster statt des RosePine-Aktivrahmens
+- Windows 11 Start Menu Styler über Windhawk mit RosePine als Layout-Basis und Catppuccin-Mocha-Farboverrides
+- Startmenü und Suchansicht mit `Base #1e1e2e`, dezentem `Surface1 #45475a`-Außenrahmen und Mauve-Fokusakzent
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 - Zen-Mod-Precheck: Browser-Neustart nur, wenn konfigurierte Mods tatsächlich fehlen
 
-Die nächsten größeren Arbeitspakete sind PowerToys Command Palette + Everything, weitere Windhawk-Mods für Startmenü und Notification Center, Taskbar-Auto-Hide-Tuning, Lock Keys Notifier sowie weiterer Catppuccin-Polish.
+Die nächsten größeren Arbeitspakete sind weitere Windhawk-Mods für das Notification Center, Taskbar-Auto-Hide-Tuning, Lock Keys Notifier sowie weiterer Catppuccin-Polish.
 
 Siehe auch [`roadmap.md`](roadmap.md).
 
@@ -240,6 +242,8 @@ Aktuell verwenden VS Code, Windows Terminal, Zebar und die über Windhawk gestal
 Windows Terminal verwendet das Catppuccin-Mocha-Farbschema ohne Acrylic und mit 100 Prozent Opazität, damit der tatsächliche Hintergrund exakt der gemeinsamen Base entspricht.
 
 Die Taskbar wird durch den Windhawk-Mod **Windows 11 Taskbar Styler** gestaltet. Das integrierte Theme **RosePine** bleibt dabei die Layout-Basis; eigene `controlStyles` überschreiben gezielt die relevanten Farben mit Catppuccin Mocha. Der RosePine-Rahmen für das aktive Fenster wird zusätzlich durch einen kleinen Mauve-Punkt unter dem aktiven Icon ersetzt.
+
+Das Startmenü wird durch **Windows 11 Start Menu Styler** ebenfalls auf Basis von **RosePine** gestaltet. Eigene Farb-Overrides setzen Hauptflächen auf Catppuccin `Base #1e1e2e`, abgesetzte Flächen auf `Surface0 #313244` und die Außenrahmen von Startmenü und Suchansicht auf `Surface1 #45475a`. Das fokussierte Suchfeld behält `Mauve #cba6f7` als gezielten Aktivitätsakzent.
 
 Zebar besitzt derzeit weiterhin eigene CSS-Variablen für die Palette, und die Windhawk-Mod-Settings enthalten die benötigten Hex-Werte. Die spätere direkte Ableitung dieser Werte aus `config/theme.psd1` ist als Folgearbeit in der Roadmap dokumentiert.
 

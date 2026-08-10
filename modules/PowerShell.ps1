@@ -120,9 +120,12 @@ function Install-PowerShellModules {
 
 function Test-PowerShellCode {
 
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [string] $Path
+        [string] $Path,
+
+        [switch] $FailOnAnyIssue
     )
 
 
@@ -133,6 +136,13 @@ function Test-PowerShellCode {
 
 
     if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
+
+        if ($FailOnAnyIssue) {
+            throw (
+                "PSScriptAnalyzer ist nicht installiert. " +
+                "Strikter Code-Preflight kann nicht ausgeführt werden."
+            )
+        }
 
         Write-Warning (
             "PSScriptAnalyzer ist nicht installiert. " +
@@ -210,9 +220,10 @@ function Test-PowerShellCode {
 
 
             Write-Host (
-                "[RETRY] PSScriptAnalyzer-Runtimefehler bei {0}. " +
-                "Erneuter Check in isoliertem PowerShell-Prozess." `
-                    -f $relativePath
+                (
+                    "[RETRY] PSScriptAnalyzer-Runtimefehler bei {0}. " +
+                    "Erneuter Check in isoliertem PowerShell-Prozess."
+                ) -f $relativePath
             ) -ForegroundColor Yellow
 
 
@@ -284,7 +295,7 @@ catch {
                     catch {
 
                         $analyzerFailures += [pscustomobject]@{
-                            File = $relativePath
+                            File    = $relativePath
                             Message = (
                                 "Isolierter Analyzer-Check lief durch, " +
                                 "aber die Ausgabe konnte nicht ausgewertet werden: " +
@@ -313,7 +324,7 @@ catch {
 
 
             $analyzerFailures += [pscustomobject]@{
-                File = $relativePath
+                File    = $relativePath
                 Message = (
                     "Normaler Check: {0}; isolierter Check: {1}" `
                         -f $_.Exception.Message, $failureMessage
@@ -360,7 +371,10 @@ catch {
 
     $errors = @(
         $issues |
-        Where-Object Severity -eq "Error"
+        Where-Object {
+            $_.Severity -eq "Error" -or
+            $_.Severity -eq "ParseError"
+        }
     )
 
 
@@ -377,9 +391,10 @@ catch {
 
 
     Write-Host (
-        "[INFO] {0} Fehler, {1} Warnungen, {2} Hinweise gefunden. " +
-        "Geprüfte Dateien: {3}" `
-            -f `
+        (
+            "[INFO] {0} Fehler, {1} Warnungen, {2} Hinweise gefunden. " +
+            "Geprüfte Dateien: {3}"
+        ) -f `
             $errors.Count,
         $warnings.Count,
         $information.Count,
@@ -397,6 +412,16 @@ catch {
     Format-Table `
         -AutoSize
 
+
+    if ($FailOnAnyIssue) {
+        throw (
+            "Strikter PowerShell-Codecheck fehlgeschlagen: " +
+            "{0} Fehler, {1} Warnungen, {2} Hinweise." -f `
+                $errors.Count,
+            $warnings.Count,
+            $information.Count
+        )
+    }
 
     if ($errors.Count -gt 0) {
         throw "PSScriptAnalyzer hat Fehler gefunden."

@@ -58,6 +58,42 @@ if (Test-Path (Join-Path $Root ".git")) {
     }
 }
 
+# ------------------------------------------------------------
+# Strikter Code-Preflight
+# ------------------------------------------------------------
+
+Write-Host ""
+Write-Host "========================================"
+Write-Host " PowerShell Preflight"
+Write-Host "========================================"
+
+$powerShellModulePath = Join-Path $Root "modules\PowerShell.ps1"
+
+if (-not (Test-Path -LiteralPath $powerShellModulePath -PathType Leaf)) {
+    throw "PowerShell-Modul nicht gefunden: $powerShellModulePath"
+}
+
+. $powerShellModulePath
+
+if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
+    Write-Host "[PREREQUISITE] PSScriptAnalyzer installieren"
+
+    Install-Module `
+        -Name "PSScriptAnalyzer" `
+        -Scope CurrentUser `
+        -Repository "PSGallery" `
+        -Force `
+        -AllowClobber `
+        -ErrorAction Stop
+}
+
+Test-PowerShellCode `
+    -Path $Root `
+    -FailOnAnyIssue
+
+Write-Host "[OK] Strikter Code-Preflight bestanden." `
+    -ForegroundColor Green
+
 Write-Host ""
 Write-Host "========================================"
 Write-Host " Windows Setup"
@@ -88,6 +124,7 @@ $PowerShell = Import-PowerShellDataFile "$Root\config\powershell.psd1"
 $PowerToys = Import-PowerShellDataFile "$Root\config\powertoys.psd1"
 $Theme = Import-PowerShellDataFile "$Root\config\theme.psd1"
 $Windhawk = Import-PowerShellDataFile "$Root\config\windhawk.psd1"
+$Windows = Import-PowerShellDataFile "$Root\config\windows.psd1"
 $Debloat = Import-PowerShellDataFile "$Root\config\debloat.psd1"
 $Storage = Import-PowerShellDataFile `
     "$Root\config\storage.psd1"
@@ -174,8 +211,10 @@ if ($script:DriverRebootRequired) {
 # ------------------------------------------------------------
 
 Set-WindowsDebloat -Config $Debloat
-Set-TaskbarPreferences
-Set-StartMenuPreferences
+Set-TaskbarPreferences `
+    -Config $Windows
+Set-StartMenuPreferences `
+    -Config $Windows
 Disable-WindowsSnap
 Set-WindowsTheme
 Set-WindowsPowerPreferences
@@ -257,9 +296,6 @@ Register-WindowsSetupScheduledTask `
 # ------------------------------------------------------------
 
 Test-ApplePasswordRequirements
-
-Test-PowerShellCode `
-    -Path $Root
 
 # ------------------------------------------------------------
 # Fertig
