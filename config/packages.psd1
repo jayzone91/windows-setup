@@ -106,6 +106,13 @@
         },
 
         @{
+            Name   = "ChatGPT"
+            Id     = "9PLM9XGG6VKS"
+            Source = "msstore"
+            Update = $true
+        },
+
+        @{
             Name    = "OpenVPN"
             Id      = "OpenVPNTechnologies.OpenVPN"
             Source  = "winget"

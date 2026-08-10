@@ -93,8 +93,7 @@ zusätzlich repo jayzone91/nvim in windows-Setup einbinden!
 
 Für Windows:
 - Programme:
-  - ChatGPT App
-  - Applauncher von Powertoys deaktivieren, Raycast für Windows installieren und auf ALT+Space oder WIN+Space legen! schauen ob man die paywall für themes umgehen kann und dann catppuccin theme drauf
+  - Applauncher von Powertoys deaktivieren, Raycast für Windows (ID: 9PFXXSHC64H3) installieren und auf ALT+Space oder WIN+Space legen! schauen ob man die paywall für themes umgehen kann und dann catppuccin theme drauf
 
 Für Zebar:
 Neues Widget: Aktueller Akku Stand der Logitech Maus (falls auslesbar)
