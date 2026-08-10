@@ -33,10 +33,51 @@ Wenn Dateien geändert werden müssen:
 2. Plane die Änderungen passend zur bestehenden Architektur.
 3. Erstelle anschließend **einen herunterladbaren `.ps1`-Patch**, der alle notwendigen Änderungen automatisch auf meine lokale Repository-Kopie anwendet.
 4. Der Patch muss möglichst idempotent bzw. defensiv sein und darf nicht stillschweigend eine unerwartete Dateiversion überschreiben.
-5. Nenne mir danach die Befehle, mit denen ich die Änderung gemäß Projektworkflow testen soll.
-6. Nach meinem Testergebnis erstellen wir bei Bedarf einen weiteren Patch, insbesondere für die abschließende Aktualisierung der `roadmap.md`.
+5. Codeblöcke zum manuellen Copy-&-Paste in einzelne Projektdateien sind **nicht der normale Änderungsweg**.
+6. Nenne mir danach die Befehle, mit denen ich die Änderung gemäß Projektworkflow testen soll.
+7. Nach meinem Testergebnis erstellen wir bei Bedarf einen weiteren Patch, insbesondere für die abschließende Aktualisierung der `roadmap.md`.
 
-Codeblöcke zum manuellen Copy-&-Paste in einzelne Projektdateien sind **nicht der normale Änderungsweg**. Für Repository-Änderungen möchte ich den `.ps1`-Patch als Download.
+## Ausführung von `.ps1`-Patches
+
+Für heruntergeladene Patch-Skripte gilt verbindlich:
+
+* **Keine globale oder benutzerspezifische PowerShell Execution Policy verändern.**
+* Kein `Set-ExecutionPolicy` verwenden, außer die Roadmap fordert dies irgendwann ausdrücklich.
+* Patches werden immer in einem eigenen PowerShell-Prozess mit prozesslokalem `ExecutionPolicy Bypass` ausgeführt.
+* Standardbefehl für heruntergeladene Patches:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File "<Pfad-zum-Patch.ps1>"
+```
+
+Beispiel:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File "$HOME\Downloads\patch-example.ps1"
+```
+
+* Falls der Patch aus dem Root von `windows-setup` ausgeführt werden muss, muss das klar genannt werden.
+* Die bestehende globale Execution Policy des Systems bleibt unangetastet.
+* Keine dauerhaften Workarounds wie pauschales Entsperren oder Abschwächen der PowerShell-Sicherheitskonfiguration vorschlagen, wenn ein prozesslokaler `Bypass` ausreicht.
+
+## Test-Workflow
+
+Nach einem Patch:
+
+1. Zuerst den vom Projekt vorgesehenen statischen Check ausführen, typischerweise:
+
+```powershell
+just check
+```
+
+2. Danach den vorgesehenen Setup-/Integrationslauf, typischerweise:
+
+```powershell
+just update
+```
+
+3. Anschließend die Änderung praktisch testen.
+4. Erst nach bestätigtem praktischem Test darf ein zugehöriger Roadmap-Punkt als `[x]` markiert werden.
 
 ## Aktuelle Aufgabe
 
