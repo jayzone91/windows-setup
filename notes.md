@@ -28,6 +28,8 @@ Für Windows:
 - Für alle Fenster:
   - Wäre nett, wenn wir die Close, Minimize, Maximize Buttons für alle Fenster global ändern könnten.
     - Idee: MacOS ähnliche Pills jedoch mit Catppuccin farben.
+- Programme:
+  - ChatGPT App
 
 Für Zebar:
 Neues Widget: Aktueller Akku Stand der Logitech Maus (falls auslesbar)
