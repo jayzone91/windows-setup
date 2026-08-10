@@ -3,7 +3,7 @@
         AdvancedPaste          = $true
         AlwaysOnTop            = $false
         Awake                  = $false
-        CmdPal                 = $true
+        CmdPal                 = $false
         ColorPicker            = $true
         CropAndLock            = $false
         CursorWrap             = $false

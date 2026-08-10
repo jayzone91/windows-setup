@@ -530,13 +530,51 @@ function Set-PowerToysConfiguration {
         }
     }
 
+    # --------------------------------------------------------
+    # Command Palette Runtime-Desired-State
+    # --------------------------------------------------------
+    #
+    # Die Command Palette läuft als eigenständige MSIX-App unter
+    # Microsoft.CmdPal.UI und fällt damit nicht unter PowerToys*.
+    # Wird CmdPal deaktiviert, muss eine bereits laufende Instanz
+    # ebenfalls beendet werden. Andernfalls hält sie ihren alten
+    # globalen Hotkey trotz CmdPal = false weiter registriert.
+    # --------------------------------------------------------
+
+    $commandPaletteDesiredEnabled =
+        [bool]$Config.EnabledModules.CmdPal
+
+    $commandPaletteProcessNames = @(
+        "Microsoft.CmdPal.UI"
+        "Microsoft.CmdPal.Ext.PowerToys"
+    )
+
+    $commandPaletteProcesses = @(
+        Get-Process -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.ProcessName -in $commandPaletteProcessNames
+        }
+    )
+
+    $commandPaletteRuntimeDrift =
+        -not $commandPaletteDesiredEnabled -and
+        $commandPaletteProcesses.Count -gt 0
+
+    if ($commandPaletteRuntimeDrift) {
+        Write-Host (
+            "[CHANGE] PowerToys Command Palette läuft noch, " +
+            "obwohl CmdPal deaktiviert ist."
+        )
+    }
+
     $changed =
         $changed -or
         $advancedChanged -or
         $fileLocksmithChanged -or
         $findMyMouseChanged -or
         $powerRenameChanged -or
-        $commandPaletteChanged
+        $commandPaletteChanged -or
+        $commandPaletteRuntimeDrift
 
     if (-not $changed) {
         Write-Host "[OK] PowerToys entspricht bereits dem Desired State."
@@ -569,13 +607,25 @@ function Set-PowerToysConfiguration {
         }
     }
 
-    if ($commandPaletteChanged) {
-        Get-Process `
-            -Name "CommandPalette" `
-            -ErrorAction SilentlyContinue |
-            Stop-Process -Force -ErrorAction SilentlyContinue
+    if (
+        $commandPaletteChanged -or
+        $commandPaletteRuntimeDrift
+    ) {
+        $runningCommandPaletteProcesses = @(
+            Get-Process -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.ProcessName -in $commandPaletteProcessNames
+            }
+        )
 
-        Start-Sleep -Milliseconds 300
+        if ($runningCommandPaletteProcesses.Count -gt 0) {
+            $runningCommandPaletteProcesses |
+                Stop-Process -Force -ErrorAction SilentlyContinue
+
+            Start-Sleep -Milliseconds 300
+
+            Write-Host "[OK] PowerToys Command Palette beendet."
+        }
     }
 
     if ($null -ne $powerToysProcess) {

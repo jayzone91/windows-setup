@@ -113,6 +113,13 @@
         },
 
         @{
+            Name   = "Raycast"
+            Id     = "9PFXXSHC64H3"
+            Source = "msstore"
+            Update = $true
+        },
+
+        @{
             Name    = "OpenVPN"
             Id      = "OpenVPNTechnologies.OpenVPN"
             Source  = "winget"

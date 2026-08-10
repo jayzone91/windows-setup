@@ -98,8 +98,6 @@ Für Windows:
 Für Zebar:
 Neues Widget: Aktueller Akku Stand der Logitech Maus (falls auslesbar)
 
-Komorebi:
-  Icloud Passwords muss von komorebi ignoriert werden, lässt sich nicht mehr bediehnen, wenn im tiling!
 
 Divers:
 - Prüfen ob man iMessage unter Windows gescheit zum laufen bekommt. Keine Bastelei, die Windows Phone App sagt zwar, das es gehen würde, die verliert jedoch regelmäßig die Verbindung zum telefon und dann geht gar nichts mehr.
