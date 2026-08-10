@@ -26,7 +26,9 @@ Für Windows:
     - Empfehlungen für Tipps, Verknüpfungen, neue Apps und Mehr anzeigen: Aus
     - Meistverwendete Apps anzeigen: An
     - Rest: Standard
-
+- Für alle Fenster:
+  - Wäre nett, wenn wir die Close, Minimize, Maximize Buttons für alle Fenster global ändern könnten.
+    - Idee: MacOS ähnliche Pills jedoch mit Catppuccin farben.
 
 Für Zebar:
 Neues Widget: Aktueller Akku Stand der Logitech Maus (falls auslesbar)
