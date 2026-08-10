@@ -14,7 +14,19 @@ tree-sitter-cli
 zusätzlich repo jayzone91/nvim in windows-Setup einbinden!
 
 Für Windows:
-Wir versuchen die Treiber Updates über Armory Crate von ASUS. Prüfen wir überhaupt, ob armory crate installiert ist? falls ja: installieren wir es, falls es noch nicht da ist? was ist mit updates von armory crate
+- Wir versuchen die Treiber Updates über Armory Crate von ASUS. Prüfen wir überhaupt, ob armory crate installiert ist? falls ja: installieren wir es, falls es noch nicht da ist? was ist mit updates von armory crate
+- Für Windwows Einstellungen:
+  - Taskleiste
+    - Verhalten der Taskleiste:
+      - Taskleiste automatisch ausblenden: AN
+      - Rest: Standard
+  - Start
+    - Zuletzt Hinzugefügte Apps anzeigen: Aus
+    - Empfohlene Dateien im Startmenü, zuletzt verwendete Dateien im Datei-Explorer und Elemete in Sprunglisten anzeigen: Aus
+    - Empfehlungen für Tipps, Verknüpfungen, neue Apps und Mehr anzeigen: Aus
+    - Meistverwendete Apps anzeigen: An
+    - Rest: Standard
+
 
 Für Zebar:
 Neues Widget: Aktueller Akku Stand der Logitech Maus (falls auslesbar)
