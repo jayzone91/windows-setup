@@ -1,4 +1,10 @@
 function Set-WindowsTerminalPreferences {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Theme
+    )
+
     Write-Host ""
     Write-Host "========================================"
     Write-Host " Windows Terminal"
@@ -59,12 +65,12 @@ function Set-WindowsTerminalPreferences {
 
     $settings.profiles.defaults | Add-Member `
         -NotePropertyName "useAcrylic" `
-        -NotePropertyValue $true `
+        -NotePropertyValue $false `
         -Force
 
     $settings.profiles.defaults | Add-Member `
         -NotePropertyName "opacity" `
-        -NotePropertyValue 92 `
+        -NotePropertyValue 100 `
         -Force
 
     $settings.profiles.defaults | Add-Member `
@@ -99,11 +105,11 @@ function Set-WindowsTerminalPreferences {
     $catppuccin = [PSCustomObject]@{
         name                = "Catppuccin Mocha"
 
-        foreground          = "#CDD6F4"
-        background          = "#1E1E2E"
+        foreground          = $Theme.Colors.Text
+        background          = $Theme.Colors.Base
 
-        cursorColor         = "#F5E0DC"
-        selectionBackground = "#585B70"
+        cursorColor         = $Theme.Colors.Rosewater
+        selectionBackground = $Theme.Colors.Surface2
 
         black               = "#45475A"
         red                 = "#F38BA8"

@@ -151,7 +151,7 @@ body {
   border: 1px solid var(--surface1);
   border-radius: 999px;
 
-  background: rgba(49, 50, 68, 0.92);
+  background: var(--base);
 }
 
 .icon {

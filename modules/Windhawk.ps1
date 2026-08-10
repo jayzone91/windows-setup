@@ -297,12 +297,10 @@ function Install-Windhawk {
     }
 }
 
-function Test-WindhawkModInstalled {
+function Get-WindhawkInstalledMods {
     [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [string] $ModId
-    )
+    [OutputType([object[]])]
+    param()
 
     $cli = Get-WindhawkCliPath
 
@@ -310,8 +308,29 @@ function Test-WindhawkModInstalled {
         throw "windhawk-cli.exe wurde nicht gefunden."
     }
 
-    $mods = & $cli --json mod list |
+    $response = & $cli --json mod list |
     ConvertFrom-Json
+
+    if (-not $response.success) {
+        throw "Installierte Windhawk-Mods konnten nicht gelesen werden."
+    }
+
+    if ($response.data.mods) {
+        return , @($response.data.mods)
+    }
+
+    return , @()
+}
+
+
+function Test-WindhawkModInstalled {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string] $ModId
+    )
+
+    $mods = Get-WindhawkInstalledMods
 
     return @(
         $mods |
@@ -368,9 +387,174 @@ function Install-WindhawkMod {
 }
 
 
+function ConvertTo-WindhawkSettingPairs {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Settings,
+
+        [string] $Prefix = ""
+    )
+
+    $pairs = [System.Collections.Generic.List[string]]::new()
+
+    foreach ($key in $Settings.Keys) {
+        $path = if ($Prefix) {
+            "$Prefix.$key"
+        }
+        else {
+            [string] $key
+        }
+
+        $value = $Settings[$key]
+
+        if ($value -is [System.Collections.IDictionary]) {
+            $nestedPairs = ConvertTo-WindhawkSettingPairs `
+                -Settings $value `
+                -Prefix $path
+
+            foreach ($pair in $nestedPairs) {
+                $pairs.Add($pair)
+            }
+
+            continue
+        }
+
+        if (
+            $value -is [System.Collections.IEnumerable] -and
+            $value -isnot [string]
+        ) {
+            $index = 0
+
+            foreach ($item in $value) {
+                $itemPath = "${path}[$index]"
+
+                if ($item -is [System.Collections.IDictionary]) {
+                    $nestedPairs = ConvertTo-WindhawkSettingPairs `
+                        -Settings $item `
+                        -Prefix $itemPath
+
+                    foreach ($pair in $nestedPairs) {
+                        $pairs.Add($pair)
+                    }
+                }
+                else {
+                    $itemValue = if ($item -is [bool]) {
+                        $item.ToString().ToLowerInvariant()
+                    }
+                    elseif ($null -eq $item) {
+                        ""
+                    }
+                    else {
+                        [string] $item
+                    }
+
+                    $pairs.Add("$itemPath=$itemValue")
+                }
+
+                $index++
+            }
+
+            continue
+        }
+
+        $serializedValue = if ($value -is [bool]) {
+            $value.ToString().ToLowerInvariant()
+        }
+        elseif ($null -eq $value) {
+            ""
+        }
+        else {
+            [string] $value
+        }
+
+        $pairs.Add("$path=$serializedValue")
+    }
+
+    return $pairs.ToArray()
+}
+
+
+function Set-WindhawkModSettings {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string] $ModId,
+
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Settings
+    )
+
+    $cli = Get-WindhawkCliPath
+
+    if (-not $cli) {
+        throw "windhawk-cli.exe wurde nicht gefunden."
+    }
+
+    $pairs = @(
+        ConvertTo-WindhawkSettingPairs `
+            -Settings $Settings
+    )
+
+    if ($pairs.Count -eq 0) {
+        return
+    }
+
+    Write-Host "[CONFIG] Windhawk-Mod Settings: $ModId"
+
+    & $cli mod settings set $ModId @pairs
+
+    if ($LASTEXITCODE -ne 0) {
+        throw (
+            "Windhawk-Mod-Settings konnten nicht gesetzt werden: " +
+            $ModId
+        )
+    }
+}
+
+
+function Set-WindhawkModEnabledState {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string] $ModId,
+
+        [Parameter(Mandatory)]
+        [bool] $Enabled
+    )
+
+    $cli = Get-WindhawkCliPath
+
+    if (-not $cli) {
+        throw "windhawk-cli.exe wurde nicht gefunden."
+    }
+
+    if ($Enabled) {
+        & $cli mod enable $ModId
+    }
+    else {
+        & $cli mod disable $ModId
+    }
+
+    if ($LASTEXITCODE -ne 0) {
+        $state = if ($Enabled) {
+            "aktiviert"
+        }
+        else {
+            "deaktiviert"
+        }
+
+        throw "Windhawk-Mod konnte nicht $state werden: $ModId"
+    }
+}
+
+
 function Set-WindhawkConfiguration {
     [CmdletBinding()]
-    param()
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Config
+    )
 
     Write-Host ""
     Write-Host "========================================"
@@ -378,5 +562,52 @@ function Set-WindhawkConfiguration {
     Write-Host "========================================"
     Write-Host ""
 
+    if (-not $Config.Mods) {
+        Write-Host "[INFO] Keine Windhawk-Mods konfiguriert."
+        return
+    }
 
+    foreach ($mod in $Config.Mods) {
+        if (-not $mod.Id) {
+            throw "Windhawk-Mod ohne Id in der Konfiguration."
+        }
+
+        $name = if ($mod.Name) {
+            $mod.Name
+        }
+        else {
+            $mod.Id
+        }
+
+        Write-Host ""
+        Write-Host "[MOD] $name ($($mod.Id))"
+
+        if (-not (Test-WindhawkModInstalled -ModId $mod.Id)) {
+            Install-WindhawkMod -ModId $mod.Id
+        }
+        else {
+            Write-Host "[OK] Windhawk-Mod bereits installiert: $($mod.Id)"
+        }
+
+        if ($mod.Settings) {
+            Set-WindhawkModSettings `
+                -ModId $mod.Id `
+                -Settings $mod.Settings
+        }
+
+        $enabled = if ($null -eq $mod.Enabled) {
+            $true
+        }
+        else {
+            [bool] $mod.Enabled
+        }
+
+        Set-WindhawkModEnabledState `
+            -ModId $mod.Id `
+            -Enabled $enabled
+    }
+
+    Write-Host ""
+    Write-Host "[OK] Windhawk-Konfiguration angewendet." `
+        -ForegroundColor Green
 }

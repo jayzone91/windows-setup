@@ -63,10 +63,14 @@ Bereits umgesetzt sind unter anderem:
 - Verzeichnis-Dotfiles werden als NTFS-Junctions eingebunden
 - Symbolic Links werden nur als dokumentierter Kompatibilitäts-Fallback verwendet; VS Code settings.json nutzt diese Ausnahme
 - Catppuccin Mocha als gemeinsame Designsprache
+- zentrale Catppuccin-Mocha-Palette unter `config/theme.psd1`
+- gemeinsame Desktop-Hauptfläche `Base #1e1e2e` für VS Code, Windows Terminal, Zebar und die Windhawk-Taskbar
+- Windows 11 Taskbar Styler über Windhawk mit RosePine als Basis und Catppuccin-Mocha-Farboverrides
+- kompakter Mauve-Punkt unter dem aktiven Taskbar-Fenster statt des RosePine-Aktivrahmens
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 - Zen-Mod-Precheck: Browser-Neustart nur, wenn konfigurierte Mods tatsächlich fehlen
 
-Die nächsten größeren Arbeitspakete sind PowerToys Command Palette + Everything, Windhawk für Taskbar, Startmenü und Notification Center, ein eigenes OSD sowie weiterer Catppuccin-Polish.
+Die nächsten größeren Arbeitspakete sind PowerToys Command Palette + Everything, weitere Windhawk-Mods für Startmenü und Notification Center, Taskbar-Auto-Hide-Tuning, Lock Keys Notifier sowie weiterer Catppuccin-Polish.
 
 Siehe auch [`roadmap.md`](roadmap.md).
 
@@ -212,6 +216,34 @@ Das `Justfile` soll nicht zu einer zweiten Setup-Architektur werden. Neue wieder
 
 ---
 
+# Zentrale Theme-Konfiguration
+
+Catppuccin Mocha ist die gemeinsame Designsprache der verwalteten Desktop-Umgebung. Die zentrale Palette liegt in:
+
+```text
+config/theme.psd1
+```
+
+Für die wichtigsten Desktop-Flächen gelten semantische Rollen:
+
+| Rolle      | Catppuccin Mocha | Verwendung                       |
+| ---------- | ---------------- | -------------------------------- |
+| `Base`     | `#1e1e2e`        | gemeinsame Hauptfläche           |
+| `Surface0` | `#313244`        | abgesetzte Controls und Flächen  |
+| `Surface1` | `#45475a`        | Borders und Hover-Zustände       |
+| `Text`     | `#cdd6f4`        | primärer Text                    |
+| `Subtext0` | `#a6adc8`        | sekundärer Text                  |
+| `Mauve`    | `#cba6f7`        | Akzent und aktiver Taskbar-Punkt |
+
+Aktuell verwenden VS Code, Windows Terminal, Zebar und die über Windhawk gestaltete Windows-Taskbar `Base #1e1e2e` als Hauptfläche.
+
+Windows Terminal verwendet das Catppuccin-Mocha-Farbschema ohne Acrylic und mit 100 Prozent Opazität, damit der tatsächliche Hintergrund exakt der gemeinsamen Base entspricht.
+
+Die Taskbar wird durch den Windhawk-Mod **Windows 11 Taskbar Styler** gestaltet. Das integrierte Theme **RosePine** bleibt dabei die Layout-Basis; eigene `controlStyles` überschreiben gezielt die relevanten Farben mit Catppuccin Mocha. Der RosePine-Rahmen für das aktive Fenster wird zusätzlich durch einen kleinen Mauve-Punkt unter dem aktiven Icon ersetzt.
+
+Zebar besitzt derzeit weiterhin eigene CSS-Variablen für die Palette, und die Windhawk-Mod-Settings enthalten die benötigten Hex-Werte. Die spätere direkte Ableitung dieser Werte aus `config/theme.psd1` ist als Folgearbeit in der Roadmap dokumentiert.
+
+---
 # Konfigurations-Synchronisierung
 
 Das Repository ist die Quelle der Wahrheit für verwaltete Konfigurationsdateien.
@@ -500,9 +532,9 @@ Windows Desktop
 │   ├── PowerToys Command Palette
 │   └── Everything
 │
-├── Windows Shell Styling (geplant)
+├── Windows Shell Styling (teilweise umgesetzt)
 │   └── Windhawk
-│       ├── Taskbar Styler
+│       ├── Taskbar Styler (umgesetzt)
 │       ├── Start Menu Styler
 │       └── Notification Center Styler
 │
@@ -694,7 +726,7 @@ Es wird bewusst keine universelle CSS-Datei für alle Anwendungen erzwungen. Jed
 | Windows Terminal    | Farbschema in `settings.json`                 |
 | VS Code             | Catppuccin Theme/Extension                    |
 | Zen Browser         | eigene CSS-/UI-Anpassungen                    |
-| Taskbar             | Windhawk Taskbar Styler (geplant)             |
+| Taskbar             | Windhawk Taskbar Styler + RosePine/Catppuccin |
 | Startmenü           | Windhawk Start Menu Styler (geplant)          |
 | Notification Center | Windhawk Notification Center Styler (geplant) |
 | eigenes OSD         | eigene Styles (geplant)                       |
@@ -901,9 +933,9 @@ Die ausführliche Priorisierung befindet sich in [`roadmap.md`](roadmap.md).
 
 Aktuell sind die nächsten Arbeitspakete:
 
-1. Home Office Paketgruppe
-2. PowerToys Command Palette + Everything
-3. Windhawk Shell Styling
-4. eigenes Catppuccin OSD
+1. weitere Windhawk-Shell-Mods für Startmenü und Notification Center
+2. Taskbar-Auto-Hide-Tuning
+3. Lock Keys Notifier mit Catppuccin-Anpassung
+4. verbleibendes Catppuccin-OSD für Volume, Mute, Brightness und Media
 5. Gaming
 6. Logging, Tests und weitere Qualitätssicherung

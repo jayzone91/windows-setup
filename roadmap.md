@@ -1098,6 +1098,31 @@ Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwalte
 
 ---
 
+## Windhawk Desired State
+
+- [x] `config/windhawk.psd1` als deklarative Mod-Liste vorgesehen
+- [x] Mod-Installation und Aktivierung generisch über `modules/Windhawk.ps1`
+- [x] Windhawk-CLI-2.x-JSON-Envelope bei installierten Mods berücksichtigen
+- [x] generische Übersetzung verschachtelter Settings in Flat-Storage-Keys
+- [x] Windows 11 Taskbar Styler als erster deklarativer Mod
+- [x] RosePine als gewünschtes Basis-Theme hinterlegt
+- [x] Taskbar Styler über `just update` auf dem aktuellen System installiert
+- [x] RosePine praktisch verifiziert
+- [x] wiederholten `just update` mit installiertem Taskbar Styler erfolgreich getestet
+- [x] Catppuccin-Mocha-Farboverrides für RosePine definiert
+- [x] Catppuccin-Mocha-Farboverrides auf dem aktuellen System praktisch getestet
+- [ ] Settings-Drift vor dem Schreiben erkennen und unveränderte Mod-Settings unangetastet lassen
+
+### Zentrale Catppuccin-Palette
+
+- [x] `config/theme.psd1` als zentrale Catppuccin-Mocha-Palette angelegt
+- [x] gemeinsame Desktop-Hauptfläche auf Catppuccin Base `#1e1e2e` festgelegt
+- [x] Windows Terminal auf Base `#1e1e2e` ohne Acrylic/Transparenz umgestellt
+- [x] Zebar-Hauptflächen auf Base `#1e1e2e` umgestellt
+- [x] Windhawk Taskbar-Styler-Hauptflächen auf Base `#1e1e2e` umgestellt
+- [x] Terminal, Zebar und Taskbar optisch gemeinsam geprüft
+- [ ] Zebar-Palette zukünftig aus `config/theme.psd1` generieren statt CSS-Farbwerte separat zu pflegen
+- [ ] Windhawk-Farbwerte zukünftig semantisch aus `config/theme.psd1` auflösen statt Hex-Werte in Mod-Settings zu duplizieren
 # 23. Phase 20 – Eigenes OSD
 
 ## Ziel
@@ -1581,10 +1606,10 @@ Noch offen aus dem Paketmanager-Umbau:
 
 ## Priorität 2 – Windows Shell
 
-1. [ ] Windhawk Taskbar Styler
+1. [x] Windhawk Taskbar Styler
 2. [ ] Windhawk Start Menu Styler
 3. [ ] Windhawk Notification Center Styler
-4. [ ] alle Einstellungen per CLI reproduzierbar machen
+4. [x] alle bisherigen Windhawk-Einstellungen per CLI reproduzierbar machen
 
 ## Priorität 3 – eigenes OSD
 

@@ -374,12 +374,19 @@ function Start-WindowsDesktopEnvironment {
         -TaskName "komorebi Desktop"
 
     $komorebiReady = $false
+    $komorebiProcess = $null
+    $whkdProcess = $null
 
-    for ($attempt = 0; $attempt -lt 20; $attempt++) {
-        if (
-            (Get-Process -Name "komorebi" -ErrorAction SilentlyContinue) -and
-            (Get-Process -Name "whkd" -ErrorAction SilentlyContinue)
-        ) {
+    for ($attempt = 0; $attempt -lt 60; $attempt++) {
+        $komorebiProcess = Get-Process `
+            -Name "komorebi" `
+            -ErrorAction SilentlyContinue
+
+        $whkdProcess = Get-Process `
+            -Name "whkd" `
+            -ErrorAction SilentlyContinue
+
+        if ($komorebiProcess -and $whkdProcess) {
             $komorebiReady = $true
             break
         }
@@ -388,7 +395,21 @@ function Start-WindowsDesktopEnvironment {
     }
 
     if (-not $komorebiReady) {
-        throw "komorebi/whkd wurden nach dem Start nicht rechtzeitig erkannt."
+        $missingProcesses = @()
+
+        if (-not $komorebiProcess) {
+            $missingProcesses += "komorebi"
+        }
+
+        if (-not $whkdProcess) {
+            $missingProcesses += "whkd"
+        }
+
+        throw (
+            "Desktop Environment wurde nicht innerhalb von 15 Sekunden " +
+            "vollständig gestartet. Fehlend: " +
+            ($missingProcesses -join ", ")
+        )
     }
 
     Write-Host "[OK] komorebi und whkd laufen." `

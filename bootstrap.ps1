@@ -86,6 +86,8 @@ $VSCode = Import-PowerShellDataFile "$Root\config\vscode.psd1"
 $Browsers = Import-PowerShellDataFile "$Root\config\browsers.psd1"
 $PowerShell = Import-PowerShellDataFile "$Root\config\powershell.psd1"
 $PowerToys = Import-PowerShellDataFile "$Root\config\powertoys.psd1"
+$Theme = Import-PowerShellDataFile "$Root\config\theme.psd1"
+$Windhawk = Import-PowerShellDataFile "$Root\config\windhawk.psd1"
 $Debloat = Import-PowerShellDataFile "$Root\config\debloat.psd1"
 $Storage = Import-PowerShellDataFile `
     "$Root\config\storage.psd1"
@@ -132,7 +134,8 @@ Update-SessionPath
 Set-PowerToysConfiguration `
     -Config $PowerToys `
     -RepositoryPath $Root
-Set-WindhawkConfiguration
+Set-WindhawkConfiguration `
+    -Config $Windhawk
 
 Set-KomorebiConfiguration `
     -RepositoryPath $Root
@@ -185,7 +188,8 @@ Set-WindowsWallpaperSlideshow
 
 Set-GitPreferences
 
-Set-WindowsTerminalPreferences
+Set-WindowsTerminalPreferences `
+    -Theme $Theme
 
 Install-PowerShellModules `
     -Modules $PowerShell.Modules
