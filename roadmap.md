@@ -1138,6 +1138,21 @@ Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwalte
 - [x] fokussiertes Suchfeld mit `Mauve #cba6f7` als Akzent beibehalten
 - [x] normales Startmenü und Suchansicht optisch praktisch verifiziert
 - [x] wiederholten `just update` mit installiertem Start Menu Styler erfolgreich getestet
+- [x] `Taskbar auto-hide speed` als deklarativen Windhawk-Mod ergänzt
+  - Ein- und Ausblendanimation jeweils auf `250 %` Speedup gesetzt
+  - `90 FPS` als konfigurierte Animations-Framerate
+  - Windows-11-Standardtaskbar verwendet; Legacy-/ExplorerPatcher-Pfad bleibt deaktiviert
+  - Installation und Verhalten auf dem aktuellen System praktisch getestet
+- [x] `Lock Keys Notifier` als deklarativen Windhawk-Mod ergänzt
+  - Benachrichtigungen für Caps Lock, Num Lock und Scroll Lock aktiviert
+  - Insert-Benachrichtigung bleibt deaktiviert
+  - `Pill`-Layout als Basis verwendet
+  - Catppuccin-Mocha-Farben direkt über die nativen Mod-Settings gesetzt
+  - `Base #1e1e2e` als Hintergrund und `Text #cdd6f4` als Schriftfarbe
+  - `Mauve #cba6f7` nur als dünne Border, nicht als große Flächenfarbe
+  - `Green #a6e3a1` als ON-Akzent für Lock-Key-Zustände
+  - Installation, `just check`, `just update` und optische Sichtprüfung auf dem aktuellen System erfolgreich getestet
+  - dient aktuell als Lock-Key-OSD; ein späteres gemeinsames OSD für Volume, Mute, Brightness, Media und Lock Keys bleibt als eigener Roadmap-Punkt bestehen
 - [ ] Settings-Drift vor dem Schreiben erkennen und unveränderte Mod-Settings unangetastet lassen
 
 ### Zentrale Catppuccin-Palette
