@@ -18,6 +18,7 @@ $modules = @(
     "OneCommander.ps1"
     "Packages.ps1"
     "PowerToys.ps1"
+    "Raycast.ps1"
     "PowerShell.ps1"
     "ScheduledTasks.ps1"
     "Security.ps1"

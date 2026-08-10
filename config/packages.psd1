@@ -187,13 +187,6 @@
             Id     = "voidtools.Everything"
             Source = "winget"
             Update = $true
-        },
-
-        @{
-            Name   = "Everything for Command Palette"
-            Id     = "lin-ycv.EverythingCmdPal"
-            Source = "winget"
-            Update = $true
         }
     )
 

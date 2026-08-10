@@ -47,17 +47,17 @@ Die Windows-Umgebung soll funktional und optisch möglichst nah an die vorhanden
 
 ## Vergleich
 
-| Arch / Linux                     | Windows                                |
-| -------------------------------- | -------------------------------------- |
-| Hyprland                         | komorebi                               |
-| Waybar                           | Zebar                                  |
-| Focus follows mouse              | masir                                  |
-| Fuzzel / Launcher                | PowerToys Command Palette + Everything |
-| Dolphin                          | OneCommander                           |
-| SwayOSD                          | eigenes Catppuccin-OSD                 |
-| Catppuccin Mocha                 | Catppuccin Mocha                       |
-| native Wayland-Tiling-Funktionen | komorebi + whkd                        |
-| dotfiles                         | Repository + NTFS-Hardlinks/Junctions  |
+| Arch / Linux                     | Windows                               |
+| -------------------------------- | ------------------------------------- |
+| Hyprland                         | komorebi                              |
+| Waybar                           | Zebar                                 |
+| Focus follows mouse              | masir                                 |
+| Fuzzel / Launcher                | Raycast + Everything                  |
+| Dolphin                          | OneCommander                          |
+| SwayOSD                          | eigenes Catppuccin-OSD                |
+| Catppuccin Mocha                 | Catppuccin Mocha                      |
+| native Wayland-Tiling-Funktionen | komorebi + whkd                       |
+| dotfiles                         | Repository + NTFS-Hardlinks/Junctions |
 
 ## Desktop-Architektur
 
@@ -79,7 +79,7 @@ Windows Desktop
 │   └── NanaZip
 │
 ├── Launcher / Search
-│   ├── PowerToys Command Palette
+│   ├── Raycast
 │   └── Everything
 │
 ├── Windows Shell Styling
@@ -304,6 +304,7 @@ Für Scoop muss zusätzlich der gewünschte `Bucket` direkt am Paket angegeben w
 - [x] Windows HDR Calibration
 - [x] iCloud
 - [x] ChatGPT Desktop-App (`9PLM9XGG6VKS`) über Microsoft Store
+- [x] Raycast (`9PFXXSHC64H3`) über Microsoft Store
 - [x] OpenVPN
 - [x] Logitech G HUB
 - [x] komorebi
@@ -312,8 +313,8 @@ Für Scoop muss zusätzlich der gewünschte `Bucket` direkt am Paket angegeben w
 - [x] Zebar
 - [x] OneCommander
 - [x] **NanaZip**
-- [ ] PowerToys
-- [ ] Everything
+- [x] PowerToys
+- [x] Everything
 
 #### ChatGPT Desktop-App
 
@@ -1324,66 +1325,150 @@ Das OSD soll sich unaufdringlich, schnell und modern verhalten.
 
 # 24. Phase 21 – Launcher / Suche
 
-## PowerToys
+## Entscheidung
 
-- [x] PowerToys installieren
-- [x] Command Palette als primären Launcher einrichten
-- [x] Start-Hotkey Win + Space definieren
-- [x] unnötige PowerToys-Module deaktivieren
-- [x] Konfiguration soweit möglich automatisieren
+Raycast ersetzt die PowerToys Command Palette als primären Launcher.
 
-## PowerToys Desired State
+Gründe:
 
-- [x] PowerToys-Modulzustände deklarativ in `config/powertoys.psd1` verwalten
-- [x] Command Palette aktiv; PowerToys Run deaktiviert
-- [x] Command Palette über `Alt + Space` öffnen
-- [x] Everything als Dateisuche in Command Palette aktivieren
-- [x] eingebauten `Files`-Provider deaktivieren, um doppelte Dateitreffer zu vermeiden
-- [x] Advanced Paste aktivieren
-- [x] `Ctrl + Shift + V` für Nur-Text
-- [x] `Ctrl + Shift + M` für Markdown
-- [x] Advanced-Paste-Fenster und JSON-Hotkey deaktivieren
-- [x] Paste-as-File-Gruppe sichtbar; einzelne direkten Hotkeys deaktiviert
-- [x] Audio-/Video-Transcode-Gruppe sichtbar; einzelne direkten Hotkeys deaktiviert
-- [x] File Locksmith in allen Kontextmenüs anzeigen
-- [x] Find My Mouse über doppeltes linkes `Ctrl`
-- [x] PowerRename aktiv mit Standardwerten
-- [x] PowerToys nur bei tatsächlichem Konfigurations-Drift neu starten
-- [x] vollständigen Desired State auf dem aktuellen System praktisch getestet
-- [x] zweiten `just update` getestet; bekannte Einschränkung: PowerToys erkennt aktuell weiterhin Drift und wird erneut gestartet
+- Raycast bietet den gewünschten keyboard-first Workflow näher am Linux-/Fuzzel-Zielbild.
+- `Win + Space` kann direkt als globaler Raycast-Hotkey verwendet werden.
+- Extensions, Themes und relevante Launcher-Einstellungen lassen sich über Raycasts eigenes Export-/Importformat reproduzierbar sichern und wiederherstellen.
+- Die PowerToys Command Palette bleibt deaktiviert und wird nicht erneut als primärer Launcher verfolgt.
+- PowerToys selbst bleibt für die weiterhin genutzten Module wie Advanced Paste, File Locksmith, Find My Mouse und PowerRename installiert.
+- Everything bleibt als eigenständiger Dienst/Index installiert und wird über die Raycast-Extension `everything-search` verwendet.
+- Der frühere Everything-Provider speziell für die PowerToys Command Palette (`lin-ycv.EverythingCmdPal`) wird nicht mehr verwaltet.
 
-### Bekannte Einschränkung – PowerToys Desired State
+## Raycast Installation
 
-- [x] Der konfigurierte Zustand wurde auf dem aktuellen System vollständig praktisch getestet.
-- [x] `Alt + Space` öffnet die Command Palette zuverlässig.
-- [x] Everything-Suche, Advanced Paste, File Locksmith, Find My Mouse und PowerRename funktionieren wie vorgesehen.
-- [x] `just check` und `just update` laufen fehlerfrei.
-- [x] Wiederholter `just update` wurde getestet.
-- [ ] PowerToys meldet intern weiterhin verwalteten Drift und wird deshalb bei jedem `just update` neu gestartet.
-- [ ] Ursache nur weiter analysieren, wenn der zusätzliche Neustart im Alltag tatsächlich stört.
+- [x] Raycast über den bestehenden generischen `msstore`-Paketworkflow installieren
+- [x] Microsoft-Store-ID `9PFXXSHC64H3` verwenden
+- [x] Paketupdates über `Update = $true` verwalten
+- [x] `winget show --id 9PFXXSHC64H3 --exact --source msstore` praktisch verifiziert
+- [x] Installation über `just update` praktisch erfolgreich getestet
+- [x] wiederholter `just update` prüft Raycast regulär auf Updates
 
-Der erneute PowerToys-Neustart ist aktuell als bekannte, akzeptierte Einschränkung dokumentiert. Der gewünschte Zustand bleibt korrekt erhalten; funktional besteht kein Blocker für den weiteren Projektfortschritt.
+## Launcher-Hotkey und PowerToys-Abgrenzung
+
+- [x] Raycast als primären Launcher verwenden
+- [x] globalen Raycast-Hotkey auf `Win + Space` setzen
+- [x] PowerToys Command Palette deaktivieren (`CmdPal = $false`)
+- [x] PowerToys Run deaktiviert lassen
+- [x] `Alt + Space` nicht mehr als Launcher-Hotkey verwenden
+- [x] PowerToys Command Palette nach Deaktivierung praktisch nicht mehr aktiv
+- [x] PowerToys weiterhin für Advanced Paste, File Locksmith, Find My Mouse und PowerRename verwenden
+
+## Raycast Desired State
+
+Versionierter, generischer Desired State:
+
+```text
+dotfiles/raycast/config.json
+```
+
+Lokale Transportkonfiguration:
+
+```text
+config/raycast.psd1
+```
+
+- [x] `config/raycast.psd1` enthält ein frei änderbares `ExportPassword`
+- [x] `config/raycast.psd1` enthält den frei wählbaren Raycast-Backup-Pfad als `BackupPath`
+- [x] `BackupPath` wird explizit aus der Konfiguration gelesen; der Workflow verlässt sich nicht auf `SpecialFolder::MyDocuments`
+- [x] Umgebungsvariablen wie `%USERPROFILE%` im Backup-Pfad werden unterstützt
+- [x] `ExportPassword` ist bewusst ein generisches lokales Transportpasswort und kein Repository-Secret
+- [x] der versionierte Desired State enthält ausschließlich eine Allowlist reproduzierbarer, nicht sensibler Einstellungen
+- [x] General-Settings nur gezielt übernehmen, darunter `globalHotkey`, Theme, Fensterverhalten, `navigationBindings` und `pageNavigationKeys`
+- [x] vollständige benutzerdefinierte Themes übernehmen
+- [x] Store-Extensions dynamisch anhand ihrer UUID übernehmen
+- [x] Extension-Versionen nicht pinnen bzw. nicht im Desired State versionieren
+- [x] Node-Extension-Settings nur als `id` + `enabled` übernehmen
+- [x] Command-Settings nur für die tatsächlich versionierten Store-Extensions übernehmen
+- [x] interne Raycast-Commands wie Clipboard History nicht in den Desired State übernehmen
+- [x] AI-Daten, Clipboard History, Notes, MCP-Server, Quicklinks, Snippets, User Activity und andere persönliche Laufzeitdaten nicht versionieren
+- [x] bekannte Credential-/Secret-Felder zusätzlich durch den Sanitizer hart ablehnen
+
+## Raycast Export-/Importformat
+
+Die aktuelle Raycast-Windows-Implementierung wurde für den benötigten Konfigurationsworkflow praktisch analysiert und verifiziert.
+
+- [x] äußeres `.rayconfig` ist GZip-komprimiertes JSON
+- [x] Schema-Version 2 verwenden
+- [x] Nutzdaten vor der Verschlüsselung mit GZip komprimieren
+- [x] Schlüssel mit `scrypt(password, salt, 32)` ableiten
+- [x] AES-256-GCM verwenden
+- [x] zufällige 16-Byte-Werte für Salt und IV verwenden
+- [x] `salt`, `iv`, `authTag` und `data` als Hex speichern
+- [x] lokales Importarchiv reproduzierbar aus `dotfiles/raycast/config.json` erzeugen
+- [x] aktuelle lokale `.rayconfig` reproduzierbar entschlüsseln und sanitizen
+- [x] Node.js aus dem System verwenden; Raycasts gebündeltes Node dient als Fallback
+
+## Erstinitialisierung und lokales Archivmodell
+
+Feste Annahme dieses Projekts: Das vollständige Raycast-`.rayconfig`-Archiv liegt lokal. Eine spätere externe Synchronisierung oder Weitergabe dieses Archivs liegt außerhalb des Verantwortungsbereichs dieses Setups.
+
+- [x] Benutzer bei der Erstinitialisierung darauf hinweisen, dass vollständige Raycast-Backups persönliche und sensible Daten enthalten können
+- [x] Benutzer muss das lokale Archivmodell ausdrücklich bestätigen
+- [x] lokalen Initialisierungsmarker unter `.generated/state/default-apps/raycast.initialized` verwenden
+- [x] Marker erst nach erfolgreich bestätigter Initialisierung erzeugen
+- [x] vorhandenes lokales Backup bei bereits eingerichteter Raycast-Installation übernehmen und sanitizen
+- [x] auf einem frischen System ohne lokales Backup einmalig ein lokales `.generated/raycast/raycast-import.rayconfig` erzeugen
+- [x] Benutzer beim initialen Raycast-Import sowie bei der Einrichtung von Daily Backup, Backup Location und Auto-Delete führen
+- [x] `.rayconfig` niemals ins Repository übernehmen
+- [x] nach erfolgreicher Initialisierung bei normalen `just update`-Läufen kein neues Restore-Archiv erzeugen
+- [x] nach erfolgreicher Initialisierung ausschließlich das neueste lokale Backup sanitizen und den Desired State bei relevanter Änderung aktualisieren
+
+## Theme
+
+- [x] Catppuccin Mocha als benutzerdefiniertes Raycast-Theme verwenden
+- [x] vollständigen Theme-Datensatz im Desired State versionieren
+- [x] Dark Appearance mit dem Catppuccin-Mocha-Theme verwenden
+- [x] Theme über Raycasts nativen Import-/Exportweg wiederherstellen
+
+## Extensions
+
+Aktuell im Desired State enthalten:
+
+- [x] Everything Search
+- [x] Visual Studio Code
+- [x] ChatGPT
+- [x] Google Search
+- [x] Shell
+- [x] Zen Browser
+- [x] Lucide Icons Search
+
+Die Extension-Liste ist absichtlich dynamisch. Weitere installierte Store-Extensions, beispielsweise eine spätere GitHub-Extension, werden bei einem späteren erfolgreichen Export automatisch in den generischen Desired State übernommen.
 
 ## Everything
 
 - [x] Everything installieren
 - [x] Everything-Index / Service auf dem aktuellen System funktionsfähig
-- [x] Everything in PowerToys Command Palette integrieren
-- [x] schnelle Datei-/Ordnersuche über Everything in Command Palette praktisch getestet
-- [x] Everything-Service als automatische Hintergrundkomponente erkannt und verwendet
+- [x] Everything über die Raycast-Extension `everything-search` integrieren
+- [x] CmdPal-spezifischen Everything-Provider aus der Paketverwaltung entfernen
+- [x] schnelle Datei-/Ordnersuche über Raycast + Everything verwenden
 
-## Design
+## Praktisch bestätigt
 
-- [ ] Command Palette mit Dark/Acrylic und Catppuccin-Mocha-Mauve konfigurieren
-- [x] wirksame Command-Palette-Theme-Einstellungen über die GUI gesetzt und aus `settings.json` verifiziert
-- [x] sichtbare Catppuccin-Mocha-Anpassung mit `#1E1E2E` bei 100 % Intensität praktisch verifiziert
-- [x] finaler CmdPal-Desired-State nach `just update` praktisch verifiziert: `Alt + Space`, Acrylic, `#1E1E2E`, App-Details, Backspace-Navigation und aktivierte Animationen bleiben erhalten
-- [ ] Workflow ähnlich zu Fuzzel
-- [x] keyboard-first mit `Alt + Space` als Launcher-Hotkey
-- [x] App-, Datei- und Command-Suche praktisch verfügbar
+- [x] `just check` nach der Raycast-Integration erfolgreich; keine neuen PSScriptAnalyzer-Probleme
+- [x] vollständiger `just update` mit Raycast-Initialisierung erfolgreich
+- [x] lokaler Marker `.generated/state/default-apps/raycast.initialized` erfolgreich erzeugt
+- [x] vollständiges lokales Backup erfolgreich entschlüsselt und als generischer Desired State sanitiziert
+- [x] keine `.rayconfig` und keine Secrets im Repository-Status
+- [x] wiederholter `just update` erfolgreich
+- [x] wiederholter Lauf erkennt `[OK] Raycast wurde bereits initialisiert.`
+- [x] wiederholter Lauf erkennt `[OK] Raycast Desired State unverändert.`
+- [x] bei unverändertem Zustand keine erneute Benutzerinteraktion und kein neues Restore-Archiv
+
+### Akzeptanzkriterien
+
+- `Win + Space` öffnet Raycast als primären Launcher.
+- PowerToys Command Palette bleibt deaktiviert.
+- Everything-Suche ist über Raycast verfügbar.
+- Catppuccin Mocha und die versionierten Raycast-Einstellungen lassen sich auf einem neuen System aus dem Desired State wiederherstellen.
+- vollständige persönliche Raycast-Backups bleiben lokal und werden nicht committed.
+- wiederholte `just update`-Läufe bleiben ohne unnötige Benutzerinteraktion und ohne erneutes Restore-Artefakt idempotent.
 
 ---
-
 # 25. Phase 22 – Home Office
 
 Diese Phase ist als eigener Bereich umgesetzt und wird nicht mit allgemeinen Tools oder Development vermischt.
@@ -1520,6 +1605,7 @@ Das System soll nach Neuinstallation auch als Gaming-PC möglichst schnell einsa
 - [x] Zen-Mods vor möglichem Browser-Neustart lokal prüfen
 - [x] Zebar Build
 - [x] OneCommander-Desired-State vor möglichem Neustart prüfen
+- [x] initialisiertes Raycast ohne erneuten Restore behandeln und aktuellen lokalen Export in den generischen Desired State sanitizen
 - [x] Desktop-Environment am Ende definiert neu starten
 - [x] PSScriptAnalyzer
 - [x] Rebootstatus
@@ -1554,10 +1640,10 @@ Das System soll nach Neuinstallation auch als Gaming-PC möglichst schnell einsa
 
 ## Offen
 
-- [ ] PowerToys Command Palette
-- [ ] Windhawk Taskbar
-- [ ] Windhawk Start Menu
-- [ ] Windhawk Notification Center
+- [x] Raycast mit Catppuccin-Mocha-Theme
+- [x] Windhawk Taskbar
+- [x] Windhawk Start Menu
+- [x] Windhawk Notification Center
 - [ ] eigenes OSD
 - [ ] Browser-Feinschliff
 - [ ] weitere Anwendungen nur themen, wenn die Anpassung stabil und wartbar ist
@@ -1589,6 +1675,7 @@ Das README soll den **aktuellen produktiven Stand** erklären.
 - [x] Zebar
 - [x] OneCommander
 - [x] NanaZip
+- [x] Raycast als primärer Launcher inklusive Desired-State-/Backup-/Restore-Workflow
 - [x] generischer Standard-App-Initialisierungsworkflow
 - [x] lokale State-Marker unter `.generated/state/default-apps/`
 - [x] Hardlinks/Junctions
@@ -1616,6 +1703,7 @@ Die Roadmap ist ausführlicher als das README und enthält auch offene Ziele.
 - [x] G-HUB-Snapshot-Strategie
 - [x] Standard-App-Initialisierungsstrategie
 - [x] NanaZip-Default-App-Workflow
+- [x] Raycast ersetzt PowerToys Command Palette als primären Launcher; Desired-State-/Initialisierungsstrategie dokumentiert
 - [x] Markdown-Ausgaberegel für vollständig kopierbare Dateien
 - [x] klare nächste Prioritäten
 - [ ] bei jeder größeren Designentscheidung aktualisieren
@@ -1663,6 +1751,15 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
   - der Bootstrap verwendet stattdessen die interaktive Standard-App-Initialisierung
 - [x] NanaZip-AppX-ProgID fest im Repository hinterlegen
   - AppX-ProgIDs werden dynamisch aus der tatsächlich installierten Paketregistrierung ermittelt
+- [x] PowerToys Command Palette als primären Launcher weiterverwenden
+  - Raycast wurde als neuer primärer Launcher gewählt
+  - `Win + Space` ist der definierte Raycast-Hotkey
+  - Command Palette und PowerToys Run bleiben deaktiviert
+  - PowerToys bleibt nur für weiterhin benötigte Module installiert
+- [x] vollständige persönliche Raycast-`.rayconfig` ins Repository committen
+  - vollständige Exporte können persönliche und sensible Daten enthalten
+  - im Repository liegt ausschließlich der sanitizte generische Desired State
+  - `.rayconfig` bleibt ein lokales Transport-/Backup-Artefakt
 
 ---
 
@@ -1699,8 +1796,8 @@ Noch offen aus dem Paketmanager-Umbau:
 - [x] `just desktop-restart` ergänzt
 - [x] Sticky Notes vom Tiling ausgeschlossen
 - [x] FileZilla vom Tiling ausgeschlossen
-- [ ] Zebar bei echten Vollbild-Anwendungen ausblenden
-- [ ] Verhalten bei Browser-/YouTube-Vollbild und Fullscreen-Anwendungen testen
+- [x] Zebar bei echten Vollbild-Anwendungen ausblenden
+- [x] Verhalten bei Browser-/YouTube-Vollbild und Fullscreen-Anwendungen testen
 
 ## Kürzlich abgeschlossen – CLI Tools / Shell UX
 
@@ -1717,13 +1814,17 @@ Noch offen aus dem Paketmanager-Umbau:
 - [x] Installation und Wiederholung über `just update` getestet
 - [x] `just check` nach dem Umbau ohne relevante Probleme
 
-## Priorität 1 – Launcher
+## Kürzlich abgeschlossen – Raycast Launcher
 
-1. [x] PowerToys installieren
-2. [x] Command Palette konfigurieren
-3. [x] Everything installieren
-4. [x] Everything integrieren
-5. [x] Workflow testen
+1. [x] Raycast über Microsoft Store integrieren
+2. [x] PowerToys Command Palette als primären Launcher ablösen und deaktivieren
+3. [x] `Win + Space` als Raycast-Hotkey verwenden
+4. [x] Catppuccin-Mocha-Theme als Raycast Desired State übernehmen
+5. [x] Everything über die Raycast-Extension integrieren
+6. [x] generischen sanitizten Desired State unter `dotfiles/raycast/config.json` einführen
+7. [x] lokales `.rayconfig`-Backup-/Restore-Format reproduzierbar verarbeiten
+8. [x] einmalige Initialisierung über `.generated/state/default-apps/raycast.initialized` idempotent machen
+9. [x] wiederholten `just update` ohne erneute Benutzerinteraktion und ohne Desired-State-Drift testen
 
 ## Priorität 2 – Windows Shell
 
@@ -1868,7 +1969,7 @@ Nach Abschluss der Roadmap soll ein frisch installiertes Windows 11 nach möglic
 - komorebi + whkd + masir
 - Zebar
 - OneCommander mit vollständigem Catppuccin-Theme und Dev-File-Icons
-- PowerToys Command Palette + Everything
+- Raycast + Everything als primärer Launcher-/Suchworkflow
 - Windhawk für verbleibende Shell-Bereiche
 - eigenes Catppuccin-OSD inklusive Caps Lock und Num Lock
 - NanaZip

@@ -122,6 +122,7 @@ $VSCode = Import-PowerShellDataFile "$Root\config\vscode.psd1"
 $Browsers = Import-PowerShellDataFile "$Root\config\browsers.psd1"
 $PowerShell = Import-PowerShellDataFile "$Root\config\powershell.psd1"
 $PowerToys = Import-PowerShellDataFile "$Root\config\powertoys.psd1"
+$Raycast = Import-PowerShellDataFile "$Root\config\raycast.psd1"
 $Theme = Import-PowerShellDataFile "$Root\config\theme.psd1"
 $Windhawk = Import-PowerShellDataFile "$Root\config\windhawk.psd1"
 $Windows = Import-PowerShellDataFile "$Root\config\windows.psd1"
@@ -170,6 +171,9 @@ Update-SessionPath
 
 Set-PowerToysConfiguration `
     -Config $PowerToys `
+    -RepositoryPath $Root
+Initialize-RaycastConfiguration `
+    -Config $Raycast `
     -RepositoryPath $Root
 Set-WindhawkConfiguration `
     -Config $Windhawk

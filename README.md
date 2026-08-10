@@ -46,6 +46,9 @@ Bereits umgesetzt sind unter anderem:
 - Bootstrap-Ausführung mit `ExecutionPolicy Bypass` ausschließlich auf Prozessebene
 - komorebi + whkd als Tiling Window Manager
 - masir für Focus Follows Mouse
+- Raycast als primärer Launcher über `Win + Space`, inklusive Catppuccin-Mocha-Theme und reproduzierbarem Desired-State-/Backup-/Restore-Workflow
+- Everything als schneller Datei-/Ordnerindex für die Raycast-Extension
+- PowerToys Command Palette und PowerToys Run deaktiviert; PowerToys bleibt für weiterhin verwendete Module installiert
 - Zebar als eigene interaktive Desktop-Bar
 - definierter Desktop-Neustart nach dem Bootstrap zur Wiederherstellung der korrekten Zebar-Z-Order
 - OneCommander als Explorer-Ersatz
@@ -486,17 +489,115 @@ angelegt.
 
 Dadurch bleibt `just update` bei späteren Durchläufen nicht unnötig interaktiv.
 
-### Bekannte PowerToys-Einschränkung
+# Raycast
 
-Der funktionale PowerToys-Desired-State ist auf dem aktuellen System praktisch getestet. Command Palette, Everything, Advanced Paste, File Locksmith, Find My Mouse und PowerRename funktionieren wie vorgesehen. Die Command Palette verwendet Acrylic mit der Catppuccin-Mocha-Base `#1E1E2E` bei 100 % Farbintensität.
+Raycast ersetzt die PowerToys Command Palette als primären Launcher. Der globale Hotkey ist:
 
-Bei einem wiederholten `just update` erkennt die aktuelle PowerToys-Konfigurationslogik weiterhin einen verwalteten Drift und startet PowerToys deshalb erneut. Der gewünschte Zustand bleibt dabei korrekt erhalten. Diese Einschränkung wird vorerst akzeptiert und nur weiter untersucht, wenn der zusätzliche Neustart im Alltag tatsächlich stört.
+```text
+Win + Space
+```
 
+PowerToys bleibt installiert, wird aber nicht mehr als Launcher verwendet. Command Palette und PowerToys Run sind deaktiviert; weiterhin genutzt werden unter anderem Advanced Paste, File Locksmith, Find My Mouse und PowerRename.
 
-Der finale Command-Palette-Desired-State wurde nach `just update` praktisch verifiziert: `Alt + Space`, Acrylic, `#1E1E2E`, App-Details und Backspace-Navigation bleiben erhalten; Animationen sind aktiviert.
+Everything bleibt als eigenständiger Index/Service installiert und wird über die Raycast-Extension `everything-search` verwendet. Der frühere Command-Palette-spezifische Everything-Provider wird nicht mehr verwaltet.
+
+## Installation und Updates
+
+Raycast wird über den Microsoft Store mit der Produkt-ID:
+
+```text
+9PFXXSHC64H3
+```
+
+installiert und über den normalen Paketworkflow bei `just update` auf Updates geprüft.
+
+## Versionierter Desired State
+
+Die generische, nicht sensible Raycast-Konfiguration liegt unter:
+
+```text
+dotfiles/raycast/config.json
+```
+
+Versioniert werden ausschließlich bewusst erlaubte, reproduzierbare Bereiche:
+
+- allgemeine Launcher-/UI-Einstellungen einschließlich `Win + Space`
+- `navigationBindings` und `pageNavigationKeys`
+- das vollständige Catppuccin-Mocha-Theme
+- installierte Raycast-Store-Extensions anhand ihrer UUID
+- Enabled-State der Store-Extensions
+- relevante Command-Einstellungen der versionierten Store-Extensions
+
+Nicht versioniert werden insbesondere AI-Inhalte, Clipboard History, Notes, MCP-Server, Quicklinks, Snippets, User Activity oder andere persönliche Laufzeitdaten. Bekannte Secret-/Credential-Felder werden durch den Sanitizer zusätzlich abgelehnt.
+
+Aktuell umfasst der Desired State die Extensions:
+
+- Everything Search
+- Visual Studio Code
+- ChatGPT
+- Google Search
+- Shell
+- Zen Browser
+- Lucide Icons Search
+
+Die Liste ist dynamisch. Weitere später installierte Store-Extensions werden bei einem zukünftigen erfolgreichen Export automatisch in den generischen Desired State aufgenommen.
+
+## Lokale Backup-Konfiguration
+
+Der lokale Raycast-Transportworkflow wird in:
+
+```text
+config/raycast.psd1
+```
+
+konfiguriert.
+
+Dort werden festgelegt:
+
+- `ExportPassword`: frei änderbares Passwort für das lokale `.rayconfig`-Transportformat
+- `BackupPath`: der in Raycast konfigurierte Backup-Ordner
+
+Der Backup-Pfad wird ausdrücklich aus dieser Datei gelesen, da Raycast den Speicherort frei wählen lässt. Umgebungsvariablen wie `%USERPROFILE%` können verwendet werden.
+
+Das konfigurierte Exportpasswort ist in diesem Projekt bewusst **kein Repository-Secret**. Sicherheit entsteht dadurch, dass nur der sanitizte Desired State committed wird. Vollständige `.rayconfig`-Archive können persönliche und sensible Daten enthalten und werden von diesem Setup als **lokale Archive** behandelt.
+
+Was ein Benutzer außerhalb dieses Setups später mit dem lokalen Archivordner macht, ist nicht Bestandteil des Sicherheitsmodells dieses Repositories.
+
+## Erstinitialisierung
+
+Bei der ersten Raycast-Initialisierung weist der Bootstrap auf das lokale Archivmodell hin und verlangt eine ausdrückliche Bestätigung.
+
+Der lokale Statusmarker lautet:
+
+```text
+.generated/state/default-apps/raycast.initialized
+```
+
+Existiert bereits ein lokales Raycast-Backup, wird dieses entschlüsselt, sanitiziert und als Ausgangszustand übernommen.
+
+Auf einem frischen System ohne vorhandenes Backup erzeugt der Bootstrap einmalig ein lokales Importarchiv unter:
+
+```text
+.generated/raycast/raycast-import.rayconfig
+```
+
+Der Benutzer wird anschließend durch den Raycast-Import sowie die Einrichtung von Daily Backup, Backup Location und Auto-Delete geführt. Erst nach erfolgreicher Bestätigung wird der Initialisierungsmarker gesetzt.
+
+Nach erfolgreicher Initialisierung wird bei normalen `just update`-Läufen **kein neues Restore-Archiv** erzeugt. Der Bootstrap:
+
+1. prüft Raycast über den Paketworkflow auf Updates,
+2. liest das neueste `.rayconfig` aus dem konfigurierten `BackupPath`,
+3. entschlüsselt und sanitiziert ausschließlich die erlaubten Einstellungen,
+4. aktualisiert `dotfiles/raycast/config.json` nur bei relevantem Drift.
+
+Ein wiederholter Lauf wurde praktisch verifiziert und meldet bei unverändertem Zustand:
+
+```text
+[OK] Raycast wurde bereits initialisiert.
+[OK] Raycast Desired State unverändert.
+```
 
 ---
-
 # Desktop Experience
 
 ## Zielbild
@@ -507,7 +608,7 @@ Arch                           Windows
 Hyprland                       komorebi
 Waybar                         Zebar
 Focus follows mouse            masir
-Fuzzel                         PowerToys Command Palette (geplant)
+Fuzzel                         Raycast
 Dolphin                        OneCommander
 SwayOSD                        eigenes OSD (geplant)
 Catppuccin Mocha               Catppuccin Mocha
@@ -532,8 +633,8 @@ Windows Desktop
 ├── Archive Manager
 │   └── NanaZip
 │
-├── Launcher / Search (geplant)
-│   ├── PowerToys Command Palette
+├── Launcher / Search
+│   ├── Raycast
 │   └── Everything
 │
 ├── Windows Shell Styling (teilweise umgesetzt)
@@ -730,6 +831,7 @@ Es wird bewusst keine universelle CSS-Datei für alle Anwendungen erzwungen. Jed
 | Windows Terminal    | Farbschema in `settings.json`                 |
 | VS Code             | Catppuccin Theme/Extension                    |
 | Zen Browser         | eigene CSS-/UI-Anpassungen                    |
+| Raycast             | natives Custom Theme + Desired State          |
 | Taskbar             | Windhawk Taskbar Styler + RosePine/Catppuccin |
 | Startmenü           | Windhawk Start Menu Styler (geplant)          |
 | Notification Center | Windhawk Notification Center Styler (geplant) |
@@ -769,6 +871,8 @@ Aktuell unter anderem:
 
 - Windows HDR Calibration
 - iCloud
+- ChatGPT
+- Raycast
 - OpenVPN
 - Logitech G HUB
 - komorebi
@@ -777,9 +881,6 @@ Aktuell unter anderem:
 - Zebar
 - OneCommander
 - NanaZip
-
-Geplant:
-
 - PowerToys
 - Everything
 
@@ -832,6 +933,7 @@ Der Wartungslauf umfasst unter anderem:
 - bereits initialisierte interaktive Standard-App-Konfigurationen überspringen
 - Zebar-Abhängigkeiten und Build sicherstellen
 - OneCommander-Desired-State prüfen und nur bei tatsächlichem Drift anwenden
+- Raycast auf Updates prüfen und bei bereits erfolgter Initialisierung das neueste lokale Backup in den generischen Desired State sanitizen
 - Catppuccin-File-Icons bei Bedarf generieren
 - PSScriptAnalyzer ausführen
 - erforderlichen Neustart erkennen

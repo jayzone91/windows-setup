@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "raycast": {
+    "sourceSchemaVersion": 2,
+    "settings": {
+      "schemaVersion": 1,
+      "general": {
+        "openAtLogin": true,
+        "showInMenuBar": true,
+        "appearance": "dark",
+        "themeDarkId": "01KZPDNQ5TRDGCX7PB249BWNHX",
+        "windowMode": "compact",
+        "windowPresentationMode": "mouse-screen",
+        "windowActivationBehavior": "move-to-active-space",
+        "globalHotkey": {
+          "kind": {
+            "type": "SingleStep",
+            "shortcut": {
+              "modifiers": [
+                {
+                  "modifier": "Meta"
+                }
+              ],
+              "key": {
+                "type": "LayoutIndependent",
+                "code": 57
+              }
+            }
+          },
+          "locality": "Global"
+        },
+        "popToRootTimeout": 90,
+        "escapeKeyBehavior": "pop-back-or-close",
+        "navigationBindings": "vim-motions",
+        "pageNavigationKeys": "arrow-keys",
+        "useSystemProxySettings": false,
+        "additionalCertificateAuthorities": [],
+        "rootSearchSensitivity": "high",
+        "builtinHotkeysPreset": "improved"
+      },
+      "themes": [
+        {
+          "id": "01KZPDNQ5TRDGCX7PB249BWNHX",
+          "name": "Catppuccin Mocha",
+          "appearance": "dark",
+          "background": "#1E1E2E",
+          "backgroundSecondary": "#1E1E2E",
+          "foreground": "#CDD6F4",
+          "accent": "#4FA3F8",
+          "selection": "#6C7086",
+          "loader": "#7F849C",
+          "red": "#F38BA8",
+          "orange": "#FAB387",
+          "yellow": "#F9E2AF",
+          "green": "#A6E3A1",
+          "blue": "#89B4FA",
+          "purple": "#B4BEFE",
+          "magenta": "#CBA6F7"
+        }
+      ],
+      "nodeExtensions": [
+        {
+          "id": "e:n:35fa3856-f360-465f-885c-acf4ebcf19b1",
+          "enabled": true
+        },
+        {
+          "id": "e:n:4f82f18c-51bc-4b7d-a1fa-342a5d5e2fc8",
+          "enabled": true
+        },
+        {
+          "id": "e:n:6b600d96-2484-4f5c-ba8b-b5754e3aa9ba",
+          "enabled": true
+        },
+        {
+          "id": "e:n:6ca71a12-3d6f-4dba-95d0-1d187c8706d4",
+          "enabled": true
+        },
+        {
+          "id": "e:n:92bc435d-4a6e-41d8-b316-b6241a7a7b80",
+          "enabled": true
+        },
+        {
+          "id": "e:n:95e41a2e-a943-4d49-b0df-152c3db2f7e0",
+          "enabled": true
+        },
+        {
+          "id": "e:n:e387a763-b755-406b-ade3-fe5add1718a0",
+          "enabled": true
+        }
+      ],
+      "commands": [
+        {
+          "id": "c:n:6ca71a12-3d6f-4dba-95d0-1d187c8706d4::-::index",
+          "extensionId": "e:n:6ca71a12-3d6f-4dba-95d0-1d187c8706d4",
+          "enabled": true
+        },
+        {
+          "id": "c:n:95e41a2e-a943-4d49-b0df-152c3db2f7e0::-::commandpalette",
+          "extensionId": "e:n:95e41a2e-a943-4d49-b0df-152c3db2f7e0",
+          "enabled": false
+        }
+      ],
+      "internalExtensions": [],
+      "frecency": []
+    },
+    "nodeExtensions": {
+      "schemaVersion": 1,
+      "extensions": [
+        {
+          "uuid": "6b600d96-2484-4f5c-ba8b-b5754e3aa9ba",
+          "name": "everything-search",
+          "author": "anastasiy_safari"
+        },
+        {
+          "uuid": "95e41a2e-a943-4d49-b0df-152c3db2f7e0",
+          "name": "visual-studio-code",
+          "author": "thomas"
+        },
+        {
+          "uuid": "35fa3856-f360-465f-885c-acf4ebcf19b1",
+          "name": "chatgpt",
+          "author": "abielzulio"
+        },
+        {
+          "uuid": "6ca71a12-3d6f-4dba-95d0-1d187c8706d4",
+          "name": "google-search",
+          "author": "mblode"
+        },
+        {
+          "uuid": "e387a763-b755-406b-ade3-fe5add1718a0",
+          "name": "shell",
+          "author": "asubbotin"
+        },
+        {
+          "uuid": "4f82f18c-51bc-4b7d-a1fa-342a5d5e2fc8",
+          "name": "zen-browser",
+          "author": "Keyruu"
+        },
+        {
+          "uuid": "92bc435d-4a6e-41d8-b316-b6241a7a7b80",
+          "name": "lucide-icons",
+          "author": "Sn0wye"
+        }
+      ]
+    }
+  }
+}
