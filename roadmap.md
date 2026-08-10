@@ -801,6 +801,13 @@ Grund:
 - [x] komorebi über Scheduled Task mit erhöhten Rechten starten
 - [x] als Administrator gestartete Terminals/Fenster in Tiling aufnehmen
 
+## whkd App-Shortcuts
+
+- [x] Win + B startet Zen Browser
+- [x] Win + T startet Windows Terminal
+- [x] Win + Shift + T startet Windows Terminal über UAC erhöht
+- [x] alle drei App-Shortcuts auf dem aktuellen System praktisch testen
+
 ## Anwendungsregeln / Floating-Verhalten
 
 - [ ] Microsoft Kurznotizen / Sticky Notes grundsätzlich vom Tiling ausschließen

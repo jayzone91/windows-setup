@@ -51,6 +51,14 @@ win + shift + 5         : komorebic move-to-workspace 4
 
 
 # ----------------------------------------------------------
+# Applications
+# ----------------------------------------------------------
+
+win + b                 : $zen = @("$env:ProgramFiles\Zen Browser\zen.exe", "${env:ProgramFiles(x86)}\Zen Browser\zen.exe", "$env:LOCALAPPDATA\Programs\Zen Browser\zen.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1; if ($zen) { Start-Process $zen }
+win + t                 : Start-Process wt.exe
+win + shift + t         : Start-Process wt.exe -Verb RunAs
+
+# ----------------------------------------------------------
 # Window
 # ----------------------------------------------------------
 

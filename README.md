@@ -527,6 +527,10 @@ Umgesetzt sind:
 - Catppuccin-Integration
 - `UltrawideVerticalStack` als bevorzugtes Layout
 - Fokus-, Move-, Resize-, Stack- und Workspace-Steuerung über whkd
+- App-Shortcuts über whkd:
+  - Win + B startet Zen Browser
+  - Win + T startet Windows Terminal
+  - Win + Shift + T startet Windows Terminal erhöht und löst die Windows-UAC-Abfrage aus
 - reproduzierbare Konfiguration unter `dotfiles/komorebi/`
 - Konfigurationsdateien als Hardlinks
 - Autostart über die Windows-Aufgabenplanung
