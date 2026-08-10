@@ -1194,6 +1194,7 @@ Das OSD soll sich unaufdringlich, schnell und modern verhalten.
 - [x] PowerToys nur bei tatsächlichem Konfigurations-Drift neu starten
 - [x] vollständigen Desired State auf dem aktuellen System praktisch getestet
 - [x] zweiten `just update` getestet; bekannte Einschränkung: PowerToys erkennt aktuell weiterhin Drift und wird erneut gestartet
+
 ### Bekannte Einschränkung – PowerToys Desired State
 
 - [x] Der konfigurierte Zustand wurde auf dem aktuellen System vollständig praktisch getestet.
@@ -1205,6 +1206,7 @@ Das OSD soll sich unaufdringlich, schnell und modern verhalten.
 - [ ] Ursache nur weiter analysieren, wenn der zusätzliche Neustart im Alltag tatsächlich stört.
 
 Der erneute PowerToys-Neustart ist aktuell als bekannte, akzeptierte Einschränkung dokumentiert. Der gewünschte Zustand bleibt korrekt erhalten; funktional besteht kein Blocker für den weiteren Projektfortschritt.
+
 ## Everything
 
 - [x] Everything installieren
@@ -1557,6 +1559,7 @@ Noch offen aus dem Paketmanager-Umbau:
 - [x] Projektcommands beim Verlassen des Repositories wieder entfernt
 - [x] Installation und Wiederholung über `just update` getestet
 - [x] `just check` nach dem Umbau ohne relevante Probleme
+
 ## Priorität 1 – Launcher
 
 1. [x] PowerToys installieren
@@ -1622,6 +1625,7 @@ Wenn eine KI Änderungen an bestehenden Repository-Dateien für den Benutzer vor
 5. Betroffene PowerShell-/PSD1-Dateien sollen nach der Änderung technisch validiert werden, sofern dies ohne zusätzliche Benutzerinteraktion möglich ist.
 6. Das Patch-Skript ist grundsätzlich ein Transportmittel für die Änderung und muss nicht selbst in das Repository übernommen werden.
 7. Nach erfolgreichem Patch gelten weiterhin die normalen Projektregeln: gezielt testen, `just check` ausführen, Git-Status prüfen und Roadmap/README bei Bedarf nachziehen.
+
 ## Während der Implementierung
 
 1. Änderungen idempotent gestalten.
