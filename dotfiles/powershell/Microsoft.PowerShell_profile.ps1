@@ -72,36 +72,37 @@ if (Get-Command zoxide -ErrorAction SilentlyContinue) {
 
 # Shell Abbreviations
 $script:ShellAbbreviations = [ordered]@{
-    "cd"   = "z"
+    "cd"     = "z"
 
-    "ls"   = "eza --icons --group-directories-first"
-    "ll"   = "eza -lah --icons --group-directories-first"
-    "la"   = "eza -a --icons --group-directories-first"
-    "lt"   = "eza --tree --icons --group-directories-first"
+    "ls"     = "eza --icons --group-directories-first"
+    "ll"     = "eza -lah --icons --group-directories-first"
+    "la"     = "eza -a --icons --group-directories-first"
+    "lt"     = "eza --tree --icons --group-directories-first"
 
-    "cat"  = "bat"
-    "grep" = "rg"
-    "find" = "fd"
+    "cat"    = "bat"
+    "grep"   = "rg"
+    "find"   = "fd"
 
-    "c"    = "clear"
-    "cls"  = "clear"
+    "c"      = "clear"
+    "cls"    = "clear"
 
-    ".."   = "cd .."
-    "..."  = "cd ../.."
-    "...." = "cd ../../.."
+    ".."     = "cd .."
+    "..."    = "cd ../.."
+    "...."   = "cd ../../.."
 
-    "gs"   = "git status"
-    "ga"   = "git add"
-    "gaa"  = "git add --all"
-    "gc"   = "git commit"
-    "gcm"  = "git commit -m"
-    "gp"   = "git push"
-    "gl"   = "git pull"
-    "gd"   = "git diff"
-    "gb"   = "git branch"
-    "gco"  = "git checkout"
-    "gsw"  = "git switch"
-    "glog" = "git log --oneline --graph --decorate --all"
+    "gs"     = "git status"
+    "ga"     = "git add"
+    "gaa"    = "git add --all"
+    "gc"     = "git commit"
+    "gcm"    = "git commit -m"
+    "gp"     = "git push"
+    "gl"     = "git pull"
+    "gd"     = "git diff"
+    "gb"     = "git branch"
+    "gco"    = "git checkout"
+    "gsw"    = "git switch"
+    "glog"   = "git log --oneline --graph --decorate --all"
+    "window" = "komorebic visible-windows"
 }
 
 function Expand-ShellAbbreviation {
@@ -159,43 +160,43 @@ Set-PSReadLineKeyHandler `
     -BriefDescription "ExpandAbbreviation" `
     -LongDescription "Fish-style shell abbreviation expansion" `
     -ScriptBlock {
-        Expand-ShellAbbreviation -Terminator " "
-    }
+    Expand-ShellAbbreviation -Terminator " "
+}
 
 Set-PSReadLineKeyHandler `
     -Key Enter `
     -BriefDescription "ExpandAbbreviationAndAcceptLine" `
     -LongDescription "Expand shell abbreviation and execute command" `
     -ScriptBlock {
-        $line = $null
-        $cursor = $null
+    $line = $null
+    $cursor = $null
 
-        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState(
-            [ref] $line,
-            [ref] $cursor
-        )
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState(
+        [ref] $line,
+        [ref] $cursor
+    )
 
-        $prefix = if ($cursor -gt 0) {
-            $line.Substring(0, $cursor)
-        }
-        else {
-            ""
-        }
-
-        if ($prefix -match '^\s*(\S+)$') {
-            $token = $Matches[1]
-
-            if ($script:ShellAbbreviations.Contains($token)) {
-                [Microsoft.PowerShell.PSConsoleReadLine]::Replace(
-                    0,
-                    $cursor,
-                    $script:ShellAbbreviations[$token]
-                )
-            }
-        }
-
-        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+    $prefix = if ($cursor -gt 0) {
+        $line.Substring(0, $cursor)
     }
+    else {
+        ""
+    }
+
+    if ($prefix -match '^\s*(\S+)$') {
+        $token = $Matches[1]
+
+        if ($script:ShellAbbreviations.Contains($token)) {
+            [Microsoft.PowerShell.PSConsoleReadLine]::Replace(
+                0,
+                $cursor,
+                $script:ShellAbbreviations[$token]
+            )
+        }
+    }
+
+    [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+}
 
 function Get-CurrentGitRoot {
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
@@ -250,52 +251,52 @@ function Update-ProjectCommands {
     $projectModule = New-Module `
         -Name $moduleName `
         -ScriptBlock {
-            function Update-WindowsSetup {
-                <#
+        function Update-WindowsSetup {
+            <#
                 .SYNOPSIS
                 Führt den vollständigen windows-setup-Bootstrap aus.
                 #>
-                just update
-            }
+            just update
+        }
 
-            function Test-WindowsSetup {
-                <#
+        function Test-WindowsSetup {
+            <#
                 .SYNOPSIS
                 Führt die statische Prüfung des windows-setup-Repositories aus.
                 #>
-                just check
-            }
+            just check
+        }
 
-            function Restart-WindowsSetupDesktop {
-                <#
+        function Restart-WindowsSetupDesktop {
+            <#
                 .SYNOPSIS
                 Startet die verwaltete Desktop-Umgebung kontrolliert neu.
                 #>
-                just desktop-restart
-            }
-
-            Set-Alias `
-                -Name update `
-                -Value Update-WindowsSetup
-
-            Set-Alias `
-                -Name check `
-                -Value Test-WindowsSetup
-
-            Set-Alias `
-                -Name desktop-restart `
-                -Value Restart-WindowsSetupDesktop
-
-            Export-ModuleMember `
-                -Function `
-                    Update-WindowsSetup,
-                    Test-WindowsSetup,
-                    Restart-WindowsSetupDesktop `
-                -Alias `
-                    update,
-                    check,
-                    desktop-restart
+            just desktop-restart
         }
+
+        Set-Alias `
+            -Name update `
+            -Value Update-WindowsSetup
+
+        Set-Alias `
+            -Name check `
+            -Value Test-WindowsSetup
+
+        Set-Alias `
+            -Name desktop-restart `
+            -Value Restart-WindowsSetupDesktop
+
+        Export-ModuleMember `
+            -Function `
+            Update-WindowsSetup,
+        Test-WindowsSetup,
+        Restart-WindowsSetupDesktop `
+            -Alias `
+            update,
+        check,
+        desktop-restart
+    }
 
     Import-Module `
         -ModuleInfo $projectModule `
@@ -342,5 +343,5 @@ Update-ProjectCommands
 # See https://ch0.co/tab-completion for details.
 $ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
 if (Test-Path($ChocolateyProfile)) {
-  Import-Module "$ChocolateyProfile"
+    Import-Module "$ChocolateyProfile"
 }
