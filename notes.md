@@ -82,3 +82,15 @@ just update
 ## Aktuelle Aufgabe
 
 Arbeite selbstständig nach den Regeln der Roadmap weiter.
+
+---
+
+bootstrap optimieren, mehr states einbauen. Laufzeit optimieren. vor dem start: wiederherstellungspunkt anlegen.
+müssen wir bei jedem durchlauf hard, symlinks und junctions neu setzen? dafür würde sich ein state anbieten.
+die caches von npm, pnpm, yarn und bun werden auch bei jedem durchlauf neu gesetzt, dafür würde sich auch ein state anbieten.
+benötigen wir einen kompletten codecheck im bootstrap? das macht doch nur bei änderungen sinn und sollte manuell ausgeführt werden.
+durlauf zeit während alles installiert ist: 3:41.67 Minuten
+
+---
+
+PC Name in config einstellen und automatisch setzen.

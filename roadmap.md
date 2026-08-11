@@ -955,7 +955,8 @@ Grund:
 - [x] Workspace-Steuerung
 - [x] Layout-Wechsel
 - [x] Konfiguration im Repository
-
+
+
 ## Animationen / Performance
 
 - [x] komorebi-Movement-Animationen praktisch auf Ruckeln untersucht
@@ -1719,12 +1720,30 @@ Für GOG GALAXY wird bewusst ausschließlich eine generelle `Exe = GalaxyClient.
 - [x] Movement-Animationen für den produktiven Desired State bewusst deaktiviert lassen
 - [x] keine weitere FPS-/Duration-/Easing-Optimierung verfolgen, solange der Animationspfad selbst der bestätigte Engpass ist
 
+## Launcher-Installationspfade / Erstinitialisierung
+
+Der Bootstrap erzwingt Launcher-Installationspfade nicht über undokumentierte interne Konfigurationsdateien. Stattdessen wird die bereits etablierte Strategie für einmalige Benutzerinteraktionen verwendet.
+
+- [x] relevante Gaming-Launcher dynamisch aus `config/packages.psd1` → `Gaming` ableiten
+- [x] Launcher über `GameLibrary` deklarativ einem Eintrag aus `config/storage.psd1` → `GameLibraries` zuordnen
+- [x] interaktive Launcher-Initialisierung erst starten, nachdem Games Drive und sämtliche konfigurierten Game-Library-Verzeichnisse vorhanden und verifiziert sind
+- [x] nur tatsächlich installierte Gaming-Pakete initialisieren
+- [x] Benutzer pro Launcher auffordern, den Launcher einmalig zu öffnen und den angezeigten Standard-Installationspfad zu setzen
+- [x] Bootstrap pro Launcher bis zur ausdrücklichen Bestätigung des gesetzten Pfads warten lassen
+- [x] pro Launcher eigenen Marker unter `.generated/state/gaming-launchers/` verwenden
+- [x] Marker erst nach ausdrücklicher Benutzerbestätigung erzeugen
+- [x] bereits initialisierte Launcher bei späteren `just update`-Läufen ohne Benutzerinteraktion überspringen
+- [x] fehlende Launcher nicht markieren, damit eine spätere Installation weiterhin initialisiert wird
+- [x] keine undokumentierten internen Launcher-Datenbanken oder privaten Konfigurationsformate manipulieren
+- [x] `just check`, erster interaktiver `just update` und wiederholter störungsfreier `just update` praktisch getestet
+
+Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launcher, GOG GALAXY, EA app, Battle.net und Ubisoft Connect. Nach der Benutzerbestätigung wird für jeden Launcher ein eigener lokaler Marker angelegt. Ein zweiter `just update` erkennt die Marker und fragt die Installationspfade nicht erneut ab.
 ## Offen
 
-- [ ] Steam Library auf `G:\Games\Steam` praktisch einrichten
-- [ ] Launcher-spezifische Spielebibliotheken unter `G:\Games\` praktisch einrichten
-- [ ] Default-Spielpfade in Steam, Epic, GOG, EA, Battle.net und Ubisoft Connect über offiziell unterstützte Launcher-Einstellungen soweit möglich auf `G:` setzen
-- [ ] keine undokumentierten internen Launcher-Datenbanken oder privaten Konfigurationsformate manipulieren
+- [x] Steam Library auf `G:\Games\Steam` praktisch einrichten
+- [x] Launcher-spezifische Spielebibliotheken unter `G:\Games\` praktisch einrichten
+- [x] Default-Spielpfade in Steam, Epic, GOG, EA, Battle.net und Ubisoft Connect über offiziell unterstützte Launcher-Einstellungen soweit möglich auf `G:` setzen
+- [x] keine undokumentierten internen Launcher-Datenbanken oder privaten Konfigurationsformate manipulieren
 - [ ] Xbox-/Gaming-Komponenten nur behalten, wenn benötigt
 - [ ] Game Mode prüfen/konfigurieren
 - [ ] Hardware Accelerated GPU Scheduling prüfen
@@ -2010,7 +2029,7 @@ Lock Keys bleiben beim bereits getesteten Windhawk `Lock Keys Notifier`; ein eig
 
 1. [x] Paketgruppe
 2. [x] Steam und weitere benötigte Launcher
-3. [ ] Game-Library-Pfade auf `G:`
+3. [x] Game-Library-Pfade auf `G:`
 4. [ ] sinnvolle Windows-Gaming-Einstellungen
 ## Priorität 5 – Qualität
 

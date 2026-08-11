@@ -18,6 +18,8 @@ Bereits umgesetzt sind unter anderem:
 - Paketmanager-Cleanup für Chocolatey und Scoop bei jedem Bootstrap-Lauf
 - eigene Home-Office-Paketgruppe mit Remote Desktop Manager und FileZilla
 - eigene Gaming-Paketgruppe mit Steam, Epic Games Launcher, GOG GALAXY, EA app, Battle.net und Ubisoft Connect
+- vorbereitete Game-Library-Verzeichnisse unter `G:\Games\`
+- einmalige interaktive Initialisierung der Launcher-Installationspfade mit eigenem State-Marker pro Launcher
 - Battle.net-Installation über den generischen Winget-`InstallLocation`-Pfad
 - Steam, GOG GALAXY, EA app und Battle.net mit normalem Windows-Fensterverhalten außerhalb des komorebi-Tilings
 - komorebi-Movement-Animationen bewusst deaktiviert, da sie selbst bei 240 FPS sichtbar ruckelten; ohne Animationen reagiert das Tiling deutlich schneller
@@ -90,7 +92,7 @@ Bereits umgesetzt sind unter anderem:
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 - Zen-Mod-Precheck: Browser-Neustart nur, wenn konfigurierte Mods tatsächlich fehlen
 
-Die Gaming-Launcher sind eingerichtet und praktisch getestet. Als Nächstes folgen die Game-Library-Pfade auf `G:`, sinnvolle Windows-Gaming-Einstellungen sowie anschließend Logging/Tests und weitere Qualitätssicherung.
+Die Gaming-Launcher einschließlich ihrer Library-/Default-Spielpfade auf `G:` sind eingerichtet und der einmalige Initialisierungsworkflow ist praktisch getestet. Als Nächstes folgen sinnvolle Windows-Gaming-Einstellungen sowie anschließend Logging/Tests und weitere Qualitätssicherung.
 
 Siehe auch [`roadmap.md`](roadmap.md).
 
@@ -739,7 +741,37 @@ Alle sechs Launcher wurden auf dem aktuellen System installiert und angemeldet.
 
 Battle.net benötigt im aktuellen Winget-Manifest einen expliziten Installationspfad. Der generische Winget-Paketworkflow unterstützt dafür optional `InstallLocation`; die Battle.net-Installation über diesen Pfad wurde praktisch erfolgreich getestet.
 
-Das Games-Laufwerk ist `G:`. Die eigentlichen Launcher-internen Library-/Default-Spielpfade werden erst als abgeschlossen betrachtet, nachdem sie über die offiziell unterstützten Launcher-Einstellungen praktisch auf `G:` gesetzt und getestet wurden. Undokumentierte interne Launcher-Datenbanken oder private Konfigurationsformate werden dafür nicht manipuliert.
+Das Games-Laufwerk ist `G:`. Die Launcher-internen Library-/Default-Spielpfade wurden über die offiziell unterstützten Launcher-Einstellungen praktisch auf die vorbereiteten Verzeichnisse unter `G:\Games\` gesetzt und getestet. Undokumentierte interne Launcher-Datenbanken oder private Konfigurationsformate werden dafür nicht manipuliert.
+
+## Einmalige Initialisierung der Launcher-Pfade
+
+Die gewünschten Launcher-Pfade werden deklarativ über zwei vorhandene Konfigurationen verbunden:
+
+- `config/packages.psd1` enthält die Gaming-Pakete und ordnet jedem Launcher über `GameLibrary` einen Bibliotheksschlüssel zu.
+- `config/storage.psd1` enthält unter `GameLibraries` die tatsächlichen Zielpfade wie `G:\Games\Steam`, `G:\Games\Epic` oder `G:\Games\GOG`.
+
+Nach der Paketinstallation und der Storage-Einrichtung prüft der Bootstrap zunächst, dass das Games-Laufwerk vorhanden ist, NTFS verwendet und **alle** konfigurierten Game-Library-Verzeichnisse existieren. Erst danach beginnt die interaktive Launcher-Initialisierung.
+
+Für jeden tatsächlich installierten Gaming-Launcher ohne vorhandenen State-Marker:
+
+1. zeigt der Bootstrap den gewünschten Library-/Default-Installationspfad an,
+2. fordert er dazu auf, den Launcher einmalig zu öffnen und den Pfad über dessen offizielle Oberfläche zu setzen,
+3. wartet er auf die ausdrückliche Bestätigung mit `Y`,
+4. schreibt er anschließend einen eigenen Marker unter:
+
+```text
+.generated/state/gaming-launchers/
+```
+
+Beispiel:
+
+```text
+.generated/state/gaming-launchers/valve-steam.install-path.initialized
+```
+
+Die Marker werden pro Launcher geführt. Ein nicht installierter Launcher wird nicht markiert und kann deshalb bei einer späteren Installation noch initialisiert werden.
+
+Bei späteren `just update`-Läufen werden bereits bestätigte Launcher ohne erneute Benutzerinteraktion übersprungen. Der Erstlauf mit allen sechs Launchern sowie ein zweiter störungsfreier `just update` ohne erneute Rückfragen wurden praktisch getestet.
 
 ## Gaming-Launcher und komorebi
 

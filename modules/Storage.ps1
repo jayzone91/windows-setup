@@ -647,6 +647,47 @@ function Add-UserPathEntry {
     }
 }
 
+function Test-GamesDriveDirectories {
+
+    param(
+        [Parameter(Mandatory)]
+        $Config
+    )
+
+    $gamesVolume = Get-Volume `
+        -DriveLetter $Config.GamesDrive.Letter `
+        -ErrorAction SilentlyContinue
+
+    if (-not $gamesVolume) {
+        return $false
+    }
+
+    if ($gamesVolume.FileSystem -ne "NTFS") {
+        return $false
+    }
+
+    if (
+        -not $Config.GameLibraries -or
+        $Config.GameLibraries.Count -eq 0
+    ) {
+        return $false
+    }
+
+    foreach ($path in $Config.GameLibraries.Values) {
+        if (
+            -not (
+                Test-Path `
+                    -LiteralPath $path `
+                    -PathType Container
+            )
+        ) {
+            return $false
+        }
+    }
+
+    return $true
+}
+
 function Initialize-GamesDriveDirectories {
 
     param(
@@ -696,4 +737,12 @@ function Initialize-GamesDriveDirectories {
 
     Write-Host "[OK] Games-Library-Verzeichnisse vorbereitet." `
         -ForegroundColor Green
+
+    if (-not (Test-GamesDriveDirectories -Config $Config)) {
+        throw (
+            "Games-Library-Verzeichnisse konnten nicht vollständig " +
+            "vorbereitet oder verifiziert werden."
+        )
+    }
+
 }

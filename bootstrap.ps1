@@ -259,6 +259,12 @@ Initialize-DevelopmentStorage `
 
 Initialize-GamesDriveDirectories `
     -Config $Storage
+
+Initialize-GamingLauncherInstallPaths `
+    -Packages $Packages.Gaming `
+    -StorageConfig $Storage `
+    -RepositoryPath $Root
+
 Install-CodexCli
 
 
