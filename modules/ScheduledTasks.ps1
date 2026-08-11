@@ -305,23 +305,124 @@ function Register-VolumeOsdStartupTask {
             -ErrorAction Stop
     ).Source
 
+    $wscript = Join-Path `
+        $env:WINDIR `
+        "System32\wscript.exe"
+
+    if (-not (
+        Test-Path `
+            -LiteralPath $wscript `
+            -PathType Leaf
+    )) {
+        throw "Windows Script Host nicht gefunden: $wscript"
+    }
+
+    $generatedRoot = Join-Path `
+        $RepositoryPath `
+        ".generated\volume-osd"
+
+    $logRoot = Join-Path `
+        $RepositoryPath `
+        ".generated\logs"
+
+    foreach ($directory in @($generatedRoot, $logRoot)) {
+        if (-not (Test-Path -LiteralPath $directory -PathType Container)) {
+            New-Item `
+                -ItemType Directory `
+                -Path $directory `
+                -Force |
+            Out-Null
+        }
+    }
+
+    $launcherPs1 = Join-Path `
+        $generatedRoot `
+        "Start-VolumeOsd.ps1"
+
+    $launcherVbs = Join-Path `
+        $generatedRoot `
+        "Start-VolumeOsd.vbs"
+
+    $startupLog = Join-Path `
+        $logRoot `
+        "volume-osd-startup.log"
+
     $escapedOsdPath = $osdPath.Replace(
         "'",
         "''"
     )
 
-    $command =
-        ". '$escapedOsdPath'; Start-VolumeOsd"
+    $escapedLogPath = $startupLog.Replace(
+        "'",
+        "''"
+    )
 
-    $argument =
-        '-NoProfile -STA -WindowStyle Hidden ' +
-        '-ExecutionPolicy Bypass -Command "' +
-        $command +
-        '"'
+    $launcherPs1Content = @"
+#Requires -Version 7.0
+`$ErrorActionPreference = "Stop"
+
+try {
+    . '$escapedOsdPath'
+    Start-VolumeOsd
+}
+catch {
+    `$timestamp = [DateTime]::Now.ToString("yyyy-MM-dd HH:mm:ss.fff")
+    `$message = (
+        "[{0}] {1}`r`n{2}`r`n" -f
+        `$timestamp,
+        `$_.Exception.Message,
+        `$_.ScriptStackTrace
+    )
+
+    [System.IO.File]::AppendAllText(
+        '$escapedLogPath',
+        `$message
+    )
+
+    throw
+}
+"@
+
+    [System.IO.File]::WriteAllText(
+        $launcherPs1,
+        $launcherPs1Content,
+        [System.Text.UTF8Encoding]::new($false)
+    )
+
+    $command =
+        '"' + $pwsh + '" ' +
+        '-NoProfile -NonInteractive -STA ' +
+        '-ExecutionPolicy Bypass ' +
+        '-File "' + $launcherPs1 + '"'
+
+    $escapedVbsCommand = $command.Replace(
+        '"',
+        '""'
+    )
+
+    $launcherVbsContent = @"
+Option Explicit
+Dim shell
+Dim command
+
+Set shell = CreateObject("WScript.Shell")
+command = "$escapedVbsCommand"
+
+WScript.Quit shell.Run(command, 0, True)
+"@
+
+    [System.IO.File]::WriteAllText(
+        $launcherVbs,
+        $launcherVbsContent,
+        [System.Text.Encoding]::ASCII
+    )
 
     $action = New-ScheduledTaskAction `
-        -Execute $pwsh `
-        -Argument $argument
+        -Execute $wscript `
+        -Argument (
+            '//B //NoLogo "{0}"' -f
+            $launcherVbs
+        )
 
     $trigger = New-ScheduledTaskTrigger `
         -AtLogOn `
@@ -396,7 +497,8 @@ function Stop-WindowsDesktopEnvironment {
         -Filter "Name = 'pwsh.exe'" `
         -ErrorAction SilentlyContinue |
     Where-Object {
-        $_.CommandLine -like "*modules\VolumeOsd.ps1*"
+        $_.CommandLine -like "*modules\VolumeOsd.ps1*" -or
+        $_.CommandLine -like "*\.generated\volume-osd\Start-VolumeOsd.ps1*"
     } |
     ForEach-Object {
         Stop-Process `
@@ -577,7 +679,8 @@ function Start-WindowsDesktopEnvironment {
                 -Filter "Name = 'pwsh.exe'" `
                 -ErrorAction SilentlyContinue |
             Where-Object {
-                $_.CommandLine -like "*modules\VolumeOsd.ps1*"
+                $_.CommandLine -like "*modules\VolumeOsd.ps1*" -or
+                $_.CommandLine -like "*\.generated\volume-osd\Start-VolumeOsd.ps1*"
             }
         )
 

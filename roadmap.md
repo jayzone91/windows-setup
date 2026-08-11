@@ -1391,14 +1391,18 @@ Brightness wird auf dem aktuellen System vorerst nicht als eigener OSD-Bereich u
 - [x] Scheduled Task `Windows Setup Volume OSD`
 - [x] nicht erhöhter Start im interaktiven Benutzerkontext
 - [x] PowerShell-Start mit `-STA`
+- [x] unsichtbarer Autostart über generierten `wscript.exe`-Launcher unter `.generated/volume-osd/`
+- [x] Launcher startet `pwsh` mit `-NoProfile -NonInteractive -STA -ExecutionPolicy Bypass`
+- [x] Startup-Fehler können unter `.generated/logs/volume-osd-startup.log` protokolliert werden
 - [x] Task lädt `modules/VolumeOsd.ps1` und ruft `Start-VolumeOsd` auf
 - [x] Registrierung/Aktualisierung über den bestehenden Bootstrap
 - [x] Volume-OSD in `Stop-WindowsDesktopEnvironment` und `Start-WindowsDesktopEnvironment` einbezogen
+- [x] Desktop-Prozesserkennung berücksichtigt sowohl den direkten Modulpfad als auch den generierten Launcher-Pfad
 - [x] produktiver `just update` nach der Integration fehlerfrei
 - [x] produktives Volume-OSD läuft nach dem Bootstrap und funktioniert praktisch
 - [x] natives Windows-Volume-OSD bleibt im produktiven Pfad aus
 - [x] Lautstärkeänderung ohne merkbare Verzögerung praktisch bestätigt
-- [ ] `AtLogOn` nach echter Ab-/Anmeldung oder Windows-Neustart praktisch bestätigen
+- [x] `AtLogOn` nach echter Ab-/Anmeldung oder Windows-Neustart praktisch bestätigt
 
 ## Verworfen / zurückgestellt
 
@@ -1419,7 +1423,9 @@ Die finale WPF-Pill wurde anschließend praktisch geprüft. Nach der Umstellung 
 
 Nach der Migration in `modules/VolumeOsd.ps1` und der Scheduled-Task-/Bootstrap-Integration lief `just update` fehlerfrei durch und das produktive OSD lief anschließend korrekt.
 
-Offen bleibt ausschließlich der separate Akzeptanztest des `AtLogOn`-Triggers nach einer echten neuen Benutzeranmeldung oder einem Windows-Neustart.
+Beim ersten echten Logon-Test zeigte sich, dass der direkte dauerhafte `pwsh`-Taskstart ein sichtbares Terminalfenster hinterlassen konnte. Der Scheduled Task startet das OSD deshalb nun über einen generierten, unsichtbaren `wscript.exe`-Launcher. Die globale PowerShell Execution Policy bleibt unverändert.
+
+Der `AtLogOn`-Akzeptanztest wurde nach einem echten Windows-Neustart praktisch bestätigt: Das OSD startet automatisch ohne sichtbares Terminalfenster, das eigene Catppuccin-OSD erscheint und das native Windows-Volume-OSD bleibt unterdrückt.
 
 ## Akzeptanzkriterien
 
@@ -1432,7 +1438,7 @@ Offen bleibt ausschließlich der separate Akzeptanztest des `AtLogOn`-Triggers n
 - [x] schnelle Eingaben flackern nicht
 - [x] Lock-Key-Anzeigen bleiben ausschließlich beim Windhawk `Lock Keys Notifier`
 - [x] produktiver Bootstrap-Lauf erfolgreich
-- [ ] automatischer Start bei echtem neuen Windows-Logon praktisch bestätigt
+- [x] automatischer Start bei echtem neuen Windows-Logon praktisch bestätigt
 
 ---
 
@@ -1757,7 +1763,7 @@ Das System soll nach Neuinstallation auch als Gaming-PC möglichst schnell einsa
 - [x] Windhawk Taskbar
 - [x] Windhawk Start Menu
 - [x] Windhawk Notification Center
-- [ ] eigenes OSD
+- [x] eigenes OSD
 - [ ] Browser-Feinschliff
 - [ ] weitere Anwendungen nur themen, wenn die Anpassung stabil und wartbar ist
 
@@ -1954,7 +1960,7 @@ Noch offen aus dem Paketmanager-Umbau:
 3. [x] Catppuccin-Pill und flackerfreies Burst-Verhalten
 4. [x] Bootstrap- und Scheduled-Task-Integration
 5. [x] Windows-OSD-Doppelanzeige vermeiden
-6. [ ] echten `AtLogOn`-Start nach Ab-/Anmeldung oder Neustart praktisch bestätigen
+6. [x] echten `AtLogOn`-Start nach Ab-/Anmeldung oder Neustart praktisch bestätigt
 7. [ ] Brightness nur bei neuem, praktisch funktionierendem Hardware-/Softwarepfad erneut prüfen
 
 Lock Keys bleiben beim bereits getesteten Windhawk `Lock Keys Notifier`; ein eigenes Media-OSD ist nicht vorgesehen. Brightness ist auf dem aktuellen System nach WMI-/DDC-/VCP-Test vorerst zurückgestellt.

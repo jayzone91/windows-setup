@@ -81,12 +81,12 @@ Bereits umgesetzt sind unter anderem:
 - eigenes Catppuccin-Mocha-Volume-OSD für Volume Up/Down und Mute/Unmute
 - vollständige Interception der Volume-Tasten verhindert das parallele native Windows-Volume-OSD
 - persistente Volume-Pill aktualisiert bei schnellen Eingaben nur ihren Zustand und flackert dadurch nicht durch wiederholtes Neu-Rendern
-- produktive Implementierung als `modules/VolumeOsd.ps1` mit Bootstrap-registriertem Scheduled Task `Windows Setup Volume OSD`
+- produktive Implementierung als `modules/VolumeOsd.ps1` mit Bootstrap-registriertem Scheduled Task `Windows Setup Volume OSD` und unsichtbarem `wscript.exe`-Launcher
 - Lock-Key-Anzeigen bleiben beim Windhawk-Mod `Lock Keys Notifier`; Brightness ist auf dem aktuellen externen Monitorpfad vorerst zurückgestellt
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 - Zen-Mod-Precheck: Browser-Neustart nur, wenn konfigurierte Mods tatsächlich fehlen
 
-Die nächsten größeren Arbeitspakete sind weitere Windhawk-Mods für das Notification Center, Taskbar-Auto-Hide-Tuning, Lock Keys Notifier sowie weiterer Catppuccin-Polish.
+Die nächsten größeren Arbeitspakete sind Gaming, anschließend Logging/Tests und weitere Qualitätssicherung sowie verbleibender Catppuccin-Polish.
 
 Siehe auch [`roadmap.md`](roadmap.md).
 
@@ -796,7 +796,9 @@ Windows Setup Volume OSD
 
 Der Task läuft im interaktiven Benutzerkontext, startet PowerShell mit `-STA`, lädt `modules/VolumeOsd.ps1` und ruft `Start-VolumeOsd` auf. Das OSD ist außerdem in den vorhandenen kontrollierten Desktop-Stop-/Start-Workflow integriert.
 
-`just update` lief nach der Produktivintegration fehlerfrei durch und das Volume-OSD lief anschließend korrekt. Noch offen ist ausschließlich die praktische Bestätigung des `AtLogOn`-Triggers nach einer echten Ab-/Anmeldung oder einem Windows-Neustart.
+Für den echten Windows-Logon verwendet der Scheduled Task einen vom Bootstrap generierten Launcher unter `.generated/volume-osd/`, der über `wscript.exe` unsichtbar gestartet wird. Der Launcher startet `pwsh` mit `-NoProfile -NonInteractive -STA -ExecutionPolicy Bypass`; die globale Execution Policy wird nicht verändert. Startup-Fehler können unter `.generated/logs/volume-osd-startup.log` protokolliert werden. Die Desktop-Prozesserkennung berücksichtigt sowohl den direkten Modulpfad als auch den generierten Launcher-Pfad.
+
+`just check` und `just update` liefen nach der finalen Autostart-Anpassung erfolgreich. Ein anschließender echter Windows-Neustart bestätigte den `AtLogOn`-Pfad praktisch: Das OSD startet automatisch ohne sichtbares Terminalfenster, das eigene Catppuccin-OSD erscheint und das native Windows-Volume-OSD bleibt unterdrückt.
 
 Caps Lock, Num Lock und Scroll Lock bleiben beim Windhawk-Mod `Lock Keys Notifier`. Ein eigenes Media-OSD ist nicht vorgesehen. Brightness wurde nach dem erfolglosen WMI-/DDC-/VCP-Test auf dem aktuellen Samsung G93SD vorerst zurückgestellt.
 
@@ -1189,8 +1191,8 @@ Die ausführliche Priorisierung befindet sich in [`roadmap.md`](roadmap.md).
 
 Aktuell sind die nächsten Arbeitspakete:
 
-1. echten `AtLogOn`-Start des produktiven Volume-OSD nach Ab-/Anmeldung oder Neustart praktisch bestätigen
-2. Brightness nur bei einem neuen, praktisch funktionierenden Hardware-/Softwarepfad erneut prüfen
-3. Gaming
-4. Logging, Tests und weitere Qualitätssicherung
-5. weiterer Catppuccin-Polish
+1. Gaming-Paketgruppe, Steam und Game-Library-Pfade
+2. sinnvolle Windows-Gaming-Einstellungen
+3. Logging, Tests und weitere Qualitätssicherung
+4. weiterer Catppuccin-Polish
+Brightness bleibt bewusst zurückgestellt und wird nur bei einem neuen, praktisch funktionierenden Hardware-/Softwarepfad erneut verfolgt.
