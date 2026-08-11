@@ -1,29 +1,33 @@
-﻿function Set-BrowserConfiguration {
-
+function Set-BrowserConfiguration {
     param(
         [Parameter(Mandatory)]
         $Config
     )
-
 
     Write-Host ""
     Write-Host "========================================"
     Write-Host " Browser"
     Write-Host "========================================"
 
+    $configurationChanged = $false
 
     if ($Config.ChromeBeta) {
-
-        Set-ChromiumExtensions `
+        $chromiumChanged = Set-ChromiumExtensions `
             -Extensions $Config.ChromeBeta.Extensions `
             -PolicyPath $Config.ChromeBeta.PolicyPath
+
+        if ($chromiumChanged) {
+            $configurationChanged = $true
+        }
     }
 
-
     if ($Config.Zen) {
-
-        Set-ZenConfiguration `
+        $zenChanged = Set-ZenConfiguration `
             -Config $Config.Zen
+
+        if ($zenChanged) {
+            $configurationChanged = $true
+        }
 
         if ($Config.Zen.Mods) {
             Set-ZenMods `
@@ -31,16 +35,16 @@
         }
     }
 
-
     Write-Host ""
     Write-Host "[OK] Browser Konfiguration abgeschlossen." `
         -ForegroundColor Green
+
+    return $configurationChanged
 }
 
 
 
 function Set-ChromiumExtensions {
-
     param(
         [Parameter(Mandatory)]
         $Extensions,
@@ -49,60 +53,88 @@ function Set-ChromiumExtensions {
         $PolicyPath
     )
 
-
     Write-Host ""
     Write-Host "[CONFIG] Chromium Extensions"
-
 
     $extensionPath = Join-Path `
         $PolicyPath `
         "ExtensionInstallForcelist"
 
+    $desired = [ordered]@{}
+    $index = 1
 
-    # alten Key entfernen
-    if (Test-Path $extensionPath) {
-        Remove-Item `
+    foreach ($extension in $Extensions) {
+        $desired[[string]$index] = (
+            "{0};https://clients2.google.com/service/update2/crx" -f
+            $extension.Id
+        )
+
+        $index++
+    }
+
+    $current = [ordered]@{}
+
+    if (Test-Path -LiteralPath $extensionPath) {
+        $properties = Get-ItemProperty `
             -Path $extensionPath `
+            -ErrorAction SilentlyContinue
+
+        if ($properties) {
+            foreach ($property in $properties.PSObject.Properties) {
+                if ($property.Name -notmatch '^PS') {
+                    $current[$property.Name] = [string]$property.Value
+                }
+            }
+        }
+    }
+
+    $isCurrent = $current.Count -eq $desired.Count
+
+    if ($isCurrent) {
+        foreach ($entry in $desired.GetEnumerator()) {
+            if (
+                -not $current.Contains($entry.Key) -or
+                $current[$entry.Key] -cne $entry.Value
+            ) {
+                $isCurrent = $false
+                break
+            }
+        }
+    }
+
+    if ($isCurrent) {
+        Write-Host "[SKIP] Chromium Extension-Policies unverändert." `
+            -ForegroundColor Green
+
+        return $false
+    }
+
+    if (Test-Path -LiteralPath $extensionPath) {
+        Remove-Item `
+            -LiteralPath $extensionPath `
             -Recurse `
             -Force
     }
 
-
-    # neuen Key erstellen
     New-Item `
         -Path $extensionPath `
         -Force |
     Out-Null
 
-
-    $index = 1
-
-
-    foreach ($extension in $Extensions) {
-
-        $value =
-        "$($extension.Id);https://clients2.google.com/service/update2/crx"
-
-
+    foreach ($entry in $desired.GetEnumerator()) {
         New-ItemProperty `
             -Path $extensionPath `
-            -Name $index `
+            -Name $entry.Key `
             -PropertyType String `
-            -Value $value `
+            -Value $entry.Value `
             -Force |
         Out-Null
-
-
-        Write-Host (
-            "[ADD] {0}" -f $extension.Name
-        )
-
-
-        $index++
     }
 
+    Write-Host "[OK] Chromium Extension-Policies aktualisiert." `
+        -ForegroundColor Green
 
-    Write-Host "[OK] Chromium Extensions gesetzt."
+    return $true
 }
 
 function Get-ZenInstallPath {
@@ -947,32 +979,26 @@ function Stop-ZenBrowser {
 }
 
 function Set-ZenConfiguration {
-
     param(
         [Parameter(Mandatory)]
         $Config
     )
 
-
     Write-Host ""
     Write-Host "[CONFIG] Zen Browser"
-
 
     $zenPath = Get-ZenInstallPath
 
     if (-not $zenPath) {
         Write-Warning "Zen Browser nicht gefunden."
-        return
+        return $false
     }
-
 
     $distributionPath = Join-Path `
         $zenPath `
         "distribution"
 
-
-    if (-not (Test-Path $distributionPath)) {
-
+    if (-not (Test-Path -LiteralPath $distributionPath -PathType Container)) {
         New-Item `
             -Path $distributionPath `
             -ItemType Directory `
@@ -980,13 +1006,10 @@ function Set-ZenConfiguration {
         Out-Null
     }
 
-
-    $policies = @{}
-
+    $policies = [ordered]@{}
 
     if ($Config.Extensions) {
-
-        $policies.Extensions = @{
+        $policies.Extensions = [ordered]@{
             Install = @(
                 foreach ($extension in $Config.Extensions) {
                     $extension.InstallUrl
@@ -995,109 +1018,98 @@ function Set-ZenConfiguration {
         }
     }
 
-
     if ($Config.Preferences) {
-
         $preferences = $Config.Preferences
 
-
         if ($preferences.Locale) {
-
             $policies.RequestedLocales = @(
                 $preferences.Locale
             )
         }
 
-
         if ($null -ne $preferences.DisableTelemetry) {
-
-            $policies.DisableTelemetry =
-            [bool]$preferences.DisableTelemetry
+            $policies.DisableTelemetry = [bool]$preferences.DisableTelemetry
         }
-
 
         if ($null -ne $preferences.DisableFirefoxStudies) {
-
-            $policies.DisableFirefoxStudies =
-            [bool]$preferences.DisableFirefoxStudies
+            $policies.DisableFirefoxStudies = [bool]$preferences.DisableFirefoxStudies
         }
-
 
         if ($null -ne $preferences.DisablePocket) {
-
-            $policies.DisablePocket =
-            [bool]$preferences.DisablePocket
+            $policies.DisablePocket = [bool]$preferences.DisablePocket
         }
 
-
         if ($preferences.SearchEngine) {
-
-            $policies.SearchEngines = @{
+            $policies.SearchEngines = [ordered]@{
                 Default = $preferences.SearchEngine
             }
         }
 
-
-        $browserPreferences = @{}
-
+        $browserPreferences = [ordered]@{}
 
         if ($preferences.RestorePreviousSession) {
-
-            $browserPreferences["browser.startup.page"] = @{
+            $browserPreferences["browser.startup.page"] = [ordered]@{
                 Value  = 3
                 Status = "default"
             }
         }
 
-
         if ($preferences.SpellcheckDictionary) {
-
-            $browserPreferences["layout.spellcheckDefault"] = @{
+            $browserPreferences["layout.spellcheckDefault"] = [ordered]@{
                 Value  = 2
                 Status = "default"
             }
 
-
-            $browserPreferences["spellchecker.dictionary"] = @{
+            $browserPreferences["spellchecker.dictionary"] = [ordered]@{
                 Value  = $preferences.SpellcheckDictionary
                 Status = "default"
             }
         }
 
-
         if ($browserPreferences.Count -gt 0) {
-
-            $policies.Preferences =
-            $browserPreferences
+            $policies.Preferences = $browserPreferences
         }
     }
 
-
-    $policy = @{
+    $policy = [ordered]@{
         policies = $policies
     }
 
+    $desiredContent = (
+        $policy |
+        ConvertTo-Json -Depth 10
+    ).Trim()
 
     $policyPath = Join-Path `
         $distributionPath `
         "policies.json"
 
+    $currentContent = $null
 
-    $policy |
-    ConvertTo-Json -Depth 10 |
-    Set-Content `
-        -Path $policyPath `
-        -Encoding UTF8
-
-
-    foreach ($extension in $Config.Extensions) {
-
-        Write-Host (
-            "[ADD] {0}" `
-                -f $extension.Name
-        )
+    if (Test-Path -LiteralPath $policyPath -PathType Leaf) {
+        $currentContent = (
+            Get-Content `
+                -LiteralPath $policyPath `
+                -Raw `
+                -Encoding UTF8
+        ).Trim()
     }
 
+    if ($currentContent -ceq $desiredContent) {
+        Write-Host "[SKIP] Zen Browser Policies unverändert." `
+            -ForegroundColor Green
 
-    Write-Host "[OK] Zen Browser konfiguriert."
+        return $false
+    }
+
+    [IO.File]::WriteAllText(
+        $policyPath,
+        $desiredContent + [Environment]::NewLine,
+        [Text.UTF8Encoding]::new($false)
+    )
+
+    Write-Host "[OK] Zen Browser Policies aktualisiert." `
+        -ForegroundColor Green
+
+    return $true
 }

@@ -55,21 +55,43 @@ function Set-NeovimCompilerEnvironment {
     Write-Host " Neovim Compiler Environment"
     Write-Host "========================================"
 
-    $zigCommand = Get-Command zig -ErrorAction SilentlyContinue
+    $zigCommand = Get-Command `
+        -Name "zig" `
+        -CommandType Application `
+        -ErrorAction SilentlyContinue
 
     if (-not $zigCommand) {
         throw "Zig wurde nicht gefunden."
     }
 
-    $scoopCommand = Get-Command scoop -ErrorAction SilentlyContinue
+    $scoopCommand = Get-Command `
+        -Name "scoop" `
+        -ErrorAction SilentlyContinue
 
     if (-not $scoopCommand) {
         throw "Scoop wurde nicht gefunden."
     }
 
-    # Tree-sitter verwendet den Compiler aus CC. Ohne explizite Auswahl
-    # fällt der Windows-Buildpfad auf cl.exe zurück. Die Scoop-Shims stellen
-    # deshalb echte cc/c++-Kommandos bereit, die Zig verwenden.
+    $scoopShimRoot = Join-Path `
+        ([Environment]::GetFolderPath("UserProfile")) `
+        "scoop\shims"
+
+    $repositoryRoot = Split-Path `
+        -Path $PSScriptRoot `
+        -Parent
+
+    $stateDirectory = Join-Path `
+        $repositoryRoot `
+        ".generated\state\neovim"
+
+    if (-not (Test-Path -LiteralPath $stateDirectory -PathType Container)) {
+        New-Item `
+            -ItemType Directory `
+            -Path $stateDirectory `
+            -Force |
+        Out-Null
+    }
+
     $compilerShims = @(
         @{
             Name      = "cc"
@@ -87,15 +109,11 @@ function Set-NeovimCompilerEnvironment {
             -CommandType Application `
             -ErrorAction SilentlyContinue
 
-        $scoopShimRoot = Join-Path `
-            ([Environment]::GetFolderPath("UserProfile")) `
-            "scoop\shims"
-
         $isScoopShim = (
             $existingCommand -and
             $existingCommand.Source.StartsWith(
                 $scoopShimRoot,
-                [System.StringComparison]::OrdinalIgnoreCase
+                [StringComparison]::OrdinalIgnoreCase
             )
         )
 
@@ -106,14 +124,63 @@ function Set-NeovimCompilerEnvironment {
             ) -f $shim.Name, $existingCommand.Source
         }
 
-        if ($isScoopShim) {
-            $removeShimArguments = @(
-                "shim",
-                "rm",
-                $shim.Name
+        $shimMetadataPath = Join-Path `
+            $scoopShimRoot `
+            ("{0}.shim" -f $shim.Name)
+
+        $statePath = Join-Path `
+            $stateDirectory `
+            ("{0}.json" -f $shim.Name.Replace("+", "plus"))
+
+        $desiredSignature = Get-TextFingerprint `
+            -Text (
+                "{0}|{1}" -f
+                [IO.Path]::GetFullPath($zigCommand.Source),
+                ($shim.Arguments -join "`0")
             )
 
-            & $scoopCommand.Path @removeShimArguments
+        $storedState = $null
+
+        if (Test-Path -LiteralPath $statePath -PathType Leaf) {
+            try {
+                $storedState = Get-Content `
+                    -LiteralPath $statePath `
+                    -Raw |
+                ConvertFrom-Json
+            }
+            catch {
+                $storedState = $null
+            }
+        }
+
+        $currentShimHash = $null
+
+        if (Test-Path -LiteralPath $shimMetadataPath -PathType Leaf) {
+            $currentShimHash = (
+                Get-FileHash `
+                    -LiteralPath $shimMetadataPath `
+                    -Algorithm SHA256
+            ).Hash.ToLowerInvariant()
+        }
+
+        $shimCurrent = (
+            $isScoopShim -and
+            $storedState -and
+            $storedState.DesiredSignature -eq $desiredSignature -and
+            $storedState.ShimHash -eq $currentShimHash
+        )
+
+        if ($shimCurrent) {
+            Write-Host (
+                "[CURRENT] Scoop-Shim '{0}' ist bereits korrekt." -f
+                $shim.Name
+            ) -ForegroundColor Green
+
+            continue
+        }
+
+        if ($isScoopShim) {
+            & $scoopCommand.Path shim rm $shim.Name
 
             if ($LASTEXITCODE -ne 0) {
                 throw (
@@ -136,6 +203,25 @@ function Set-NeovimCompilerEnvironment {
                 "Scoop-Shim '{0}' für Zig konnte nicht erstellt werden."
             ) -f $shim.Name
         }
+
+        if (-not (Test-Path -LiteralPath $shimMetadataPath -PathType Leaf)) {
+            throw "Scoop-Shim-Metadatei fehlt nach Erstellung: $shimMetadataPath"
+        }
+
+        $newShimHash = (
+            Get-FileHash `
+                -LiteralPath $shimMetadataPath `
+                -Algorithm SHA256
+        ).Hash.ToLowerInvariant()
+
+        [ordered]@{
+            DesiredSignature = $desiredSignature
+            ShimHash          = $newShimHash
+        } |
+        ConvertTo-Json |
+        Set-Content `
+            -LiteralPath $statePath `
+            -Encoding utf8NoBOM
     }
 
     $compilerEnvironment = [ordered]@{
@@ -158,8 +244,9 @@ function Set-NeovimCompilerEnvironment {
             )
 
             Write-Host (
-                "[CONFIG] Benutzer-Umgebungsvariable {0} = {1}" `
-                    -f $entry.Key, $entry.Value
+                "[CONFIG] Benutzer-Umgebungsvariable {0} = {1}" -f
+                $entry.Key,
+                $entry.Value
             )
         }
 
@@ -168,13 +255,18 @@ function Set-NeovimCompilerEnvironment {
             -Value $entry.Value
     }
 
-    # Frühere Wrapper-Erkennung wird nicht mehr benötigt, weil CC jetzt
-    # direkt auf das echte ausführbare Kommando 'cc' zeigt.
-    [Environment]::SetEnvironmentVariable(
+    $knownWrapper = [Environment]::GetEnvironmentVariable(
         "CC_KNOWN_WRAPPER_CUSTOM",
-        $null,
         "User"
     )
+
+    if ($null -ne $knownWrapper) {
+        [Environment]::SetEnvironmentVariable(
+            "CC_KNOWN_WRAPPER_CUSTOM",
+            $null,
+            "User"
+        )
+    }
 
     Remove-Item `
         -Path "Env:CC_KNOWN_WRAPPER_CUSTOM" `

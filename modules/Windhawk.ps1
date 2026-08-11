@@ -477,6 +477,7 @@ function ConvertTo-WindhawkSettingPairs {
 
 function Set-WindhawkModSettings {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)]
         [string] $ModId,
@@ -497,12 +498,80 @@ function Set-WindhawkModSettings {
     )
 
     if ($pairs.Count -eq 0) {
-        return
+        return $false
     }
 
-    Write-Host "[CONFIG] Windhawk-Mod Settings: $ModId"
+    $response = & $cli --json mod settings get $ModId |
+    ConvertFrom-Json
 
-    & $cli mod settings set $ModId @pairs
+    if (
+        $LASTEXITCODE -ne 0 -or
+        -not $response.success -or
+        -not $response.data
+    ) {
+        throw (
+            "Windhawk-Mod-Settings konnten nicht gelesen werden: " +
+            $ModId
+        )
+    }
+
+    $runtimeSettings = $response.data.settings
+    $changedPairs = [Collections.Generic.List[string]]::new()
+
+    foreach ($pair in $pairs) {
+        $separatorIndex = $pair.IndexOf("=")
+
+        if ($separatorIndex -lt 1) {
+            throw "Ungültiges Windhawk-Setting-Paar: $pair"
+        }
+
+        $key = $pair.Substring(0, $separatorIndex)
+        $desiredValue = $pair.Substring($separatorIndex + 1)
+
+        $property = $runtimeSettings.PSObject.Properties[$key]
+        $currentValue = $null
+
+        if ($property) {
+            $rawValue = $property.Value
+
+            $currentValue = if ($rawValue -is [bool]) {
+                $rawValue.ToString().ToLowerInvariant()
+            }
+            elseif ($null -eq $rawValue) {
+                ""
+            }
+            elseif ($rawValue -is [IConvertible]) {
+                [Convert]::ToString(
+                    $rawValue,
+                    [Globalization.CultureInfo]::InvariantCulture
+                )
+            }
+            else {
+                [string] $rawValue
+            }
+        }
+
+        if ($currentValue -cne $desiredValue) {
+            $changedPairs.Add($pair)
+        }
+    }
+
+    if ($changedPairs.Count -eq 0) {
+        Write-Host (
+            "[CURRENT] Windhawk-Mod-Settings unverändert: {0}" -f
+            $ModId
+        ) -ForegroundColor Green
+
+        return $false
+    }
+
+    Write-Host (
+        "[CONFIG] Windhawk-Mod Settings: {0} ({1} Änderung(en))" -f
+        $ModId,
+        $changedPairs.Count
+    )
+
+    & $cli mod settings set $ModId @($changedPairs)
 
     if ($LASTEXITCODE -ne 0) {
         throw (
@@ -510,23 +579,43 @@ function Set-WindhawkModSettings {
             $ModId
         )
     }
+
+    return $true
 }
 
 
 function Set-WindhawkModEnabledState {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)]
         [string] $ModId,
 
         [Parameter(Mandatory)]
-        [bool] $Enabled
+        [bool] $Enabled,
+
+        [AllowNull()]
+        [object] $CurrentMod
     )
 
     $cli = Get-WindhawkCliPath
 
     if (-not $cli) {
         throw "windhawk-cli.exe wurde nicht gefunden."
+    }
+
+    if (
+        $CurrentMod -and
+        $null -ne $CurrentMod.enabled -and
+        [bool] $CurrentMod.enabled -eq $Enabled
+    ) {
+        Write-Host (
+            "[CURRENT] Windhawk-Mod ist bereits {0}: {1}" -f
+            $(if ($Enabled) { "aktiviert" } else { "deaktiviert" }),
+            $ModId
+        ) -ForegroundColor Green
+
+        return $false
     }
 
     if ($Enabled) {
@@ -546,11 +635,14 @@ function Set-WindhawkModEnabledState {
 
         throw "Windhawk-Mod konnte nicht $state werden: $ModId"
     }
+
+    return $true
 }
 
 
 function Set-WindhawkConfiguration {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)]
         [System.Collections.IDictionary] $Config
@@ -564,8 +656,13 @@ function Set-WindhawkConfiguration {
 
     if (-not $Config.Mods) {
         Write-Host "[INFO] Keine Windhawk-Mods konfiguriert."
-        return
+        return $false
     }
+
+    $configurationChanged = $false
+    $installedMods = @(
+        Get-WindhawkInstalledMods
+    )
 
     foreach ($mod in $Config.Mods) {
         if (-not $mod.Id) {
@@ -582,17 +679,36 @@ function Set-WindhawkConfiguration {
         Write-Host ""
         Write-Host "[MOD] $name ($($mod.Id))"
 
-        if (-not (Test-WindhawkModInstalled -ModId $mod.Id)) {
+        $currentMod = $installedMods |
+        Where-Object {
+            $_.id -eq $mod.Id
+        } |
+        Select-Object -First 1
+
+        if (-not $currentMod) {
             Install-WindhawkMod -ModId $mod.Id
+            $configurationChanged = $true
+
+            $currentMod = [pscustomobject]@{
+                id      = $mod.Id
+                enabled = $true
+            }
         }
         else {
-            Write-Host "[OK] Windhawk-Mod bereits installiert: $($mod.Id)"
+            Write-Host (
+                "[OK] Windhawk-Mod bereits installiert: {0}" -f
+                $mod.Id
+            )
         }
 
         if ($mod.Settings) {
-            Set-WindhawkModSettings `
+            $settingsChanged = Set-WindhawkModSettings `
                 -ModId $mod.Id `
                 -Settings $mod.Settings
+
+            if ($settingsChanged) {
+                $configurationChanged = $true
+            }
         }
 
         $enabled = if ($null -eq $mod.Enabled) {
@@ -602,12 +718,26 @@ function Set-WindhawkConfiguration {
             [bool] $mod.Enabled
         }
 
-        Set-WindhawkModEnabledState `
+        $enabledChanged = Set-WindhawkModEnabledState `
             -ModId $mod.Id `
-            -Enabled $enabled
+            -Enabled $enabled `
+            -CurrentMod $currentMod
+
+        if ($enabledChanged) {
+            $configurationChanged = $true
+        }
     }
 
     Write-Host ""
-    Write-Host "[OK] Windhawk-Konfiguration angewendet." `
-        -ForegroundColor Green
+
+    if ($configurationChanged) {
+        Write-Host "[OK] Windhawk-Konfiguration aktualisiert." `
+            -ForegroundColor Green
+    }
+    else {
+        Write-Host "[SKIP] Windhawk-Konfiguration unverändert." `
+            -ForegroundColor Green
+    }
+
+    return $configurationChanged
 }

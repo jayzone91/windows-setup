@@ -9,6 +9,8 @@ function Set-ZebarConfiguration {
     Write-Host " Zebar"
     Write-Host "========================================"
 
+    $configurationChanged = $false
+
     $zebar = Get-Command `
         -Name "zebar" `
         -ErrorAction SilentlyContinue
@@ -18,24 +20,24 @@ function Set-ZebarConfiguration {
     }
 
     Write-Host (
-        "[FOUND] Zebar: {0}" `
-            -f $zebar.Source
+        "[FOUND] Zebar: {0}" -f
+        $zebar.Source
     )
 
     $repositoryConfigDirectory = Join-Path `
         $RepositoryPath `
         "dotfiles\zebar"
 
-    if (-not (Test-Path $repositoryConfigDirectory)) {
+    if (-not (Test-Path -LiteralPath $repositoryConfigDirectory -PathType Container)) {
         Write-Host "[SKIP] Zebar-Konfiguration noch nicht im Repository."
-        return
+        return $false
     }
 
     $userZebarDirectory = Join-Path `
         $env:USERPROFILE `
         ".glzr\zebar"
 
-    if (-not (Test-Path $userZebarDirectory)) {
+    if (-not (Test-Path -LiteralPath $userZebarDirectory -PathType Container)) {
         New-Item `
             -ItemType Directory `
             -Path $userZebarDirectory `
@@ -43,6 +45,7 @@ function Set-ZebarConfiguration {
         Out-Null
 
         Write-Host "[CREATE] $userZebarDirectory"
+        $configurationChanged = $true
     }
 
     $settingsSource = Join-Path `
@@ -61,7 +64,17 @@ function Set-ZebarConfiguration {
         $userZebarDirectory `
         "windows-setup-bar"
 
-    if (Test-Path $settingsSource) {
+    if (Test-Path -LiteralPath $settingsSource -PathType Leaf) {
+        if (
+            -not (
+                Test-FileHardLinkTarget `
+                    -Path $settingsTarget `
+                    -Target $settingsSource
+            )
+        ) {
+            $configurationChanged = $true
+        }
+
         Set-FileHardLink `
             -Path $settingsTarget `
             -Target $settingsSource `
@@ -71,7 +84,17 @@ function Set-ZebarConfiguration {
         Write-Host "[SKIP] Zebar settings.json nicht im Repository vorhanden."
     }
 
-    if (Test-Path $widgetSource) {
+    if (Test-Path -LiteralPath $widgetSource -PathType Container) {
+        if (
+            -not (
+                Test-DirectoryJunctionTarget `
+                    -Path $widgetTarget `
+                    -Target $widgetSource
+            )
+        ) {
+            $configurationChanged = $true
+        }
+
         Set-DirectoryJunction `
             -Path $widgetTarget `
             -Target $widgetSource
@@ -92,10 +115,7 @@ function Set-ZebarConfiguration {
         $zebarProjectDirectory `
         "package-lock.json"
 
-    foreach ($requiredFile in @(
-            $packageJson,
-            $packageLock
-        )) {
+    foreach ($requiredFile in @($packageJson, $packageLock)) {
         if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) {
             throw "Erforderliche Zebar-Datei wurde nicht gefunden: $requiredFile"
         }
@@ -104,15 +124,15 @@ function Set-ZebarConfiguration {
     $npmPath = Get-NpmExecutable
 
     Write-Host (
-        "[FOUND] npm: {0}" `
-            -f $npmPath
+        "[FOUND] npm: {0}" -f
+        $npmPath
     )
 
     $stateDirectory = Join-Path `
         $RepositoryPath `
         ".generated\state\zebar"
 
-    if (-not (Test-Path -LiteralPath $stateDirectory)) {
+    if (-not (Test-Path -LiteralPath $stateDirectory -PathType Container)) {
         New-Item `
             -ItemType Directory `
             -Path $stateDirectory `
@@ -156,6 +176,8 @@ function Set-ZebarConfiguration {
 
     try {
         if ($dependenciesChanged) {
+            $configurationChanged = $true
+
             Write-Host "[INFO] Installiere geänderte Zebar-Abhängigkeiten."
 
             & $npmPath ci
@@ -186,9 +208,7 @@ function Set-ZebarConfiguration {
                 -File `
                 -ErrorAction Stop |
             Where-Object {
-                $_.Name -notin @(
-                    ".gitignore"
-                )
+                $_.Name -notin @(".gitignore")
             }
 
             Get-ChildItem `
@@ -237,6 +257,8 @@ function Set-ZebarConfiguration {
         )
 
         if ($buildChanged) {
+            $configurationChanged = $true
+
             Write-Host "[INFO] Erstelle geändertes Zebar-Bundle."
 
             & $npmPath run build
@@ -267,6 +289,8 @@ function Set-ZebarConfiguration {
 
     Write-Host "[OK] Zebar-Konfiguration vorbereitet." `
         -ForegroundColor Green
+
+    return $configurationChanged
 }
 
 

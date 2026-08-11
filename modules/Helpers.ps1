@@ -1,3 +1,97 @@
+function Test-DirectoryJunctionTarget {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path,
+
+        [Parameter(Mandatory)]
+        [string] $Target
+    )
+
+    $item = Get-Item `
+        -LiteralPath $Path `
+        -Force `
+        -ErrorAction SilentlyContinue
+
+    if (
+        -not $item -or
+        -not $item.PSIsContainer -or
+        $item.LinkType -ne "Junction"
+    ) {
+        return $false
+    }
+
+    try {
+        $currentTarget = [IO.Path]::GetFullPath(
+            [string] $item.Target
+        ).TrimEnd("\")
+
+        $desiredTarget = [IO.Path]::GetFullPath(
+            $Target
+        ).TrimEnd("\")
+
+        return $currentTarget.Equals(
+            $desiredTarget,
+            [StringComparison]::OrdinalIgnoreCase
+        )
+    }
+    catch {
+        return $false
+    }
+}
+
+function Set-WindowsSetupGeneratedTextFile {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path,
+
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string] $Content,
+
+        [ValidateSet("Utf8NoBom", "Ascii")]
+        [string] $Encoding = "Utf8NoBom"
+    )
+
+    $parent = Split-Path `
+        -Path $Path `
+        -Parent
+
+    if (-not (Test-Path -LiteralPath $parent -PathType Container)) {
+        New-Item `
+            -ItemType Directory `
+            -Path $parent `
+            -Force |
+        Out-Null
+    }
+
+    if (Test-Path -LiteralPath $Path -PathType Leaf) {
+        $currentContent = [IO.File]::ReadAllText($Path)
+
+        if ($currentContent -ceq $Content) {
+            return $false
+        }
+    }
+
+    $textEncoding = if ($Encoding -eq "Ascii") {
+        [Text.Encoding]::ASCII
+    }
+    else {
+        [Text.UTF8Encoding]::new($false)
+    }
+
+    [IO.File]::WriteAllText(
+        $Path,
+        $Content,
+        $textEncoding
+    )
+
+    return $true
+}
+
 function Write-WindowsSetupInteractive {
     param(
         [AllowEmptyString()]

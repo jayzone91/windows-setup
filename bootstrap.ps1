@@ -257,14 +257,21 @@ Set-PowerToysConfiguration `
 Initialize-RaycastConfiguration `
     -Config $Raycast `
     -RepositoryPath $Root
-Set-WindhawkConfiguration `
+$null = Set-WindhawkConfiguration `
     -Config $Windhawk
 
-Set-KomorebiConfiguration `
+$komorebiConfigurationChanged = Set-KomorebiConfiguration `
     -RepositoryPath $Root
 
-Set-ZebarConfiguration `
+$zebarConfigurationChanged = Set-ZebarConfiguration `
     -RepositoryPath $Root
+
+$desktopStateFingerprint = Get-WindowsDesktopStateFingerprint `
+    -RepositoryPath $Root
+
+$desktopStateCurrent = Test-WindowsDesktopStateFingerprint `
+    -RepositoryPath $Root `
+    -Fingerprint $desktopStateFingerprint
 
 Set-OneCommanderConfiguration `
     -RepositoryPath $Root
@@ -297,15 +304,27 @@ if ($script:DriverRebootRequired) {
 # ------------------------------------------------------------
 
 Set-WindowsDebloat -Config $Debloat
-Set-TaskbarPreferences `
+
+$taskbarChanged = Set-TaskbarPreferences `
     -Config $Windows
-Set-StartMenuPreferences `
+
+$startMenuChanged = Set-StartMenuPreferences `
     -Config $Windows
-Disable-WindowsSnap
-Set-WindowsTheme
-Set-WindowsPowerPreferences
+
+$windowsSnapChanged = Disable-WindowsSnap
+$windowsThemeChanged = Set-WindowsTheme
+$null = Set-WindowsPowerPreferences
+
 Set-WindowsHDR
-Set-WindowsWallpaperSlideshow
+
+$null = Set-WindowsWallpaperSlideshow
+
+$windowsExplorerRestartRequired = (
+    $taskbarChanged -or
+    $startMenuChanged -or
+    $windowsSnapChanged -or
+    $windowsThemeChanged
+)
 
 # ------------------------------------------------------------
 # Entwicklung
@@ -360,10 +379,16 @@ Set-VSCodeSettings `
 # Browser Config
 # ------------------------------------------------------------
 
-Set-BrowserConfiguration `
+$null = Set-BrowserConfiguration `
     -Config $Browsers
 
-Restart-WindowsExplorer
+if ($windowsExplorerRestartRequired) {
+    Restart-WindowsExplorer
+}
+else {
+    Write-Host ""
+    Write-Host "[SKIP] Windows Explorer bleibt geöffnet; kein Shell-Drift."
+}
 
 # ------------------------------------------------------------
 # Peripherie
@@ -384,16 +409,47 @@ Install-WindowsUpdates
 # ------------------------------------------------------------
 
 
-Register-KomorebiStartupTask
+$komorebiTaskChanged = Register-KomorebiStartupTask
+$zebarTaskChanged = Register-ZebarStartupTask
 
-Register-ZebarStartupTask
-
-Register-VolumeOsdStartupTask `
+$volumeOsdTaskChanged = Register-VolumeOsdStartupTask `
     -RepositoryPath $Root
 
-Restart-WindowsDesktopEnvironment
+$desktopCoreRestartRequired = (
+    $komorebiConfigurationChanged -or
+    $zebarConfigurationChanged -or
+    -not $desktopStateCurrent -or
+    $komorebiTaskChanged -or
+    $zebarTaskChanged -or
+    -not (Test-WindowsDesktopCoreEnvironmentRunning)
+)
 
-Register-WindowsSetupScheduledTask `
+if ($desktopCoreRestartRequired) {
+    Restart-WindowsDesktopEnvironment
+
+    Save-WindowsDesktopStateFingerprint `
+        -RepositoryPath $Root `
+        -Fingerprint $desktopStateFingerprint
+}
+else {
+    Write-Host ""
+    Write-Host (
+        "[SKIP] komorebi/whkd/masir/Zebar unverändert und aktiv. " +
+        "Desktop-Neustart entfällt."
+    ) -ForegroundColor Green
+
+    if (
+        $volumeOsdTaskChanged -or
+        -not (Test-WindowsVolumeOsdRunning)
+    ) {
+        Restart-WindowsVolumeOsd
+    }
+    else {
+        Write-Host "[SKIP] Volume OSD unverändert und aktiv."
+    }
+}
+
+$null = Register-WindowsSetupScheduledTask `
     -BootstrapPath "$Root\bootstrap.ps1"
 
 # ------------------------------------------------------------

@@ -10,53 +10,55 @@ function Set-TaskbarPreferences {
     Write-Host " Taskleiste"
     Write-Host "========================================"
 
+    $changed = $false
     $advancedPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
     $searchPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search"
 
-    foreach ($path in @(
-            $advancedPath,
-            $searchPath
-        )) {
-        if (-not (Test-Path $path)) {
+    foreach ($path in @($advancedPath, $searchPath)) {
+        if (-not (Test-Path -LiteralPath $path)) {
             New-Item `
                 -Path $path `
                 -Force `
-                -ErrorAction Stop | Out-Null
+                -ErrorAction Stop |
+            Out-Null
+
+            $changed = $true
         }
     }
 
-    # Suche
-    Write-Host "[CONFIG] Suche ausblenden"
+    if (
+        Set-RegistryDword `
+            -Path $searchPath `
+            -Name "SearchboxTaskbarMode" `
+            -Value 0
+    ) {
+        Write-Host "[CONFIG] Suche ausgeblendet."
+        $changed = $true
+    }
 
-    Set-RegistryDword `
-        -Path $searchPath `
-        -Name "SearchboxTaskbarMode" `
-        -Value 0
+    if (
+        Set-RegistryDword `
+            -Path $advancedPath `
+            -Name "ShowTaskViewButton" `
+            -Value 0
+    ) {
+        Write-Host "[CONFIG] Aktive Anwendungen ausgeblendet."
+        $changed = $true
+    }
 
-
-    # Taskansicht / Aktive Anwendungen
-    Write-Host "[CONFIG] Aktive Anwendungen ausblenden"
-
-    Set-RegistryDword `
-        -Path $advancedPath `
-        -Name "ShowTaskViewButton" `
-        -Value 0
-
-# Fortsetzen
-    Write-Host "[CONFIG] Fortsetzen ausblenden"
-
-    Set-RegistryDword `
-        -Path $advancedPath `
-        -Name "TaskbarResume" `
-        -Value 0
-
-
-    # Automatisches Ausblenden
-    Write-Host "[CONFIG] Taskleiste automatisch ausblenden"
+    if (
+        Set-RegistryDword `
+            -Path $advancedPath `
+            -Name "TaskbarResume" `
+            -Value 0
+    ) {
+        Write-Host "[CONFIG] Fortsetzen ausgeblendet."
+        $changed = $true
+    }
 
     $stuckRectsPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StuckRects3"
 
-    if (-not (Test-Path $stuckRectsPath)) {
+    if (-not (Test-Path -LiteralPath $stuckRectsPath)) {
         throw "StuckRects3 wurde nicht gefunden: $stuckRectsPath"
     }
 
@@ -74,10 +76,7 @@ function Set-TaskbarPreferences {
     $currentAutoHide = ($taskbarSettings[8] -band 0x01) -eq 0x01
     $desiredAutoHide = [bool] $Config.Taskbar.AutoHide
 
-    if ($currentAutoHide -eq $desiredAutoHide) {
-        Write-Host "[OK] Taskleisten-Autohide bereits korrekt."
-    }
-    else {
+    if ($currentAutoHide -ne $desiredAutoHide) {
         if ($desiredAutoHide) {
             $taskbarSettings[8] = $taskbarSettings[8] -bor 0x01
         }
@@ -91,10 +90,20 @@ function Set-TaskbarPreferences {
             -Value $taskbarSettings `
             -ErrorAction Stop
 
-        Write-Host "[OK] Taskleisten-Autohide aktualisiert."
+        Write-Host "[CONFIG] Taskleisten-Autohide aktualisiert."
+        $changed = $true
     }
-    Write-Host "[OK] Taskleisten-Einstellungen gesetzt." `
-        -ForegroundColor Green
+
+    if ($changed) {
+        Write-Host "[OK] Taskleisten-Einstellungen aktualisiert." `
+            -ForegroundColor Green
+    }
+    else {
+        Write-Host "[SKIP] Taskleisten-Einstellungen unverändert." `
+            -ForegroundColor Green
+    }
+
+    return $changed
 }
 
 function Set-StartMenuPreferences {
@@ -109,56 +118,75 @@ function Set-StartMenuPreferences {
     Write-Host " Startmenü & Suche"
     Write-Host "========================================"
 
+    $changed = $false
     $explorerPolicyPath = "HKCU:\Software\Policies\Microsoft\Windows\Explorer"
 
-    if (-not (Test-Path $explorerPolicyPath)) {
+    if (-not (Test-Path -LiteralPath $explorerPolicyPath)) {
         New-Item `
             -Path $explorerPolicyPath `
             -Force `
-            -ErrorAction Stop | Out-Null
+            -ErrorAction Stop |
+        Out-Null
+
+        $changed = $true
     }
 
-    Write-Host "[CONFIG] Internet-Suche im Startmenü deaktivieren"
-
-    New-ItemProperty `
-        -Path $explorerPolicyPath `
-        -Name "DisableSearchBoxSuggestions" `
-        -PropertyType DWord `
-        -Value 1 `
-        -Force `
-        -ErrorAction Stop | Out-Null
-
-
-    # ------------------------------------------------------------
-    # Personalisierung > Start
-    # ------------------------------------------------------------
+    if (
+        Set-RegistryDword `
+            -Path $explorerPolicyPath `
+            -Name "DisableSearchBoxSuggestions" `
+            -Value 1
+    ) {
+        $changed = $true
+    }
 
     $advancedPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
     $startPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Start"
 
-    Write-Host "[CONFIG] Startmenü-Personalisierung setzen"
+    $desiredValues = @(
+        @{
+            Path  = $advancedPath
+            Name  = "Start_TrackDocs"
+            Value = [int] [bool] $Config.StartMenu.ShowRecentlyAddedApps
+        },
+        @{
+            Path  = $startPath
+            Name  = "ShowRecentList"
+            Value = [int] [bool] $Config.StartMenu.ShowRecentItems
+        },
+        @{
+            Path  = $advancedPath
+            Name  = "Start_IrisRecommendations"
+            Value = [int] [bool] $Config.StartMenu.ShowRecommendations
+        },
+        @{
+            Path  = $startPath
+            Name  = "ShowFrequentList"
+            Value = [int] [bool] $Config.StartMenu.ShowMostUsedApps
+        }
+    )
 
-    Set-RegistryDword `
-        -Path $advancedPath `
-        -Name "Start_TrackDocs" `
-        -Value ([int] [bool] $Config.StartMenu.ShowRecentlyAddedApps)
+    foreach ($entry in $desiredValues) {
+        if (
+            Set-RegistryDword `
+                -Path $entry.Path `
+                -Name $entry.Name `
+                -Value $entry.Value
+        ) {
+            $changed = $true
+        }
+    }
 
-    Set-RegistryDword `
-        -Path $startPath `
-        -Name "ShowRecentList" `
-        -Value ([int] [bool] $Config.StartMenu.ShowRecentItems)
+    if ($changed) {
+        Write-Host "[OK] Startmenü-Einstellungen aktualisiert." `
+            -ForegroundColor Green
+    }
+    else {
+        Write-Host "[SKIP] Startmenü-Einstellungen unverändert." `
+            -ForegroundColor Green
+    }
 
-    Set-RegistryDword `
-        -Path $advancedPath `
-        -Name "Start_IrisRecommendations" `
-        -Value ([int] [bool] $Config.StartMenu.ShowRecommendations)
-
-    Set-RegistryDword `
-        -Path $startPath `
-        -Name "ShowFrequentList" `
-        -Value ([int] [bool] $Config.StartMenu.ShowMostUsedApps)
-    Write-Host "[OK] Startmenü-Einstellungen gesetzt." `
-        -ForegroundColor Green
+    return $changed
 }
 
 function Set-WindowsTheme {
@@ -167,59 +195,59 @@ function Set-WindowsTheme {
     Write-Host " Windows Design"
     Write-Host "========================================"
 
+    $changed = $false
     $personalizePath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
     $desktopPath = "HKCU:\Control Panel\Desktop"
 
-    foreach ($path in @(
-            $personalizePath,
-            $desktopPath
-        )) {
-        if (-not (Test-Path $path)) {
+    foreach ($path in @($personalizePath, $desktopPath)) {
+        if (-not (Test-Path -LiteralPath $path)) {
             New-Item `
                 -Path $path `
                 -Force `
-                -ErrorAction Stop | Out-Null
+                -ErrorAction Stop |
+            Out-Null
+
+            $changed = $true
         }
     }
 
-    # ------------------------------------------------------------
-    # Dark Mode
-    # ------------------------------------------------------------
+    foreach ($entry in @(
+            @{
+                Path  = $personalizePath
+                Name  = "AppsUseLightTheme"
+                Value = 0
+            },
+            @{
+                Path  = $personalizePath
+                Name  = "SystemUsesLightTheme"
+                Value = 0
+            },
+            @{
+                Path  = $desktopPath
+                Name  = "AutoColorization"
+                Value = 1
+            }
+        )) {
+        if (
+            Set-RegistryDword `
+                -Path $entry.Path `
+                -Name $entry.Name `
+                -Value $entry.Value
+        ) {
+            $changed = $true
+        }
+    }
 
-    Write-Host "[CONFIG] Dark Mode aktivieren"
+    if ($changed) {
+        Write-Host "[OK] Windows Design aktualisiert." `
+            -ForegroundColor Green
+    }
+    else {
+        Write-Host "[SKIP] Windows Design unverändert." `
+            -ForegroundColor Green
+    }
 
-    New-ItemProperty `
-        -Path $personalizePath `
-        -Name "AppsUseLightTheme" `
-        -PropertyType DWord `
-        -Value 0 `
-        -Force `
-        -ErrorAction Stop | Out-Null
-
-    New-ItemProperty `
-        -Path $personalizePath `
-        -Name "SystemUsesLightTheme" `
-        -PropertyType DWord `
-        -Value 0 `
-        -Force `
-        -ErrorAction Stop | Out-Null
-
-    # ------------------------------------------------------------
-    # Akzentfarbe automatisch aus Hintergrundbild bestimmen
-    # ------------------------------------------------------------
-
-    Write-Host "[CONFIG] Akzentfarbe automatisch bestimmen"
-
-    New-ItemProperty `
-        -Path $desktopPath `
-        -Name "AutoColorization" `
-        -PropertyType DWord `
-        -Value 1 `
-        -Force `
-        -ErrorAction Stop | Out-Null
-
-    Write-Host "[OK] Windows Design konfiguriert." `
-        -ForegroundColor Green
+    return $changed
 }
 
 function Restart-WindowsExplorer {
@@ -237,20 +265,20 @@ function Restart-WindowsExplorer {
 }
 
 function Set-RegistryDword {
-
+    [CmdletBinding()]
+    [OutputType([bool])]
     param (
         [Parameter(Mandatory)]
-        [string]$Path,
+        [string] $Path,
 
         [Parameter(Mandatory)]
-        [string]$Name,
+        [string] $Name,
 
         [Parameter(Mandatory)]
-        [int]$Value
+        [int] $Value
     )
 
-
-    if (-not (Test-Path $Path)) {
+    if (-not (Test-Path -LiteralPath $Path)) {
         New-Item `
             -Path $Path `
             -Force `
@@ -258,31 +286,35 @@ function Set-RegistryDword {
         Out-Null
     }
 
-
-    $property =
-    Get-ItemProperty `
+    $currentValue = Get-ItemPropertyValue `
         -Path $Path `
         -Name $Name `
         -ErrorAction SilentlyContinue
 
+    if (
+        $null -ne $currentValue -and
+        [int] $currentValue -eq $Value
+    ) {
+        return $false
+    }
 
-    if ($null -eq $property) {
-
+    if ($null -eq $currentValue) {
         New-ItemProperty `
             -Path $Path `
             -Name $Name `
             -PropertyType DWord `
             -Value $Value `
+            -Force `
             -ErrorAction Stop |
         Out-Null
-
-        return
+    }
+    else {
+        Set-ItemProperty `
+            -Path $Path `
+            -Name $Name `
+            -Value $Value `
+            -ErrorAction Stop
     }
 
-
-    Set-ItemProperty `
-        -Path $Path `
-        -Name $Name `
-        -Value $Value `
-        -ErrorAction Stop
+    return $true
 }

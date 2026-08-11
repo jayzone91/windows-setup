@@ -4,16 +4,12 @@ function Set-KomorebiConfiguration {
         [string] $RepositoryPath
     )
 
-
     Write-Host ""
     Write-Host "========================================"
     Write-Host " komorebi"
     Write-Host "========================================"
 
-
-    #
-    # Lizenzhinweis
-    #
+    $configurationChanged = $false
 
     Write-Host "[INFO] komorebi kann für persönliche Nutzung verwendet werden."
     Write-Host (
@@ -29,11 +25,6 @@ function Set-KomorebiConfiguration {
         "'komorebic license <email>' registriert werden."
     )
 
-
-    #
-    # Installation prüfen
-    #
-
     $komorebic = Get-Command `
         -Name "komorebic" `
         -ErrorAction SilentlyContinue
@@ -41,7 +32,6 @@ function Set-KomorebiConfiguration {
     if (-not $komorebic) {
         throw "komorebic wurde nicht gefunden."
     }
-
 
     $whkd = Get-Command `
         -Name "whkd" `
@@ -51,27 +41,21 @@ function Set-KomorebiConfiguration {
         throw "whkd wurde nicht gefunden."
     }
 
-
     Write-Host (
-        "[FOUND] komorebi: {0}" `
-            -f $komorebic.Source
+        "[FOUND] komorebi: {0}" -f
+        $komorebic.Source
     )
 
     Write-Host (
-        "[FOUND] whkd: {0}" `
-            -f $whkd.Source
+        "[FOUND] whkd: {0}" -f
+        $whkd.Source
     )
-
-
-    #
-    # Config-Verzeichnis für whkd
-    #
 
     $userConfigDirectory = Join-Path `
         $env:USERPROFILE `
         ".config"
 
-    if (-not (Test-Path $userConfigDirectory)) {
+    if (-not (Test-Path -LiteralPath $userConfigDirectory -PathType Container)) {
         New-Item `
             -ItemType Directory `
             -Path $userConfigDirectory `
@@ -79,30 +63,20 @@ function Set-KomorebiConfiguration {
         Out-Null
 
         Write-Host "[CREATE] $userConfigDirectory"
+        $configurationChanged = $true
     }
-
-
-    #
-    # Repo-Konfiguration
-    #
 
     $repositoryConfigDirectory = Join-Path `
         $RepositoryPath `
         "dotfiles\komorebi"
 
-    if (-not (Test-Path $repositoryConfigDirectory)) {
+    if (-not (Test-Path -LiteralPath $repositoryConfigDirectory -PathType Container)) {
         Write-Host (
             "[SKIP] komorebi-Konfiguration ist noch nicht im Repository."
         )
 
-        Write-Host (
-            "[INFO] Hardlinks werden eingerichtet, sobald " +
-            "dotfiles\komorebi vorhanden ist."
-        )
-
-        return
+        return $configurationChanged
     }
-
 
     $links = @(
         @{
@@ -127,19 +101,27 @@ function Set-KomorebiConfiguration {
         }
     )
 
-
     Write-Host ""
     Write-Host "[CONFIG] komorebi Hardlinks"
 
-
     foreach ($link in $links) {
-        if (-not (Test-Path $link.Source)) {
+        if (-not (Test-Path -LiteralPath $link.Source -PathType Leaf)) {
             Write-Host (
-                "[SKIP] {0} noch nicht im Repository vorhanden." `
-                    -f $link.Name
+                "[SKIP] {0} noch nicht im Repository vorhanden." -f
+                $link.Name
             )
 
             continue
+        }
+
+        if (
+            -not (
+                Test-FileHardLinkTarget `
+                    -Path $link.Target `
+                    -Target $link.Source
+            )
+        ) {
+            $configurationChanged = $true
         }
 
         Set-FileHardLink `
@@ -148,7 +130,8 @@ function Set-KomorebiConfiguration {
             -ReplaceExistingFile
     }
 
-
     Write-Host "[OK] komorebi-Konfiguration vorbereitet." `
         -ForegroundColor Green
+
+    return $configurationChanged
 }

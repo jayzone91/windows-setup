@@ -1,4 +1,4 @@
-﻿if (-not ("DesktopWallpaperNativeV2" -as [type])) {
+if (-not ("DesktopWallpaperNativeV2" -as [type])) {
     Add-Type @"
 using System;
 using System.Runtime.InteropServices;
@@ -301,17 +301,21 @@ public static class DesktopWallpaperNativeV2
 }
 
 function Set-WindowsWallpaperSlideshow {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        "PSAvoidUsingPositionalParameters",
+        "",
+        Justification = "Git ist ein natives CLI-Programm; die verwendeten Argumente folgen der regulären Git-Syntax."
+    )]
     param(
-        [string]$RepositoryUrl = "https://github.com/jayzone91/wallpaper.git",
+        [string] $RepositoryUrl = "https://github.com/jayzone91/wallpaper.git",
 
-        [string]$RepositoryPath =
-        "$env:USERPROFILE\Pictures\wallpaper",
+        [string] $RepositoryPath = "$env:USERPROFILE\Pictures\wallpaper",
 
-        [string]$WallpaperSubfolder = "oled",
+        [string] $WallpaperSubfolder = "oled",
 
-        [int]$IntervalMinutes = 30,
+        [int] $IntervalMinutes = 30,
 
-        [bool]$Shuffle = $true
+        [bool] $Shuffle = $true
     )
 
     Write-Host ""
@@ -319,27 +323,100 @@ function Set-WindowsWallpaperSlideshow {
     Write-Host " Wallpaper"
     Write-Host "========================================"
 
-    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    $git = Get-Command `
+        -Name "git" `
+        -ErrorAction SilentlyContinue
+
+    if (-not $git) {
         throw "Git wurde nicht gefunden."
     }
 
-    # ------------------------------------------------------------
-    # Repository
-    # ------------------------------------------------------------
+    $repositoryChanged = $false
 
-    if (Test-Path (Join-Path $RepositoryPath ".git")) {
-        Write-Host "[UPDATE] Wallpaper-Repository"
-
-        & git `
-            -C $RepositoryPath `
-            pull `
-            --ff-only
+    if (Test-Path -LiteralPath (Join-Path $RepositoryPath ".git") -PathType Container) {
+        $fetchOutput = @(
+            & $git.Source -C $RepositoryPath fetch --quiet 2>&1
+        )
 
         if ($LASTEXITCODE -ne 0) {
-            throw "Wallpaper-Repository konnte nicht aktualisiert werden."
+            throw (
+                "Wallpaper-Repository konnte nicht abgefragt werden: {0}" -f
+                ($fetchOutput -join " ")
+            )
+        }
+
+        $localHead = (
+            @(
+                & $git.Source -C $RepositoryPath rev-parse HEAD 2>$null
+            ) -join "`n"
+        ).Trim()
+
+        $upstream = (
+            @(
+                & $git.Source `
+                    -C $RepositoryPath `
+                    rev-parse `
+                    --abbrev-ref `
+                    --symbolic-full-name `
+                    '@{u}' `
+                    2>$null
+            ) -join "`n"
+        ).Trim()
+
+        if (
+            $LASTEXITCODE -ne 0 -or
+            [string]::IsNullOrWhiteSpace($upstream)
+        ) {
+            throw (
+                "Wallpaper-Repository besitzt keinen auswertbaren Upstream-Branch."
+            )
+        }
+
+        $remoteHead = (
+            @(
+                & $git.Source -C $RepositoryPath rev-parse $upstream 2>$null
+            ) -join "`n"
+        ).Trim()
+
+        if ($LASTEXITCODE -ne 0 -or -not $remoteHead) {
+            throw "Wallpaper-Upstream-Commit konnte nicht ermittelt werden."
+        }
+
+        if ($localHead -ne $remoteHead) {
+            & $git.Source `
+                -C $RepositoryPath `
+                merge-base `
+                --is-ancestor `
+                $localHead `
+                $remoteHead
+
+            if ($LASTEXITCODE -ne 0) {
+                throw (
+                    "Wallpaper-Repository kann nicht per Fast-Forward " +
+                    "aktualisiert werden."
+                )
+            }
+
+            Write-Host "[UPDATE] Wallpaper-Repository"
+
+            & $git.Source `
+                -C $RepositoryPath `
+                pull `
+                --ff-only `
+                --quiet
+
+            if ($LASTEXITCODE -ne 0) {
+                throw "Wallpaper-Repository konnte nicht aktualisiert werden."
+            }
+
+            $repositoryChanged = $true
+        }
+        else {
+            Write-Host "[CURRENT] Wallpaper-Repository ist bereits aktuell." `
+                -ForegroundColor Green
         }
     }
-    elseif (Test-Path $RepositoryPath) {
+    elseif (Test-Path -LiteralPath $RepositoryPath) {
         throw (
             "Wallpaper-Ziel existiert bereits, " +
             "ist aber kein Git-Repository: $RepositoryPath"
@@ -348,31 +425,30 @@ function Set-WindowsWallpaperSlideshow {
     else {
         Write-Host "[CLONE] Wallpaper-Repository"
 
-        & git clone `
+        & $git.Source clone `
             --depth 1 `
+            --quiet `
             $RepositoryUrl `
             $RepositoryPath
 
         if ($LASTEXITCODE -ne 0) {
             throw "Wallpaper-Repository konnte nicht geklont werden."
         }
-    }
 
-    # ------------------------------------------------------------
-    # Wallpaper-Ordner
-    # ------------------------------------------------------------
+        $repositoryChanged = $true
+    }
 
     $wallpaperPath = Join-Path `
         $RepositoryPath `
         $WallpaperSubfolder
 
-    if (-not (Test-Path $wallpaperPath)) {
+    if (-not (Test-Path -LiteralPath $wallpaperPath -PathType Container)) {
         throw "Wallpaper-Ordner nicht gefunden: $wallpaperPath"
     }
 
     $images = @(
         Get-ChildItem `
-            -Path $wallpaperPath `
+            -LiteralPath $wallpaperPath `
             -File |
         Where-Object {
             $_.Extension.ToLowerInvariant() -in @(
@@ -391,20 +467,87 @@ function Set-WindowsWallpaperSlideshow {
     Write-Host "[OK] $($images.Count) Wallpaper gefunden." `
         -ForegroundColor Green
 
-    # ------------------------------------------------------------
-    # Windows Diashow
-    # ------------------------------------------------------------
+    $head = (
+        @(
+            & $git.Source -C $RepositoryPath rev-parse HEAD
+        ) -join "`n"
+    ).Trim()
+
+    $desiredFingerprint = Get-TextFingerprint `
+        -Text (
+            "{0}|{1}|{2}|{3}|FIT|0 0 0" -f
+            [IO.Path]::GetFullPath($wallpaperPath),
+            $IntervalMinutes,
+            $Shuffle,
+            $head
+        )
+
+    $windowsSetupRoot = Split-Path `
+        -Path (Split-Path -Path $PSScriptRoot -Parent) `
+        -Parent
+
+    $stateDirectory = Join-Path `
+        $windowsSetupRoot `
+        ".generated\state\windows"
+
+    if (-not (Test-Path -LiteralPath $stateDirectory -PathType Container)) {
+        New-Item `
+            -ItemType Directory `
+            -Path $stateDirectory `
+            -Force |
+        Out-Null
+    }
+
+    $statePath = Join-Path `
+        $stateDirectory `
+        "wallpaper.sha256"
+
+    $storedFingerprint = $null
+
+    if (Test-Path -LiteralPath $statePath -PathType Leaf) {
+        $storedFingerprint = (
+            Get-Content `
+                -LiteralPath $statePath `
+                -Raw
+        ).Trim()
+    }
+
+    $desktopPath = "HKCU:\Control Panel\Desktop"
+    $colorsPath = "HKCU:\Control Panel\Colors"
+
+    $wallpaperStyle = Get-ItemPropertyValue `
+        -Path $desktopPath `
+        -Name "WallpaperStyle" `
+        -ErrorAction SilentlyContinue
+
+    $tileWallpaper = Get-ItemPropertyValue `
+        -Path $desktopPath `
+        -Name "TileWallpaper" `
+        -ErrorAction SilentlyContinue
+
+    $background = Get-ItemPropertyValue `
+        -Path $colorsPath `
+        -Name "Background" `
+        -ErrorAction SilentlyContinue
+
+    $settingsChanged = (
+        $repositoryChanged -or
+        $storedFingerprint -ne $desiredFingerprint -or
+        [string]$wallpaperStyle -ne "6" -or
+        [string]$tileWallpaper -ne "0" -or
+        [string]$background -ne "0 0 0"
+    )
+
+    if (-not $settingsChanged) {
+        Write-Host "[SKIP] Wallpaper-Diashow unverändert." `
+            -ForegroundColor Green
+
+        return $false
+    }
 
     $intervalMilliseconds = [uint32](
         $IntervalMinutes * 60 * 1000
     )
-
-    Write-Host "[CONFIG] Diashow-Ordner: $wallpaperPath"
-    Write-Host "[CONFIG] Intervall: $IntervalMinutes Minuten"
-    Write-Host "[CONFIG] Zufällige Reihenfolge: $Shuffle"
-
-    $desktopPath = "HKCU:\Control Panel\Desktop"
-    $colorsPath = "HKCU:\Control Panel\Colors"
 
     Set-ItemProperty `
         -Path $desktopPath `
@@ -427,6 +570,14 @@ function Set-WindowsWallpaperSlideshow {
         $Shuffle
     )
 
-    Write-Host "[OK] Wallpaper-Diashow konfiguriert." `
+    Set-Content `
+        -LiteralPath $statePath `
+        -Value $desiredFingerprint `
+        -Encoding utf8NoBOM `
+        -NoNewline
+
+    Write-Host "[OK] Wallpaper-Diashow aktualisiert." `
         -ForegroundColor Green
+
+    return $true
 }
