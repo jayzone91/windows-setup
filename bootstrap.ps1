@@ -1,6 +1,62 @@
 #Requires -RunAsAdministrator
 
+param(
+    [switch] $Warning,
+
+    [switch] $Log,
+
+    [Parameter(DontShow)]
+    [switch] $InternalRun
+)
+
 $ErrorActionPreference = "Stop"
+
+if ($Warning -and $Log) {
+    throw "Die Parameter -Warning und -Log können nicht gleichzeitig verwendet werden."
+}
+
+if (-not $InternalRun) {
+    $pwsh = (
+        Get-Command `
+            -Name "pwsh" `
+            -ErrorAction Stop
+    ).Source
+
+    $arguments = @(
+        "-NoProfile"
+        "-ExecutionPolicy"
+        "Bypass"
+        "-File"
+        $PSCommandPath
+        "-InternalRun"
+    )
+
+    if ($Log) {
+        $arguments += "-Log"
+
+        & $pwsh @arguments
+        exit $LASTEXITCODE
+    }
+
+    if ($Warning) {
+        $arguments += "-Warning"
+
+        & $pwsh @arguments `
+            1>$null `
+            4>$null `
+            5>$null `
+            6>$null
+
+        exit $LASTEXITCODE
+    }
+
+    & $pwsh @arguments *>$null
+    exit $LASTEXITCODE
+}
+
+if (-not $Log) {
+    $ProgressPreference = "SilentlyContinue"
+}
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
@@ -59,7 +115,7 @@ if (Test-Path (Join-Path $Root ".git")) {
 }
 
 # ------------------------------------------------------------
-# Strikter Code-Preflight
+# Fingerprint-gesteuerter Code-Preflight
 # ------------------------------------------------------------
 
 Write-Host ""
@@ -67,33 +123,47 @@ Write-Host "========================================"
 Write-Host " PowerShell Preflight"
 Write-Host "========================================"
 
+$helpersModulePath = Join-Path $Root "modules\Helpers.ps1"
 $powerShellModulePath = Join-Path $Root "modules\PowerShell.ps1"
 
-if (-not (Test-Path -LiteralPath $powerShellModulePath -PathType Leaf)) {
-    throw "PowerShell-Modul nicht gefunden: $powerShellModulePath"
+foreach ($modulePath in @(
+        $helpersModulePath,
+        $powerShellModulePath
+    )) {
+    if (-not (Test-Path -LiteralPath $modulePath -PathType Leaf)) {
+        throw "Preflight-Modul nicht gefunden: $modulePath"
+    }
+
+    . $modulePath
 }
 
-. $powerShellModulePath
-
-if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
-    Write-Host "[PREREQUISITE] PSScriptAnalyzer installieren"
-
-    Install-Module `
-        -Name "PSScriptAnalyzer" `
-        -Scope CurrentUser `
-        -Repository "PSGallery" `
-        -Force `
-        -AllowClobber `
-        -ErrorAction Stop
+if (Test-PowerShellCodeFingerprint -Path $Root) {
+    Write-Host "[SKIP] PowerShell-Code seit letztem erfolgreichen Check unverändert." `
+        -ForegroundColor Green
 }
+else {
+    Write-Host "[CHECK] PowerShell-Code-Fingerprint geändert."
 
-Test-PowerShellCode `
-    -Path $Root `
-    -FailOnAnyIssue
+    if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
+        Write-Host "[PREREQUISITE] PSScriptAnalyzer installieren"
 
-Write-Host "[OK] Strikter Code-Preflight bestanden." `
-    -ForegroundColor Green
+        Install-Module `
+            -Name "PSScriptAnalyzer" `
+            -Scope CurrentUser `
+            -Repository "PSGallery" `
+            -Force `
+            -AllowClobber `
+            -ErrorAction Stop
+    }
 
+    Test-PowerShellCode `
+        -Path $Root `
+        -FailOnAnyIssue `
+        -UpdateFingerprint
+
+    Write-Host "[OK] Strikter Code-Preflight bestanden." `
+        -ForegroundColor Green
+}
 Write-Host ""
 Write-Host "========================================"
 Write-Host " Windows Setup"
@@ -105,6 +175,12 @@ Write-Host ""
 # ------------------------------------------------------------
 
 . "$Root\modules\index.ps1"
+
+# ------------------------------------------------------------
+# Wiederherstellungspunkt
+# ------------------------------------------------------------
+
+New-WindowsSetupRestorePoint
 
 # ------------------------------------------------------------
 # Cleanup
@@ -162,6 +238,8 @@ try {
         -Packages $Packages.Gaming `
         -GroupName "Gaming"
     Install-PackageGroup -Packages $Packages.Browser -GroupName "Browser"
+
+    Invoke-WingetQueuedChanges
 }
 finally {
     Clear-PackageManagerCaches
@@ -255,7 +333,8 @@ Set-NushellPreferences
 Set-LanguageEnvironment
 
 Initialize-DevelopmentStorage `
-    -Config $Storage
+    -Config $Storage `
+    -RepositoryPath $Root
 
 Initialize-GamesDriveDirectories `
     -Config $Storage

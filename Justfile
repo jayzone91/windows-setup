@@ -2,13 +2,25 @@
 
 set shell := ["pwsh", "-NoProfile", "-Command"]
 
-# Normaler manueller Setup-/Wartungslauf
+# Normaler manueller Setup-/Wartungslauf: bewusst ohne Konsolenausgabe
 update:
-    pwsh -NoProfile -ExecutionPolicy Bypass -File ./bootstrap.ps1
+    @pwsh -NoProfile -ExecutionPolicy Bypass -File ./bootstrap.ps1
 
-# Nur Syntax/Qualitätschecks, später erweiterbar
+# Diagnosemodus: nur Warnungen und Fehler
+update-warning:
+    @pwsh -NoProfile -ExecutionPolicy Bypass -File ./bootstrap.ps1 -Warning
+
+# Vollständige Ausgabe für funktionale Tests und Diagnose
+update-log:
+    @pwsh -NoProfile -ExecutionPolicy Bypass -File ./bootstrap.ps1 -Log
+
+# Reproduzierbarer Performance-Test des stillen Bootstrap
+update-performance:
+    @pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/Measure-BootstrapPerformance.ps1
+
+# Vollständiger manueller Codecheck; erfolgreicher Lauf aktualisiert den Bootstrap-Fingerprint
 check:
-    pwsh -NoProfile -ExecutionPolicy Bypass -Command ". ./modules/PowerShell.ps1; Test-PowerShellCode -Path ."
+    pwsh -NoProfile -ExecutionPolicy Bypass -Command ". ./modules/Helpers.ps1; . ./modules/PowerShell.ps1; Test-PowerShellCode -Path . -FailOnAnyIssue -UpdateFingerprint"
 
 # komorebi, whkd, masir und Zebar sauber neu starten
 desktop-restart:

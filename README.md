@@ -16,6 +16,7 @@ Bereits umgesetzt sind unter anderem:
 - Chocolatey und Scoop werden bei Bedarf automatisch installiert und bei jedem Bootstrap selbst aktualisiert
 - Scoop-Buckets werden aus den Paketdefinitionen abgeleitet; pro Scoop-Paket ist der gewünschte Bucket explizit definiert
 - Paketmanager-Cleanup für Chocolatey und Scoop bei jedem Bootstrap-Lauf
+- Winget prüft nur die in `config/packages.psd1` verwalteten Pakete und bündelt normale Installationen sowie Updates pro Source statt `winget upgrade --all` zu verwenden
 - eigene Home-Office-Paketgruppe mit Remote Desktop Manager und FileZilla
 - eigene Gaming-Paketgruppe mit Steam, Epic Games Launcher, GOG GALAXY, EA app, Battle.net und Ubisoft Connect
 - vorbereitete Game-Library-Verzeichnisse unter `G:\Games\`
@@ -29,14 +30,15 @@ Bereits umgesetzt sind unter anderem:
 - Windows- und Microsoft-Updates
 - Treiberlogik für NVIDIA und Intel
 - PowerShell-, Node.js-, Bun- und Go-Entwicklungsumgebung
+- Node.js wird über fnm auf die aktuelle LTS-Version geprüft; npm, pnpm und Yarn werden separat gegen die Registry geprüft und nur bei Versions-Drift aktualisiert
 - Git, GitHub CLI und GitHub Desktop
 - Visual Studio Code inklusive Extensions und Settings
 - Windows Terminal, Nushell und Starship
 - Windows-Terminal-`settings.json` als versioniertes Dotfile mit einmaliger Initialisierung und Symbolic-Link-Kompatibilitätsfallback
 - Neovim Nightly über Scoop `versions`
 - extern gepflegte Neovim-Konfiguration aus `jayzone91/nvim` als Submodule unter `external/nvim`
-- automatische Aktualisierung des Neovim-Submodules auf `main` bei jedem Bootstrap
-- automatische Stash/Pull/Restore-Behandlung für lokale Änderungen im Neovim-Submodule
+- Neovim prüft bei jedem Bootstrap `origin/main`; ein Fast-Forward-Pull erfolgt nur, wenn tatsächlich ein neuer Remote-Commit vorhanden ist
+- lokale Neovim-Änderungen werden nur dann gestasht und anschließend wiederhergestellt, wenn für ein tatsächliches Remote-Update ein Pull erforderlich ist
 - `tree-sitter-cli` über Scoop und Zig als C/C++-Toolchain für `nvim-treesitter`
 - moderne CLI-Werkzeuge: ripgrep, eza, fd, bat, fzf, jq und zoxide
 - Fish-artige PowerShell-Abbreviations über PSReadLine
@@ -48,10 +50,13 @@ Bereits umgesetzt sind unter anderem:
 - Microsoft Defender Dev Drive Performance Mode
 - automatische wöchentliche Wartung
 - Desktop-Benachrichtigungen
-- PSScriptAnalyzer-Codeprüfung
+- fingerprint-gesteuerte PSScriptAnalyzer-Codeprüfung: der Bootstrap verwendet einen schnellen Git-basierten Codezustand und startet den vollständigen Analyzer nur bei geändertem PowerShell-Code
 - `just` als einheitliche Bedienoberfläche für manuelle Projektaktionen
-- `just update` für den vollständigen manuellen Wartungs-/Setup-Lauf
-- `just check` für die rekursive PSScriptAnalyzer-Prüfung
+- `just update` für den vollständigen stillen Wartungs-/Setup-Lauf
+- `just update-warning` für ausschließlich Warnungen und Fehler
+- `just update-log` für vollständige Konsolenausgabe bei funktionalen Tests und Diagnose
+- `just update-performance` für einen reproduzierbaren stillen Lauf mit Laufzeitmessung
+- `just check` für einen bewusst vollständigen PSScriptAnalyzer-Lauf und die Aktualisierung des Codezustands
 - `just desktop-restart` für einen definierten Neustart von komorebi, whkd, masir, Zebar und Volume-OSD
 - `just ghub-backup` und `just ghub-restore` für bewusste G-HUB-Konfigurations-Snapshots
 - Bootstrap-Ausführung mit `ExecutionPolicy Bypass` ausschließlich auf Prozessebene
@@ -61,6 +66,8 @@ Bereits umgesetzt sind unter anderem:
 - Everything als schneller Datei-/Ordnerindex für die Raycast-Extension
 - PowerToys Command Palette und PowerToys Run deaktiviert; PowerToys bleibt für weiterhin verwendete Module installiert
 - Zebar als eigene interaktive Desktop-Bar
+- Zebar führt `npm ci` nur bei Dependency-Drift aus und baut das TypeScript-Bundle nur bei geändertem Build-Input oder fehlenden Build-Artefakten neu
+- Dev-Drive-Paketcache-Konfiguration für npm/pnpm/Yarn sowie Bun-/Go-Umgebungswerte wird über lokalen State nur bei geändertem Desired State erneut geschrieben
 - Zebar-Akkuanzeige für die Logitech G502 X Plus über eine lokale PowerShell-Bridge zur G-HUB-WebSocket-API, inklusive Wireless-/USB-Erkennung, Lade-/Vollgeladen-Status und Catppuccin-Farbzuständen
 - definierter Desktop-Neustart nach dem Bootstrap zur Wiederherstellung der korrekten Zebar-Z-Order
 - OneCommander als Explorer-Ersatz
@@ -74,7 +81,7 @@ Bereits umgesetzt sind unter anderem:
 - Fallback auf die allgemeine Windows-Standard-App-Seite
 - Bootstrap wartet bei interaktiver Standard-App-Konfiguration auf das Schließen der Windows-Einstellungen
 - persistenter Initialisierungsstatus unter `.generated/state/default-apps/`
-- Datei-Dotfiles werden standardmäßig als NTFS-Hardlinks eingebunden
+- Datei-Dotfiles werden standardmäßig als NTFS-Hardlinks eingebunden und bei wiederholten Läufen nur bei tatsächlichem Link-Drift neu erzeugt
 - Verzeichnis-Dotfiles werden als NTFS-Junctions eingebunden
 - Symbolic Links werden nur als dokumentierter Kompatibilitäts-Fallback verwendet; VS Code und Windows Terminal `settings.json` nutzen diese praktisch bestätigte Ausnahme
 - Catppuccin Mocha als gemeinsame Designsprache
@@ -136,11 +143,7 @@ cd ~/windows-setup
 just update
 ```
 
-`just update` startet:
-
-```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File ./bootstrap.ps1
-```
+`just update` startet den vollständigen Bootstrap bewusst **ohne normale Konsolenausgabe**. Derselbe parameterlose Bootstrap-Aufruf wird auch für die wöchentliche Scheduled-Task-Wartung verwendet.
 
 Der vollständige Bootstrap:
 
@@ -153,7 +156,44 @@ Der vollständige Bootstrap:
 - prüft Rebootbedarf,
 - prüft Repository-Status und ungepushte Commits,
 - richtet bzw. aktualisiert Scheduled Tasks,
-- führt die statische PowerShell-Prüfung aus.
+- vergleicht vor der eigentlichen Setup-Logik den Git-basierten PowerShell-Codezustand und führt den strikten PSScriptAnalyzer-Preflight nur bei geändertem Code aus.
+
+## Ausgabe- und Testmodi
+
+Für manuelle Diagnose stehen drei zusätzliche Recipes zur Verfügung:
+
+```powershell
+just update-warning
+just update-log
+just update-performance
+```
+
+Dabei gilt projektweit:
+
+- `just update` ist der normale stille Setup-/Wartungslauf.
+- `just update-warning` zeigt ausschließlich Warnungen und Fehler.
+- `just update-log` zeigt die vollständige Ausgabe einschließlich `OK`, `SKIP`, Paketstatus und Diagnoseinformationen. **Funktionale Bootstrap-Tests werden mit diesem Modus durchgeführt.**
+- `just update-performance` startet denselben stillen Bootstrap über `scripts/Measure-BootstrapPerformance.ps1` und gibt anschließend nur Laufzeit und `TotalSeconds` aus. **Performance-Tests werden ausschließlich mit diesem Modus durchgeführt.**
+- Der Scheduled Task startet `bootstrap.ps1` ohne Ausgabeparameter und bleibt damit im Hintergrund still.
+
+Die persistente Protokollierung ist davon getrennt. Eine zentrale Log-Funktion für Warnungen/Fehler mit Timestamp sowie eine automatische Log-Retention sind als nächste Qualitätsstufen vorgesehen.
+
+## Performance
+
+Ausgangsmessung vor der Optimierungsrunde auf dem vollständig eingerichteten System:
+
+```text
+03:41.67
+```
+
+Nach den bisher praktisch getesteten Optimierungen benötigt der stille Performance-Lauf:
+
+```text
+01:10.73
+70,73 Sekunden
+```
+
+Das entspricht einer Reduktion der gemessenen Laufzeit um rund **68,1 %**. Konsolenausgabe ist bei Performance-Messungen bewusst deaktiviert, damit Terminal-I/O den Vergleich nicht verfälscht.
 
 ## Projekt prüfen
 
@@ -161,11 +201,9 @@ Der vollständige Bootstrap:
 just check
 ```
 
-`just check` führt PSScriptAnalyzer rekursiv über das gesamte Repository aus:
+`just check` führt bewusst den vollständigen strikten PSScriptAnalyzer-Workflow über alle relevanten PowerShell-Dateien aus. Nach einem erfolgreichen Lauf wird der Git-basierte Codezustand unter `.generated/state/` aktualisiert.
 
-```powershell
-Invoke-ScriptAnalyzer -Path . -Recurse
-```
+Der Bootstrap vergleicht denselben Zustand. Ist der PowerShell-Code unverändert, wird der vollständige Analyzer-Lauf übersprungen. Ein separates `just check` ist deshalb nicht mehr vor jedem `just update` erforderlich; für Codeänderungen kann der Bootstrap den strikten Preflight selbst auslösen.
 
 ## Desktop-Umgebung neu starten
 
@@ -194,7 +232,7 @@ Falls `just` nicht verfügbar ist, kann der Bootstrap weiterhin direkt gestartet
 pwsh -NoProfile -ExecutionPolicy Bypass -File .\bootstrap.ps1
 ```
 
-Der direkte PowerShell-Aufruf bleibt der technische Fallback. Für normale manuelle Nutzung ist `just update` der bevorzugte Einstiegspunkt.
+Der direkte PowerShell-Aufruf bleibt der technische Fallback. Ohne Parameter ist auch dieser Aufruf still; `-Warning` zeigt nur Warnungen/Fehler und `-Log` die vollständige Ausgabe. Für normale manuelle Nutzung bleiben die `just`-Recipes der bevorzugte Einstiegspunkt.
 
 ---
 
@@ -262,15 +300,15 @@ per NTFS-Junction mit `external/nvim`.
 
 Das Neovim-Repository wird bewusst **extern** gepflegt. Neue Commits oder lokale Änderungen innerhalb dieses Submodules sollen nicht als normale Änderungen von `windows-setup` behandelt oder automatisch in dessen Git-History übernommen werden. Das Submodule verwendet deshalb `branch = main` und `ignore = all`.
 
-Bei jedem Bootstrap wird das Submodule synchronisiert und bei Bedarf initialisiert. Danach wird das externe Repository mit:
+Bei jedem Bootstrap wird das Submodule synchronisiert und bei Bedarf initialisiert. Anschließend ruft der Bootstrap `origin/main` per `git fetch` ab und vergleicht den lokalen HEAD mit dem Remote-Stand.
+
+Sind beide Commits identisch, bleibt das Submodule vollständig unangetastet. Nur wenn `origin/main` tatsächlich neuer ist und ein Fast-Forward möglich ist, erfolgt:
 
 ```powershell
 git pull --ff-only origin main
 ```
 
-aktualisiert.
-
-Enthält `external/nvim` lokale Änderungen, sichert der Bootstrap diese vor dem Pull automatisch per Git-Stash einschließlich untracked Dateien. Nach dem Pull wird der Stash wiederhergestellt. Scheitert die Wiederherstellung wegen eines Konflikts, wird der Zustand nicht automatisch verworfen. Der Stash bleibt erhalten und am Ende des Bootstrap werden die relevanten Stash- und Git-Informationen sowie Diagnosebefehle ausgegeben.
+Lokale Änderungen einschließlich untracked Dateien werden ebenfalls nur für ein tatsächlich erforderliches Update gestasht. Nach dem Pull wird der Stash wiederhergestellt. Scheitert die Wiederherstellung wegen eines Konflikts, wird der Zustand nicht automatisch verworfen. Der Stash bleibt erhalten und am Ende des Bootstrap werden die relevanten Stash- und Git-Informationen sowie Diagnosebefehle ausgegeben.
 
 ## Tree-sitter unter Windows
 

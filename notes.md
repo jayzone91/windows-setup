@@ -91,8 +91,4 @@ PC Name in config einstellen und automatisch setzen.
 
 ---
 
-Script bereinigung: Entfernen nicht genutzter Funktionen, verwaister Dateien.
-
----
-
-Refactor des kompletten Projekts. Alle Dateien >500 Zeilen sollen gesplittet werden. Für gesplittete Dateien wird ein neuer Unterordner angelegt, die neuen Dateien werden in einer index.ps1 zusammengefasst und dann nur die Index im bootstrap importiert (Bsp.: modules/Drivers oder modules/Windows).
+Refactor des kompletten Projekts. Alle Dateien >500 Zeilen sollen gesplittet werden. Für gesplittete Dateien wird ein neuer Unterordner angelegt, die neuen Dateien werden in einer index.ps1 zusammengefasst und dann nur die Index im bootstrap importiert (Bsp.: modules/Drivers oder modules/Windows). Keine neue Datei darf >500 Zeilen sein. Verwaiste Dateien finden und entfernen, verwaiste funktionen finden und entfernen. Wichtig: Justfile und andere scripts könnten die Funktionen nutzen, hier besonders aufmerksam prüfen, dass die Funktion wirklich in KEINER Datei genutzt wird.

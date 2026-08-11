@@ -128,7 +128,12 @@ Windows Desktop
 - [x] `just` als Base-Abhängigkeit über `Casey.Just`
 - [x] `just update` startet den vollständigen Bootstrap
 - [x] `just update` verwendet `-NoProfile -ExecutionPolicy Bypass`
-- [x] `just check` und Bootstrap verwenden denselben zentralen `Test-PowerShellCode`-Workflow; Dateien werden wegen eines PSScriptAnalyzer-`-Recurse`-Crashes einzeln mit `PSScriptAnalyzerSettings.psd1` geprüft
+- [x] `just update` ist der normale stille Lauf ohne reguläre Konsolenausgabe
+- [x] `just update-warning` zeigt ausschließlich Warnungen und Fehler; fehlerfreier Lauf auf dem aktuellen System praktisch ohne Ausgabe bestätigt
+- [x] `just update-log` zeigt die vollständige Bootstrap-Ausgabe und ist der verbindliche Modus für funktionale Bootstrap-Tests
+- [x] `just update-performance` führt über `scripts/Measure-BootstrapPerformance.ps1` denselben parameterlosen/stillen Bootstrap aus und misst reproduzierbar die Laufzeit
+- [x] Performance-Tests werden ohne reguläre Bootstrap-Ausgabe durchgeführt; funktionale Tests verwenden `-Log`
+- [x] `just check` und Bootstrap verwenden denselben zentralen `Test-PowerShellCode`-Workflow; `just check` führt den vollständigen strikten Analyzer aus und aktualisiert danach den Git-basierten Codezustand, während der Bootstrap den Analyzer nur bei geändertem PowerShell-Code ausführt
 - [x] interne PSScriptAnalyzer-Runtimefehler einzelner Dateien werden einmal in einem frischen `pwsh -NoProfile`-Prozess erneut geprüft
 - [x] `just desktop-restart` startet die Desktop-Umgebung kontrolliert neu
 - [x] `just ghub-backup` sichert die G-HUB-Konfiguration bewusst ins Repository
@@ -149,6 +154,7 @@ Projektweite Regel:
 - [x] VS Code `settings.json` verwendet einen Symbolic Link, da VS Code beim Speichern die Datei ersetzt und dadurch einen NTFS-Hardlink auftrennt
 - [x] Windows Terminal `settings.json` verwendet ebenfalls den Symbolic-Link-Kompatibilitätsfallback; ein Hardlink wurde beim Speichern über die Settings-GUI praktisch als ungeeignet bestätigt
 - [x] `Set-FileHardLink` zentral als Standard-Helper
+- [x] korrekte NTFS-Hardlinks vor Änderungen auf ihr tatsächliches Ziel prüfen und bei unverändertem Desired State nicht löschen oder neu erzeugen
 - [x] `Set-FileSymbolicLink` zentral als Kompatibilitäts-Helper
 - [x] `Set-DirectoryJunction` zentral als Helper
 
@@ -227,6 +233,9 @@ Begründung:
 ## Manueller Workflow
 
 - [x] `just update`
+- [x] `just update-warning`
+- [x] `just update-log`
+- [x] `just update-performance`
 - [x] `just check`
 - [x] `just desktop-restart`
 - [x] `just ghub-backup`
@@ -235,9 +244,17 @@ Begründung:
 - [x] Just als Base-Paket
 - [x] Just-Workflow im README dokumentiert
 
-## Noch offen
+## Ausgabe / Logging
 
-- [ ] zentrale Logging-Strategie für komplette Bootstrap-Läufe
+- [x] parameterloser Bootstrap läuft ohne reguläre Konsolenausgabe
+- [x] `-Warning` zeigt nur Warnungen und Fehler
+- [x] `-Log` zeigt die vollständige Konsolenausgabe
+- [x] Weekly-Maintenance-Task ruft den Bootstrap weiterhin ohne Ausgabeparameter auf
+- [x] funktionale Bootstrap-Tests verwenden `-Log`
+- [x] Performance-Tests verwenden den stillen `just update-performance`-Pfad
+- [ ] zentrale persistente Logging-Strategie für komplette Bootstrap-Läufe
+- [ ] Warnungen und Fehler mit Timestamp in Log-Dateien speichern
+- [ ] automatische Log-Retention bzw. Bereinigung, damit Logs nicht unbegrenzt wachsen
 - [ ] Log-Dateien mit Datum/Uhrzeit und Ergebnisstatus
 - [ ] optionaler `-Verbose`-Modus für detailliertere Diagnose
 - [ ] optionaler `-DryRun` / `-WhatIf`-Modus
@@ -250,9 +267,60 @@ Ein frisches Windows-System soll mit möglichst wenigen manuellen Schritten übe
 
 Nach der Erstinstallation sollen wiederkehrende manuelle Aktionen über kurze, dokumentierte `just`-Recipes möglich sein.
 
+## Bootstrap-Performance / Desired-State-Optimierung
+
+Ausgangsmessung auf dem vollständig eingerichteten System vor dieser Optimierungsrunde:
+
+```text
+03:41.67
+221,67 Sekunden
+```
+
+Praktisch bestätigter Stand nach der ersten Optimierungsrunde:
+
+```text
+01:10.73
+70,73 Sekunden
+```
+
+Damit wurde die gemessene Laufzeit bislang um rund **68,1 %** reduziert.
+
+Feste Architekturentscheidungen:
+
+- [x] teure Prüfungen und externe CLI-Schreiboperationen nur wiederholen, wenn Input oder Desired State dies erfordern
+- [x] lokaler Performance-/Initialisierungszustand darf unter `.generated/state/` liegen und wird nicht committed
+- [x] PowerShell-Codezustand basiert im Git-Repository auf HEAD plus tatsächlich geänderten/gestagten/untracked PowerShell-Dateien; saubere getrackte Dateien werden für den schnellen Preflight nicht vollständig neu gehasht
+- [x] unveränderter PowerShell-Code überspringt den vollständigen PSScriptAnalyzer-Lauf; geänderter Code muss weiterhin denselben strikten Check bestehen
+- [x] `just check` aktualisiert nach erfolgreichem vollständigem Analyzer-Lauf denselben Codezustand
+- [x] normale WinGet-Installationen und Updates werden pro Source gebündelt; verarbeitet werden ausschließlich in `config/packages.psd1` deklarierte Pakete
+- [x] `Update = $false` und versionsgepinnte Pakete werden nicht in den normalen Winget-Upgrade-Batch aufgenommen
+- [x] korrekte Hardlinks werden bei wiederholten Läufen nicht neu erzeugt
+- [x] Dev-Drive-Paketcache-Konfiguration wird nur bei geändertem Desired State erneut geschrieben
+- [x] Zebar führt `npm ci` nur bei Dependency-Drift bzw. fehlendem `node_modules` aus
+- [x] Zebar baut sein Bundle nur bei geändertem Build-Input bzw. fehlenden Build-Artefakten neu
+- [x] VS Code ermittelt die installierten Extensions pro Bootstrap nur einmal
+- [x] Node.js wird über fnm gegen die aktuelle LTS-Version geprüft
+- [x] npm, pnpm und Yarn werden gegen ihre aktuellen Registry-Versionen geprüft und bei unverändertem Stand nicht neu installiert
+- [ ] tatsächlichen Updatepfad von npm/pnpm/Yarn bei zukünftig vorhandener neuer Version praktisch bestätigen
+- [x] Bun-Updates bleiben im zentralen deklarativen Winget-Paketpfad
+- [x] Neovim ruft `origin/main` per Fetch ab und führt bei identischem lokalen/Remote-HEAD keinen Stash, Checkout oder Pull aus
+- [ ] optimierten Neovim-Pfad bei einem zukünftig tatsächlich vorhandenen neuen Remote-Commit einschließlich lokaler Änderungen erneut praktisch bestätigen
+- [x] Wiederherstellungspunkt wird vor der eigentlichen Setup-Logik erstellt; Erstellung auf dem aktuellen System praktisch bestätigt
+- [ ] Erkennung eines bereits frischen Wiederherstellungspunkts korrigieren: die aktuelle CIM-Abfrage meldet auf dem Testsystem `Zugriff verweigert`, wodurch derzeit erneut ein Restore Point angelegt wird
+
+Offene nächste Performance-/Desired-State-Runde:
+
+- [ ] Windhawk-Mod-Settings vor dem Schreiben gegen den tatsächlichen Runtime-Zustand vergleichen
+- [ ] Scheduled Tasks nur bei tatsächlichem Drift von Action, Trigger, Principal oder Settings neu registrieren
+- [ ] Windows-Shell-/Theme-/Power-/Wallpaper-Konfiguration nur bei Drift schreiben; Debloat bleibt bewusst bei jedem Bootstrap aktiv
+- [ ] Explorer-Neustart auf tatsächliche Shell-Änderungen begrenzen und den ursprünglichen Grund für den bisherigen unbedingten Restart dokumentieren
+- [ ] komorebi/whkd/Zebar gemeinsam nur neu starten, wenn sich ein relevanter Teil des Desktop-Stacks geändert hat; die funktionale Kopplung und Startreihenfolge bleiben erhalten
+- [ ] Zig-`cc`-/`c++`-Shims vor dem Neuschreiben auf den gewünschten Zustand prüfen
+- [ ] Browser-Policies nur bei tatsächlichem Drift neu schreiben
 ---
 
 # 5. Phase 2 – Paketverwaltung
+
 
 ## Gemeinsame Paketarchitektur
 
@@ -295,6 +363,8 @@ Für Scoop muss zusätzlich der gewünschte `Bucket` direkt am Paket angegeben w
 - [x] Microsoft-Store-Quelle unterstützen
 - [x] installierte Pakete erkennen
 - [x] Updates durchführen
+- [x] normale Winget-/MS-Store-Pakete pro Source gesammelt aktualisieren statt einen Updateprozess pro Paket zu starten
+- [x] ausschließlich deklarierte Pakete aktualisieren; kein unkontrolliertes `winget upgrade --all`
 - [x] Updates pro Paket deaktivieren
 - [x] feste Versionen definieren
 - [x] installierte Version gepinnter Pakete prüfen
@@ -479,6 +549,8 @@ Der NanaZip-Workflow ist absichtlich generisch aufgebaut und soll für weitere P
 - [x] reine NSIS-/Temp-Cleanup-Einträge nicht als relevanten Rebootbedarf melden
 - [x] globale PowerShell Execution Policy nicht verändern
 - [x] interne Bootstrap-Skripte über prozesslokale Execution Policy ausführbar halten
+- [x] vor der eigentlichen Setup-Logik einen Windows-Systemwiederherstellungspunkt anlegen; Erstellung auf dem aktuellen System praktisch bestätigt
+- [ ] vorhandenen frischen Restore Point zuverlässig erkennen und wiederverwenden; aktuelle CIM-Abfrage liefert auf dem Testsystem `Zugriff verweigert`
 - [ ] BitLocker-Status prüfen
 - [ ] Secure-Boot-Status in Abschlussprüfung anzeigen
 - [ ] Firewall-Status in Abschlussprüfung anzeigen
@@ -602,10 +674,11 @@ Offen / zu testen:
 ## Node.js
 
 - [x] fnm installieren
-- [x] Node LTS
-- [x] npm
-- [x] pnpm
-- [x] Yarn
+- [x] Node immer gegen die aktuelle LTS-Version prüfen und nur bei Versions-Drift über fnm aktualisieren
+- [x] npm separat gegen `npm@latest` prüfen und bei unverändertem Stand nicht neu installieren
+- [x] pnpm separat gegen `pnpm@latest` prüfen und bei unverändertem Stand nicht neu installieren
+- [x] Yarn separat gegen `yarn@latest` prüfen und bei unverändertem Stand nicht neu installieren
+- [ ] tatsächliche npm-/pnpm-/Yarn-Updateinstallation bei einer zukünftig vorhandenen neueren Version erneut praktisch bestätigen
 - [x] PATH / `PNPM_HOME`
 - [x] npm während desselben Bootstrap-Laufs verfügbar machen
 - [x] npm für Zebar-Build
@@ -646,15 +719,18 @@ Offen / zu testen:
 - [x] extern gepflegtes Repository `jayzone91/nvim` als Git-Submodule unter `external/nvim`
 - [x] Submodule auf Branch `main`
 - [x] `%LOCALAPPDATA%\nvim` per Junction auf `external/nvim`
-- [x] Submodule bei jedem Bootstrap synchronisieren und initialisieren
-- [x] externes Neovim-Repository bei jedem Bootstrap per `git pull --ff-only origin main` aktualisieren
+- [x] Submodule bei jedem Bootstrap synchronisieren und bei Bedarf initialisieren
+- [x] `origin/main` bei jedem Bootstrap per Fetch prüfen
+- [x] `git pull --ff-only origin main` nur ausführen, wenn der Remote-Commit tatsächlich neuer ist und ein Fast-Forward möglich ist
+- [x] bei identischem lokalen/Remote-HEAD ohne Stash, Checkout oder Pull fortfahren
 - [x] neue Commits des extern verwalteten Submodules durch `ignore = all` nicht als lokale Änderung von `windows-setup` behandeln
 - [x] Änderungen am extern verwalteten Neovim-Repository nicht automatisch in die Git-History von `windows-setup` übernehmen
 
 ### Lokale Änderungen im Neovim-Submodule
 
-- [x] lokale Änderungen einschließlich untracked Dateien vor dem Pull automatisch stagen
+- [x] lokale Änderungen einschließlich untracked Dateien nur dann vorübergehend sichern, wenn ein tatsächliches Remote-Update einen Pull erfordert
 - [x] Bootstrap-Stash mit eindeutiger Nachricht erzeugen
+- [ ] optimierten Updatepfad mit neuem Remote-Commit und vorhandenen lokalen Änderungen erneut praktisch bestätigen
 - [x] Stash nach erfolgreichem Pull per `stash pop --index` wiederherstellen
 - [x] fehlgeschlagene Stash-Wiederherstellung nicht automatisch zurücksetzen
 - [x] bei Stash-Konflikten den Stash erhalten
@@ -730,6 +806,7 @@ Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games 
 - [x] `D:\Cache\go\build`
 - [x] `D:\Cache\go\modules`
 - [x] Defender Dev Drive Performance Mode
+- [x] npm-/pnpm-/Yarn-Cacheziele und Bun-/Go-Umgebungswerte über lokalen State nur bei geändertem Desired State erneut konfigurieren
 
 ---
 
@@ -740,7 +817,7 @@ Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games 
 - [x] PSScriptAnalyzer
 - [x] BurntToast
 - [x] PSWindowsUpdate
-- [x] Codeprüfung am Ende des Bootstrap-Laufs
+- [x] fingerprint-gesteuerte strikte Codeprüfung vor der eigentlichen Setup-Logik; unveränderter Code überspringt PSScriptAnalyzer, geänderter Code muss den vollständigen Preflight bestehen
 - [x] Fehler, Warnungen und Hinweise getrennt zählen
 - [x] Analyzer-Probleme im OneCommander-Icon-Build bereinigt
 - [x] `just check` als manueller Einstiegspunkt für PSScriptAnalyzer
@@ -1786,7 +1863,8 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [x] OneCommander-Desired-State vor möglichem Neustart prüfen
 - [x] initialisiertes Raycast ohne erneuten Restore behandeln und aktuellen lokalen Export in den generischen Desired State sanitizen
 - [x] Desktop-Environment am Ende definiert neu starten
-- [x] PSScriptAnalyzer
+- [x] PSScriptAnalyzer nur bei geändertem PowerShell-Code über den gemeinsamen strikten Preflight ausführen
+- [x] parameterloser/stiller Bootstrap für die automatische Wartung; Konsolenausgabe wird für den Hintergrundtask nicht benötigt
 - [x] Rebootstatus
 - [x] Git-Status
 - [x] ungepushte Commits
@@ -1840,6 +1918,9 @@ Das README soll den **aktuellen produktiven Stand** erklären.
 - [x] Execution-Policy-Verhalten
 - [x] Just-Workflow
 - [x] `just update`
+- [x] `just update-warning`
+- [x] `just update-log`
+- [x] `just update-performance`
 - [x] `just check`
 - [x] `just desktop-restart`
 - [x] `just ghub-backup`
@@ -2082,13 +2163,15 @@ Wenn eine KI Änderungen an bestehenden Repository-Dateien für den Benutzer vor
 15. einmalige interaktive Schritte erst nach erfolgreichem Abschluss mit einem Marker unter `.generated/state/` als erledigt markieren.
 16. bei einem Fallback ohne direkte App-ID die allgemeine Standard-App-Seite öffnen, den Benutzer zur manuellen Suche auffordern und auf das Schließen von Settings warten.
 
-- [x] `bootstrap.ps1` führt vor der Setup-Logik einen strikten PowerShell-Code-Preflight aus und bricht bei Error, Warning oder Information ab
+- [x] `bootstrap.ps1` vergleicht vor der Setup-Logik den Git-basierten PowerShell-Codezustand; nur bei geändertem Code läuft der strikte Preflight, der weiterhin bei Error, Warning oder Information abbricht
+- [x] funktionale Bootstrap-Tests werden mit vollständiger Ausgabe über `just update-log` durchgeführt
+- [x] Performance-Messungen werden ohne reguläre Bootstrap-Ausgabe über `just update-performance` durchgeführt
 
 ## Nach einer Implementierung
 
 1. Funktion gezielt testen.
-2. `just update` bzw. den relevanten Bootstrap-Pfad testen.
-3. `just check` ausführen.
+2. funktionale Bootstrap-Änderungen mit `just update-log` bzw. dem relevanten spezifischen Einstiegspunkt testen; Performance ausschließlich mit `just update-performance` messen.
+3. Sicherstellen, dass für den finalen PowerShell-Codezustand ein erfolgreicher strikter Analyzer-Lauf vorliegt: entweder bewusst über `just check` oder automatisch durch den Bootstrap bei geändertem Codezustand.
 4. Git-Status prüfen.
 5. Roadmap aktualisieren.
 6. README aktualisieren, falls sich der produktive Stand oder Benutzer-Workflow geändert hat.
@@ -2117,7 +2200,7 @@ Ein Roadmap-Punkt darf nur `[x]` werden, wenn:
 - technisch notwendige Benutzerinteraktionen klar geführt, abgewartet und idempotent über lokalen Zustand behandelt werden,
 - keine unnötigen Anwendungsneustarts oder Prozessabbrüche bei unverändertem Zustand bestehen,
 - keine Secrets im Repository gelandet sind,
-- `just check` bzw. PSScriptAnalyzer keine neuen relevanten Probleme meldet,
+- für den finalen PowerShell-Codezustand ein erfolgreicher strikter PSScriptAnalyzer-Lauf vorliegt; dieser darf durch `just check` oder automatisch durch den fingerprint-gesteuerten Bootstrap-Preflight erfolgt sein,
 - Roadmap und bei Bedarf README aktualisiert wurden.
 
 Für neue manuelle Projektaktionen gilt zusätzlich:

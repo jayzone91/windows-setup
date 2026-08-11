@@ -88,8 +88,50 @@ function Install-VSCodeExtensions {
     Write-Host " VS Code Extensions"
     Write-Host "========================================"
 
+    $code = Get-VSCodeCommand
+
+    if (-not $code) {
+        throw "Visual Studio Code wurde nicht gefunden"
+    }
+
+    $installedExtensions = @(
+        & $code --list-extensions 2>$null |
+        ForEach-Object {
+            $_.Trim().ToLowerInvariant()
+        }
+    )
+
     foreach ($extension in $Extensions) {
-        Install-VSCodeExtension -ExtensionId $extension
+        $normalizedExtension = $extension.ToLowerInvariant()
+
+        Write-Host ""
+        Write-Host "[CHECK] VS Code Extension: $extension"
+
+        if ($installedExtensions -contains $normalizedExtension) {
+            Write-Host "[OK] Bereits installiert." `
+                -ForegroundColor Green
+
+            continue
+        }
+
+        Write-Host "[INSTALL] $extension" `
+            -ForegroundColor Cyan
+
+        & $code `
+            --install-extension $extension `
+            --force
+
+        if ($LASTEXITCODE -ne 0) {
+            throw (
+                "VS Code Extension konnte nicht installiert werden: " +
+                $extension
+            )
+        }
+
+        $installedExtensions += $normalizedExtension
+
+        Write-Host "[OK] $extension installiert." `
+            -ForegroundColor Green
     }
 }
 

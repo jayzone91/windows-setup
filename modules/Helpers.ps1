@@ -1,3 +1,140 @@
+function Get-TextFingerprint {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Text
+    )
+
+    $bytes = [Text.Encoding]::UTF8.GetBytes($Text)
+    $hash = [Security.Cryptography.SHA256]::HashData($bytes)
+
+    return [Convert]::ToHexString($hash).ToLowerInvariant()
+}
+
+
+function Get-FileSetFingerprint {
+    param(
+        [Parameter(Mandatory)]
+        [string] $RootPath,
+
+        [Parameter(Mandatory)]
+        [System.IO.FileInfo[]] $Files
+    )
+
+    $entries = foreach ($file in @($Files | Sort-Object FullName)) {
+        $relativePath = [System.IO.Path]::GetRelativePath(
+            $RootPath,
+            $file.FullName
+        )
+
+        $hash = (
+            Get-FileHash `
+                -LiteralPath $file.FullName `
+                -Algorithm SHA256
+        ).Hash.ToLowerInvariant()
+
+        "{0}|{1}" -f $relativePath.Replace("\", "/"), $hash
+    }
+
+    return Get-TextFingerprint -Text ($entries -join "`n")
+}
+
+
+function Test-FileHardLinkTarget {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        "PSAvoidUsingPositionalParameters",
+        "",
+        Justification = "fsutil ist ein natives Windows-Programm und verwendet positionsbasierte Argumente."
+    )]
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path,
+
+        [Parameter(Mandatory)]
+        [string] $Target
+    )
+
+    $item = Get-Item `
+        -LiteralPath $Path `
+        -Force `
+        -ErrorAction SilentlyContinue
+
+    if (-not $item -or $item.LinkType -ne "HardLink") {
+        return $false
+    }
+
+    $pathFull = [System.IO.Path]::GetFullPath($Path)
+    $targetFull = [System.IO.Path]::GetFullPath($Target)
+
+    foreach ($reportedTarget in @($item.Target)) {
+        if ([string]::IsNullOrWhiteSpace([string]$reportedTarget)) {
+            continue
+        }
+
+        try {
+            $reportedFull = [System.IO.Path]::GetFullPath(
+                [string]$reportedTarget
+            )
+
+            if ($reportedFull -eq $targetFull) {
+                return $true
+            }
+        }
+        catch {
+            Write-Verbose (
+                "Hardlink-Ziel konnte nicht direkt normalisiert werden; " +
+                "verwende fsutil-Fallback. Fehler: {0}" `
+                    -f $_.Exception.Message
+            )
+        }
+    }
+
+    $fsutil = Get-Command `
+        -Name "fsutil.exe" `
+        -ErrorAction SilentlyContinue
+
+    if (-not $fsutil) {
+        return $false
+    }
+
+    $hardLinks = @(
+        & $fsutil.Source hardlink list $pathFull 2>$null
+    )
+
+    if ($LASTEXITCODE -ne 0) {
+        return $false
+    }
+
+    $driveRoot = [System.IO.Path]::GetPathRoot($pathFull)
+
+    foreach ($hardLink in $hardLinks) {
+        $candidate = ([string]$hardLink).Trim()
+
+        if ([string]::IsNullOrWhiteSpace($candidate)) {
+            continue
+        }
+
+        if ($candidate.StartsWith("\")) {
+            $candidate = Join-Path `
+                $driveRoot `
+                $candidate.TrimStart("\")
+        }
+
+        try {
+            if (
+                [System.IO.Path]::GetFullPath($candidate) -eq
+                $targetFull
+            ) {
+                return $true
+            }
+        }
+        catch {
+            continue
+        }
+    }
+
+    return $false
+}
+
 function Update-SessionPath {
 
     Write-Host ""
@@ -83,11 +220,24 @@ function Set-FileHardLink {
             throw "Hardlink-Zielpfad ist ein Verzeichnis: $Path"
         }
 
-        if (
-            $existingItem.LinkType -eq "SymbolicLink" -or
-            $existingItem.LinkType -eq "HardLink"
-        ) {
-            Write-Host "[REMOVE] Bestehende Verknüpfung: $Path"
+        if ($existingItem.LinkType -eq "HardLink") {
+            if (
+                Test-FileHardLinkTarget `
+                    -Path $Path `
+                    -Target $Target
+            ) {
+                Write-Host "[OK] Hardlink bereits korrekt: $Path"
+                return
+            }
+
+            Write-Host "[REMOVE] Bestehender Hardlink mit falschem Ziel: $Path"
+
+            Remove-Item `
+                -LiteralPath $Path `
+                -Force
+        }
+        elseif ($existingItem.LinkType -eq "SymbolicLink") {
+            Write-Host "[REMOVE] Bestehender Symlink: $Path"
 
             Remove-Item `
                 -LiteralPath $Path `

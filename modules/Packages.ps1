@@ -14,6 +14,25 @@ function Test-WingetPackage {
 }
 
 
+$script:WingetInstallQueue = @{
+    winget  = [Collections.Generic.List[string]]::new()
+    msstore = [Collections.Generic.List[string]]::new()
+}
+
+$script:WingetUpgradeQueue = @{
+    winget  = [Collections.Generic.List[string]]::new()
+    msstore = [Collections.Generic.List[string]]::new()
+}
+
+
+function Reset-WingetPackageQueues {
+    foreach ($source in @("winget", "msstore")) {
+        $script:WingetInstallQueue[$source].Clear()
+        $script:WingetUpgradeQueue[$source].Clear()
+    }
+}
+
+
 function Install-WingetPackage {
     param(
         [Parameter(Mandatory)]
@@ -50,45 +69,55 @@ function Install-WingetPackage {
     $isInstalled = ($LASTEXITCODE -eq 0)
 
     if (-not $isInstalled) {
-        Write-Host "[INSTALL] $Name" -ForegroundColor Cyan
+        if ($InstallLocation -or $Version) {
+            Write-Host "[INSTALL] $Name" `
+                -ForegroundColor Cyan
 
-        $installArguments = @(
-            "install"
-            "--id", $Id
-            "--exact"
-            "--source", $Source
-            "--accept-package-agreements"
-            "--accept-source-agreements"
-            "--disable-interactivity"
-        )
+            $installArguments = @(
+                "install"
+                "--id", $Id
+                "--exact"
+                "--source", $Source
+                "--accept-package-agreements"
+                "--accept-source-agreements"
+                "--disable-interactivity"
+            )
 
-        if ($InstallLocation) {
-            $expandedInstallLocation = (
-                [Environment]::ExpandEnvironmentVariables(
-                    $InstallLocation
+            if ($InstallLocation) {
+                $expandedInstallLocation = (
+                    [Environment]::ExpandEnvironmentVariables(
+                        $InstallLocation
+                    )
                 )
-            )
 
-            $installArguments += @(
-                "--location", $expandedInstallLocation
-            )
+                $installArguments += @(
+                    "--location", $expandedInstallLocation
+                )
+            }
+
+            if ($Version) {
+                $installArguments += @(
+                    "--version", $Version
+                )
+            }
+
+            & winget @installArguments
+
+            if ($LASTEXITCODE -ne 0) {
+                throw "Installation fehlgeschlagen: $Name"
+            }
+
+            Write-Host "[OK] $Name installiert." `
+                -ForegroundColor Green
+
+            return
         }
 
-        if ($Version) {
-            $installArguments += @(
-                "--version", $Version
-            )
+        if (-not $script:WingetInstallQueue[$Source].Contains($Id)) {
+            $script:WingetInstallQueue[$Source].Add($Id)
         }
 
-        & winget @installArguments
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Installation fehlgeschlagen: $Name"
-        }
-
-        Write-Host "[OK] $Name installiert." `
-            -ForegroundColor Green
-
+        Write-Host "[QUEUE] Installation: $Name"
         return
     }
 
@@ -149,46 +178,122 @@ function Install-WingetPackage {
         return
     }
 
-    Write-Host "[UPDATE] Prüfe auf Updates..."
+    if (-not $script:WingetUpgradeQueue[$Source].Contains($Id)) {
+        $script:WingetUpgradeQueue[$Source].Add($Id)
+    }
 
-    $upgradeArguments = @(
-        "upgrade"
-        "--id", $Id
-        "--exact"
-        "--source", $Source
-        "--accept-package-agreements"
-        "--accept-source-agreements"
-        "--disable-interactivity"
-    )
+    Write-Host "[QUEUE] Update-Prüfung: $Name"
+}
 
-    $upgradeOutput = & winget @upgradeArguments 2>&1
-    $upgradeExitCode = $LASTEXITCODE
 
-    switch ($upgradeExitCode) {
-        0 {
-            Write-Host "[UPDATED] $Name wurde aktualisiert." `
-                -ForegroundColor Green
+function Invoke-WingetQueuedChanges {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        "PSAvoidUsingPositionalParameters",
+        "",
+        Justification = "WinGet unterstützt mehrere Paket-Queries positionsbasiert in einem gemeinsamen Install-/Upgrade-Aufruf."
+    )]
+    param()
+
+    Write-Host ""
+    Write-Host "========================================"
+    Write-Host " Winget Batch"
+    Write-Host "========================================"
+
+    foreach ($source in @("winget", "msstore")) {
+        $installIds = @(
+            $script:WingetInstallQueue[$source] |
+            Select-Object -Unique
+        )
+
+        if ($installIds.Count -eq 0) {
+            continue
         }
 
-        -1978335189 {
-            Write-Host "[CURRENT] $Name ist bereits aktuell." `
-                -ForegroundColor Green
-        }
+        Write-Host (
+            "[INSTALL] {0} verwaltete Pakete über Source '{1}'." `
+                -f $installIds.Count, $source
+        ) -ForegroundColor Cyan
 
-        default {
-            Write-Warning (
-                "Winget-Update für '$Name' fehlgeschlagen. " +
-                "ExitCode: $upgradeExitCode"
+        $installArguments = @("install") +
+            $installIds +
+            @(
+                "--exact"
+                "--source", $source
+                "--accept-package-agreements"
+                "--accept-source-agreements"
+                "--disable-interactivity"
             )
 
-            $upgradeOutput | ForEach-Object {
-                Write-Host $_
+        & winget @installArguments
+
+        if ($LASTEXITCODE -ne 0) {
+            throw (
+                "Gebündelte Winget-Installation für Source '{0}' " +
+                "ist fehlgeschlagen. ExitCode: {1}" `
+                    -f $source, $LASTEXITCODE
+            )
+        }
+
+        Write-Host "[OK] Winget-Installationsbatch abgeschlossen." `
+            -ForegroundColor Green
+    }
+
+    foreach ($source in @("winget", "msstore")) {
+        $upgradeIds = @(
+            $script:WingetUpgradeQueue[$source] |
+            Select-Object -Unique
+        )
+
+        if ($upgradeIds.Count -eq 0) {
+            continue
+        }
+
+        Write-Host (
+            "[UPDATE] Prüfe {0} verwaltete Pakete über Source '{1}'." `
+                -f $upgradeIds.Count, $source
+        )
+
+        $upgradeArguments = @("upgrade") +
+            $upgradeIds +
+            @(
+                "--exact"
+                "--source", $source
+                "--accept-package-agreements"
+                "--accept-source-agreements"
+                "--disable-interactivity"
+            )
+
+        $upgradeOutput = @(
+            & winget @upgradeArguments 2>&1
+        )
+
+        $upgradeExitCode = $LASTEXITCODE
+
+        switch ($upgradeExitCode) {
+            0 {
+                Write-Host "[OK] Winget-Updatebatch abgeschlossen." `
+                    -ForegroundColor Green
+            }
+
+            -1978335189 {
+                Write-Host "[CURRENT] Verwaltete Winget-Pakete sind aktuell." `
+                    -ForegroundColor Green
+            }
+
+            default {
+                Write-Warning (
+                    "Gebündeltes Winget-Upgrade für Source '{0}' " +
+                    "meldet ExitCode {1}." `
+                        -f $source, $upgradeExitCode
+                )
+
+                $upgradeOutput |
+                ForEach-Object {
+                    Write-Host $_
+                }
             }
         }
     }
-
-    Write-Host "[OK] Update-Prüfung abgeschlossen." `
-        -ForegroundColor Green
 }
 
 
@@ -1691,6 +1796,8 @@ function Initialize-PackageManagers {
         [Parameter(Mandatory)]
         [hashtable]$Packages
     )
+
+    Reset-WingetPackageQueues
 
     Install-Chocolatey
     Install-Scoop

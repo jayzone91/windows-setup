@@ -88,50 +88,178 @@ function Set-ZebarConfiguration {
         $zebarProjectDirectory `
         "package.json"
 
-    if (-not (Test-Path $packageJson)) {
-        throw "Zebar package.json wurde nicht gefunden: $packageJson"
+    $packageLock = Join-Path `
+        $zebarProjectDirectory `
+        "package-lock.json"
+
+    foreach ($requiredFile in @(
+            $packageJson,
+            $packageLock
+        )) {
+        if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) {
+            throw "Erforderliche Zebar-Datei wurde nicht gefunden: $requiredFile"
+        }
     }
 
-    $npmPath =
-    Get-NpmExecutable
+    $npmPath = Get-NpmExecutable
 
     Write-Host (
         "[FOUND] npm: {0}" `
             -f $npmPath
     )
 
+    $stateDirectory = Join-Path `
+        $RepositoryPath `
+        ".generated\state\zebar"
 
-    Write-Host ""
-    Write-Host "[INFO] Installiere Zebar-Abhängigkeiten."
+    if (-not (Test-Path -LiteralPath $stateDirectory)) {
+        New-Item `
+            -ItemType Directory `
+            -Path $stateDirectory `
+            -Force |
+        Out-Null
+    }
+
+    $dependencyFiles = @(
+        Get-Item -LiteralPath $packageJson
+        Get-Item -LiteralPath $packageLock
+    )
+
+    $dependencyFingerprint = Get-FileSetFingerprint `
+        -RootPath $zebarProjectDirectory `
+        -Files $dependencyFiles
+
+    $dependencyStatePath = Join-Path `
+        $stateDirectory `
+        "dependencies.sha256"
+
+    $storedDependencyFingerprint = $null
+
+    if (Test-Path -LiteralPath $dependencyStatePath -PathType Leaf) {
+        $storedDependencyFingerprint = (
+            Get-Content `
+                -LiteralPath $dependencyStatePath `
+                -Raw
+        ).Trim()
+    }
+
+    $nodeModulesPath = Join-Path `
+        $zebarProjectDirectory `
+        "node_modules"
+
+    $dependenciesChanged = (
+        -not (Test-Path -LiteralPath $nodeModulesPath -PathType Container) -or
+        $storedDependencyFingerprint -ne $dependencyFingerprint
+    )
 
     Push-Location $zebarProjectDirectory
 
     try {
-        & $npmPath ci
+        if ($dependenciesChanged) {
+            Write-Host "[INFO] Installiere geänderte Zebar-Abhängigkeiten."
 
-        if ($LASTEXITCODE -ne 0) {
-            throw (
-                "npm ci für Zebar ist fehlgeschlagen. " +
-                "Exit-Code: $LASTEXITCODE"
-            )
+            & $npmPath ci
+
+            if ($LASTEXITCODE -ne 0) {
+                throw (
+                    "npm ci für Zebar ist fehlgeschlagen. " +
+                    "Exit-Code: $LASTEXITCODE"
+                )
+            }
+
+            Set-Content `
+                -LiteralPath $dependencyStatePath `
+                -Value $dependencyFingerprint `
+                -Encoding utf8NoBOM `
+                -NoNewline
+
+            Write-Host "[OK] Zebar-Abhängigkeiten installiert." `
+                -ForegroundColor Green
+        }
+        else {
+            Write-Host "[SKIP] Zebar-Abhängigkeiten unverändert."
         }
 
-        Write-Host "[OK] Zebar-Abhängigkeiten installiert." `
-            -ForegroundColor Green
+        $buildInputFiles = @(
+            Get-ChildItem `
+                -LiteralPath $zebarProjectDirectory `
+                -File `
+                -ErrorAction Stop |
+            Where-Object {
+                $_.Name -notin @(
+                    ".gitignore"
+                )
+            }
 
-        Write-Host "[INFO] Erstelle Zebar-Bundle."
+            Get-ChildItem `
+                -LiteralPath (Join-Path $zebarProjectDirectory "src") `
+                -Recurse `
+                -File `
+                -ErrorAction Stop
+        )
 
-        & $npmPath run build
+        $buildFingerprint = Get-FileSetFingerprint `
+            -RootPath $zebarProjectDirectory `
+            -Files $buildInputFiles
 
-        if ($LASTEXITCODE -ne 0) {
-            throw (
-                "Zebar-Build ist fehlgeschlagen. " +
-                "Exit-Code: $LASTEXITCODE"
-            )
+        $buildStatePath = Join-Path `
+            $stateDirectory `
+            "build.sha256"
+
+        $storedBuildFingerprint = $null
+
+        if (Test-Path -LiteralPath $buildStatePath -PathType Leaf) {
+            $storedBuildFingerprint = (
+                Get-Content `
+                    -LiteralPath $buildStatePath `
+                    -Raw
+            ).Trim()
         }
 
-        Write-Host "[OK] Zebar-Bundle erstellt." `
-            -ForegroundColor Green
+        $distDirectory = Join-Path `
+            $zebarProjectDirectory `
+            "dist"
+
+        $buildOutputExists = (
+            (Test-Path -LiteralPath $distDirectory -PathType Container) -and
+            @(
+                Get-ChildItem `
+                    -LiteralPath $distDirectory `
+                    -File `
+                    -ErrorAction SilentlyContinue
+            ).Count -gt 0
+        )
+
+        $buildChanged = (
+            $dependenciesChanged -or
+            -not $buildOutputExists -or
+            $storedBuildFingerprint -ne $buildFingerprint
+        )
+
+        if ($buildChanged) {
+            Write-Host "[INFO] Erstelle geändertes Zebar-Bundle."
+
+            & $npmPath run build
+
+            if ($LASTEXITCODE -ne 0) {
+                throw (
+                    "Zebar-Build ist fehlgeschlagen. " +
+                    "Exit-Code: $LASTEXITCODE"
+                )
+            }
+
+            Set-Content `
+                -LiteralPath $buildStatePath `
+                -Value $buildFingerprint `
+                -Encoding utf8NoBOM `
+                -NoNewline
+
+            Write-Host "[OK] Zebar-Bundle erstellt." `
+                -ForegroundColor Green
+        }
+        else {
+            Write-Host "[SKIP] Zebar-Bundle unverändert."
+        }
     }
     finally {
         Pop-Location

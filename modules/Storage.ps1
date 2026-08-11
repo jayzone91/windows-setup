@@ -63,7 +63,10 @@ function Initialize-DevelopmentStorage {
 
     param(
         [Parameter(Mandatory)]
-        $Config
+        $Config,
+
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
     )
 
     Write-Host ""
@@ -89,7 +92,8 @@ function Initialize-DevelopmentStorage {
 
 
         Set-DevDriveConfiguration `
-            -Config $Config
+            -Config $Config `
+            -RepositoryPath $RepositoryPath
 
         return
     }
@@ -289,14 +293,18 @@ function Initialize-DevelopmentStorage {
 
 
     Set-DevDriveConfiguration `
-        -Config $Config
+        -Config $Config `
+        -RepositoryPath $RepositoryPath
 }
 
 function Set-DevDriveConfiguration {
 
     param(
         [Parameter(Mandatory)]
-        $Config
+        $Config,
+
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
     )
 
 
@@ -339,7 +347,8 @@ function Set-DevDriveConfiguration {
 
 
     Set-DevDrivePackageCaches `
-        -Paths $Config.Paths
+        -Paths $Config.Paths `
+        -RepositoryPath $RepositoryPath
 }
 
 
@@ -419,60 +428,55 @@ function Set-DevDrivePackageCaches {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
         "PSAvoidUsingPositionalParameters",
         "",
-        Justification = "npm und yarn sind externe CLI-Programme und verwenden Positionsargumente als Teil ihrer regulären CLI-Syntax."
+        Justification = "npm, pnpm und yarn sind externe CLI-Programme und verwenden Positionsargumente als Teil ihrer regulären CLI-Syntax."
     )]
     param(
         [Parameter(Mandatory)]
-        $Paths
-    )
+        $Paths,
 
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
+    )
 
     Write-Host ""
     Write-Host "[CONFIG] Dev Drive Package Caches"
 
-
-    #
-    # npm
-    #
-
-    if (Get-Command npm -ErrorAction SilentlyContinue) {
-
-        npm config set `
-            cache `
-            $Paths.NpmCache `
-            --global
-
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "npm Cache konnte nicht konfiguriert werden."
-        }
-
-
-        Write-Host "[SET] npm cache = $($Paths.NpmCache)"
+    $available = [ordered]@{
+        npm  = [bool](Get-Command npm -ErrorAction SilentlyContinue)
+        pnpm = [bool](Get-Command pnpm -ErrorAction SilentlyContinue)
+        yarn = [bool](Get-Command yarn -ErrorAction SilentlyContinue)
+        bun  = [bool](Get-Command bun -ErrorAction SilentlyContinue)
+        go   = [bool](Get-Command go -ErrorAction SilentlyContinue)
     }
 
+    $pnpmHome = Join-Path $env:LOCALAPPDATA "pnpm"
+    $pnpmBin = Join-Path $pnpmHome "bin"
 
-    #
-    # pnpm
-    #
+    $stateInput = @(
+        "npm=$($Paths.NpmCache)|$($available.npm)"
+        "pnpm=$($Paths.PnpmStore)|$($available.pnpm)"
+        "yarn=$($Paths.YarnCache)|$($available.yarn)"
+        "bun=$($Paths.BunCache)|$($available.bun)"
+        "go-build=$($Paths.GoBuildCache)|$($available.go)"
+        "go-mod=$($Paths.GoModCache)|$($available.go)"
+        "pnpm-home=$pnpmHome"
+    ) -join "`n"
 
-    if (Get-Command pnpm -ErrorAction SilentlyContinue) {
+    $fingerprint = Get-TextFingerprint -Text $stateInput
+    $statePath = Join-Path `
+        $RepositoryPath `
+        ".generated\state\dev-drive-package-caches.sha256"
 
-        #
-        # pnpm Home und globales Bin-Verzeichnis
-        #
+    $storedFingerprint = $null
 
-        $pnpmHome = Join-Path `
-            $env:LOCALAPPDATA `
-            "pnpm"
+    if (Test-Path -LiteralPath $statePath -PathType Leaf) {
+        $storedFingerprint = (
+            Get-Content -LiteralPath $statePath -Raw
+        ).Trim()
+    }
 
-        $pnpmBin = Join-Path `
-            $pnpmHome `
-            "bin"
-
-
-        if (-not (Test-Path $pnpmBin)) {
-
+    if ($available.pnpm) {
+        if (-not (Test-Path -LiteralPath $pnpmBin)) {
             New-Item `
                 -Path $pnpmBin `
                 -ItemType Directory `
@@ -480,88 +484,91 @@ function Set-DevDrivePackageCaches {
             Out-Null
         }
 
-
         Set-UserEnvironmentVariable `
             -Name "PNPM_HOME" `
             -Value $pnpmHome
 
-
-        Add-UserPathEntry `
-            -Path $pnpmBin
-
-
-        #
-        # pnpm Package Store auf Dev Drive
-        #
-
-        pnpm config set `
-            store-dir `
-            $Paths.PnpmStore `
-            --global
-
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "pnpm Store konnte nicht konfiguriert werden."
-        }
-
-
-        Write-Host "[SET] pnpm store = $($Paths.PnpmStore)"
+        Add-UserPathEntry -Path $pnpmBin
     }
 
-
-    #
-    # Yarn Classic
-    #
-
-    if (Get-Command yarn -ErrorAction SilentlyContinue) {
-
-        yarn config set `
-            cache-folder `
-            $Paths.YarnCache
-
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Yarn Cache konnte nicht konfiguriert werden."
-        }
-
-
-        Write-Host "[SET] Yarn cache = $($Paths.YarnCache)"
-    }
-
-
-    #
-    # Bun
-    #
-
-    if (Get-Command bun -ErrorAction SilentlyContinue) {
-
+    if ($available.bun) {
         Set-UserEnvironmentVariable `
             -Name "BUN_INSTALL_CACHE_DIR" `
             -Value $Paths.BunCache
     }
 
-
-    #
-    # Go
-    #
-
-    if (Get-Command go -ErrorAction SilentlyContinue) {
-
+    if ($available.go) {
         Set-UserEnvironmentVariable `
             -Name "GOCACHE" `
             -Value $Paths.GoBuildCache
-
 
         Set-UserEnvironmentVariable `
             -Name "GOMODCACHE" `
             -Value $Paths.GoModCache
     }
 
+    if ($storedFingerprint -eq $fingerprint) {
+        Write-Host "[SKIP] Package-Cache-Konfiguration unverändert."
+        return
+    }
+
+    if ($available.npm) {
+        npm config set `
+            cache `
+            $Paths.NpmCache `
+            --global
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "npm Cache konnte nicht konfiguriert werden."
+        }
+
+        Write-Host "[SET] npm cache = $($Paths.NpmCache)"
+    }
+
+    if ($available.pnpm) {
+        pnpm config set `
+            store-dir `
+            $Paths.PnpmStore `
+            --global
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "pnpm Store konnte nicht konfiguriert werden."
+        }
+
+        Write-Host "[SET] pnpm store = $($Paths.PnpmStore)"
+    }
+
+    if ($available.yarn) {
+        yarn config set `
+            cache-folder `
+            $Paths.YarnCache
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Yarn Cache konnte nicht konfiguriert werden."
+        }
+
+        Write-Host "[SET] Yarn cache = $($Paths.YarnCache)"
+    }
+
+    $stateDirectory = Split-Path -Path $statePath -Parent
+
+    if (-not (Test-Path -LiteralPath $stateDirectory)) {
+        New-Item `
+            -ItemType Directory `
+            -Path $stateDirectory `
+            -Force |
+        Out-Null
+    }
+
+    Set-Content `
+        -LiteralPath $statePath `
+        -Value $fingerprint `
+        -Encoding utf8NoBOM `
+        -NoNewline
 
     Write-Host "[OK] Package Caches konfiguriert." `
         -ForegroundColor Green
 }
-
 
 function Set-UserEnvironmentVariable {
 
@@ -574,24 +581,29 @@ function Set-UserEnvironmentVariable {
     )
 
 
-    [Environment]::SetEnvironmentVariable(
+    $currentUserValue = [Environment]::GetEnvironmentVariable(
         $Name,
-        $Value,
         "User"
     )
 
+    if ($currentUserValue -ne $Value) {
+        [Environment]::SetEnvironmentVariable(
+            $Name,
+            $Value,
+            "User"
+        )
+
+        Write-Host (
+            "[SET] {0} = {1}" `
+                -f `
+                $Name,
+            $Value
+        )
+    }
 
     Set-Item `
         -Path "Env:$Name" `
         -Value $Value
-
-
-    Write-Host (
-        "[SET] {0} = {1}" `
-            -f `
-            $Name,
-        $Value
-    )
 }
 
 function Add-UserPathEntry {

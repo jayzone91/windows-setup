@@ -216,6 +216,11 @@ function Set-NeovimCompilerEnvironment {
 }
 
 function Update-NeovimConfiguration {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        "PSAvoidUsingPositionalParameters",
+        "",
+        Justification = "Git ist ein natives CLI-Programm; die verwendeten Argumente folgen der regulären Git-Syntax."
+    )]
     param(
         [Parameter(Mandatory)]
         [string] $RepositoryPath
@@ -288,6 +293,80 @@ function Update-NeovimConfiguration {
         ) -join "`n"
     ).Trim()
 
+    Write-Host "[CHECK] Neovim origin/main"
+
+    $gitFetchOutput = @(
+        & git -C $submodulePath fetch origin main 2>&1
+    )
+
+    if ($LASTEXITCODE -ne 0) {
+        if ($gitFetchOutput.Count -gt 0) {
+            Write-Warning (
+                "Neovim-Fetch fehlgeschlagen: {0}" -f
+                ($gitFetchOutput -join " ")
+            )
+        }
+
+        throw "Neovim-Submodule konnte origin/main nicht abrufen."
+    }
+
+    if ($script:WindowsSetupOutputMode -eq "Log") {
+        foreach ($line in $gitFetchOutput) {
+            Write-Host $line
+        }
+    }
+
+    $remoteHead = (
+        @(
+            & git -C $submodulePath rev-parse origin/main
+        ) -join "`n"
+    ).Trim()
+
+    if ($LASTEXITCODE -ne 0 -or -not $remoteHead) {
+        throw "Neovim origin/main konnte nicht ermittelt werden."
+    }
+
+    if ($originalHead -eq $remoteHead) {
+        Write-Host (
+            "[CURRENT] Neovim ist bereits aktuell: {0}" -f
+            $originalHead.Substring(0, [Math]::Min(12, $originalHead.Length))
+        ) -ForegroundColor Green
+
+        $nvimConfigPath = Join-Path $env:LOCALAPPDATA "nvim"
+
+        Set-DirectoryJunction `
+            -Path $nvimConfigPath `
+            -Target $submodulePath
+
+        return
+    }
+
+    & git -C $submodulePath `
+        merge-base `
+        --is-ancestor `
+        $originalHead `
+        $remoteHead
+
+    $ancestorExitCode = $LASTEXITCODE
+
+    if ($ancestorExitCode -eq 1) {
+        throw (
+            "Neovim kann nicht per Fast-Forward aktualisiert werden. " +
+            "Lokaler HEAD und origin/main sind divergiert oder der lokale " +
+            "HEAD ist neuer. Automatisches Zurücksetzen wird verweigert."
+        )
+    }
+
+    if ($ancestorExitCode -ne 0) {
+        throw "Neovim-Fast-Forward-Prüfung ist fehlgeschlagen."
+    }
+
+    Write-Host (
+        "[UPDATE] Neovim: {0} -> {1}" -f
+        $originalHead.Substring(0, [Math]::Min(12, $originalHead.Length)),
+        $remoteHead.Substring(0, [Math]::Min(12, $remoteHead.Length))
+    ) -ForegroundColor Cyan
+
     $originalStatus = @(
         & git -C $submodulePath `
             status `
@@ -312,7 +391,7 @@ function Update-NeovimConfiguration {
 
         Write-Host (
             "[STASH] Neovim enthält lokale Änderungen. " +
-            "Sie werden vor dem Update gesichert."
+            "Sie werden nur für das anstehende Update gesichert."
         ) -ForegroundColor Yellow
 
         & git -C $submodulePath `
@@ -346,12 +425,6 @@ function Update-NeovimConfiguration {
     $updateError = $null
 
     try {
-        & git -C $submodulePath fetch origin main
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Neovim-Submodule konnte origin/main nicht abrufen."
-        }
-
         & git -C $submodulePath `
             show-ref `
             --verify `
