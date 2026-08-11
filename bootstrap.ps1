@@ -123,7 +123,8 @@ $Browsers = Import-PowerShellDataFile "$Root\config\browsers.psd1"
 $PowerShell = Import-PowerShellDataFile "$Root\config\powershell.psd1"
 $PowerToys = Import-PowerShellDataFile "$Root\config\powertoys.psd1"
 $Raycast = Import-PowerShellDataFile "$Root\config\raycast.psd1"
-$Theme = Import-PowerShellDataFile "$Root\config\theme.psd1"
+$Theme = Import-PowerShellDataFile "$Root\config\theme.psd1"
+$Terminal = Import-PowerShellDataFile "$Root\config\terminal.psd1"
 $Windhawk = Import-PowerShellDataFile "$Root\config\windhawk.psd1"
 $Windows = Import-PowerShellDataFile "$Root\config\windows.psd1"
 $Debloat = Import-PowerShellDataFile "$Root\config\debloat.psd1"
@@ -238,8 +239,9 @@ Set-NeovimCompilerEnvironment
 
 Test-NeovimRequirements
 Set-WindowsTerminalPreferences `
-    -Theme $Theme
-
+    -Config $Terminal `
+    -Theme $Theme `
+    -RepositoryPath $Root
 Install-PowerShellModules `
     -Modules $PowerShell.Modules
 

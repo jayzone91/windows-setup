@@ -1,8 +1,272 @@
-function Set-WindowsTerminalPreferences {
+function Get-WindowsTerminalSettingsPath {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Config
+    )
+
+    if (
+        -not $Config.Contains("SettingsPath") -or
+        [string]::IsNullOrWhiteSpace([string] $Config.SettingsPath)
+    ) {
+        throw "Terminal-Konfiguration enthält keinen SettingsPath."
+    }
+
+    return [Environment]::ExpandEnvironmentVariables(
+        [string] $Config.SettingsPath
+    )
+}
+
+
+function Get-WindowsTerminalRepositorySettingsPath {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Config,
+
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
+    )
+
+    if (
+        -not $Config.Contains("RepositorySettingsPath") -or
+        [string]::IsNullOrWhiteSpace([string] $Config.RepositorySettingsPath)
+    ) {
+        throw "Terminal-Konfiguration enthält keinen RepositorySettingsPath."
+    }
+
+    return Join-Path `
+        $RepositoryPath `
+        ([string] $Config.RepositorySettingsPath)
+}
+
+
+function Get-WindowsTerminalStateMarkerPath {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Config,
+
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
+    )
+
+    if (
+        -not $Config.Contains("StateMarkerPath") -or
+        [string]::IsNullOrWhiteSpace([string] $Config.StateMarkerPath)
+    ) {
+        throw "Terminal-Konfiguration enthält keinen StateMarkerPath."
+    }
+
+    return Join-Path `
+        $RepositoryPath `
+        ([string] $Config.StateMarkerPath)
+}
+
+
+function Test-WindowsTerminalSettingsJson {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [System.Collections.IDictionary] $Theme
+        [string] $Path
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw "Windows Terminal settings.json nicht gefunden: $Path"
+    }
+
+    try {
+        Get-Content `
+            -LiteralPath $Path `
+            -Raw `
+            -Encoding UTF8 |
+        ConvertFrom-Json `
+            -ErrorAction Stop |
+        Out-Null
+    }
+    catch {
+        throw (
+            "Windows Terminal settings.json ist kein gültiges JSON: " +
+            "$Path`n$($_.Exception.Message)"
+        )
+    }
+}
+
+
+function New-WindowsTerminalInitialSettings {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Config,
+
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Theme,
+
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
+
+    if (-not $Config.Contains("Initial")) {
+        throw "Terminal-Konfiguration enthält keinen Initial-Bereich."
+    }
+
+    if (-not $Config.Contains("ColorSchemeName")) {
+        throw "Terminal-Konfiguration enthält keinen ColorSchemeName."
+    }
+
+    $initial = $Config.Initial
+    $profileDefaults = $initial.ProfileDefaults
+    $tabs = $initial.Tabs
+    $schemeName = [string] $Config.ColorSchemeName
+
+    $settings = [ordered]@{
+        '$schema' = "https://aka.ms/terminal-profiles-schema"
+
+        defaultProfile = [string] $initial.DefaultProfile
+
+        alwaysShowTabs     = [bool] $tabs.AlwaysShow
+        showTabsInTitlebar = [bool] $tabs.ShowInTitlebar
+        tabWidthMode       = [string] $tabs.WidthMode
+        useAcrylicInTabRow = [bool] $tabs.UseAcrylicInRow
+
+        profiles = [ordered]@{
+            defaults = [ordered]@{
+                font = [ordered]@{
+                    face = [string] $profileDefaults.FontFace
+                    size = [int] $profileDefaults.FontSize
+                }
+
+                colorScheme = [string] $profileDefaults.ColorScheme
+                cursorShape = [string] $profileDefaults.CursorShape
+                useAcrylic  = [bool] $profileDefaults.UseAcrylic
+                opacity     = [int] $profileDefaults.Opacity
+                padding     = [string] $profileDefaults.Padding
+            }
+
+            list = @(
+                foreach ($profileName in @($initial.HiddenProfiles)) {
+                    [ordered]@{
+                        name   = [string] $profileName
+                        hidden = $true
+                    }
+                }
+            )
+        }
+
+        schemes = @(
+            [ordered]@{
+                name                = $schemeName
+                foreground          = $Theme.Colors.Text
+                background          = $Theme.Colors.Base
+                cursorColor         = $Theme.Colors.Rosewater
+                selectionBackground = $Theme.Colors.Surface2
+
+                black        = $Theme.Colors.Surface1
+                red          = $Theme.Colors.Red
+                green        = $Theme.Colors.Green
+                yellow       = $Theme.Colors.Yellow
+                blue         = $Theme.Colors.Blue
+                purple       = $Theme.Colors.Pink
+                cyan         = $Theme.Colors.Teal
+                white        = $Theme.Colors.Subtext1
+
+                brightBlack  = $Theme.Colors.Surface2
+                brightRed    = $Theme.Colors.Red
+                brightGreen  = $Theme.Colors.Green
+                brightYellow = $Theme.Colors.Yellow
+                brightBlue   = $Theme.Colors.Blue
+                brightPurple = $Theme.Colors.Pink
+                brightCyan   = $Theme.Colors.Teal
+                brightWhite  = $Theme.Colors.Subtext0
+            }
+        )
+    }
+
+    $parent = Split-Path -Path $Path -Parent
+
+    if (-not (Test-Path -LiteralPath $parent -PathType Container)) {
+        New-Item `
+            -ItemType Directory `
+            -Path $parent `
+            -Force |
+        Out-Null
+    }
+
+    $json = $settings |
+    ConvertTo-Json `
+        -Depth 20
+
+    [System.IO.File]::WriteAllText(
+        $Path,
+        $json,
+        [System.Text.UTF8Encoding]::new($false)
+    )
+
+    Test-WindowsTerminalSettingsJson -Path $Path
+
+    Write-Host "[INIT] Windows Terminal settings.json erzeugt: $Path"
+}
+
+
+function Backup-WindowsTerminalSettings {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string] $SettingsPath,
+
+        [Parameter(Mandatory)]
+        [string] $RepositorySettingsPath
+    )
+
+    $existingItem = Get-Item `
+        -LiteralPath $SettingsPath `
+        -Force `
+        -ErrorAction SilentlyContinue
+
+    if (-not $existingItem) {
+        return
+    }
+
+    if ($existingItem.LinkType -eq "HardLink") {
+        return
+    }
+
+    if ($existingItem.LinkType -eq "SymbolicLink") {
+        return
+    }
+
+    if (-not (Test-Path -LiteralPath $RepositorySettingsPath -PathType Leaf)) {
+        return
+    }
+
+    $backupPath = "$SettingsPath.backup-before-windows-setup"
+
+    if (Test-Path -LiteralPath $backupPath -PathType Leaf) {
+        return
+    }
+
+    Write-Host "[BACKUP] $SettingsPath -> $backupPath"
+
+    Copy-Item `
+        -LiteralPath $SettingsPath `
+        -Destination $backupPath
+}
+
+
+function Initialize-WindowsTerminalConfiguration {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Config,
+
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Theme,
+
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
     )
 
     Write-Host ""
@@ -10,167 +274,106 @@ function Set-WindowsTerminalPreferences {
     Write-Host " Windows Terminal"
     Write-Host "========================================"
 
-    $settingsPath = Join-Path `
-        $env:LOCALAPPDATA `
-        "Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
+    $settingsPath = Get-WindowsTerminalSettingsPath `
+        -Config $Config
 
-    if (-not (Test-Path $settingsPath)) {
-        throw "Windows Terminal settings.json nicht gefunden: $settingsPath"
+    $repositorySettingsPath = Get-WindowsTerminalRepositorySettingsPath `
+        -Config $Config `
+        -RepositoryPath $RepositoryPath
+
+    $stateMarkerPath = Get-WindowsTerminalStateMarkerPath `
+        -Config $Config `
+        -RepositoryPath $RepositoryPath
+
+    $initialized = Test-Path `
+        -LiteralPath $stateMarkerPath `
+        -PathType Leaf
+
+    if ($initialized) {
+        if (-not (Test-Path -LiteralPath $repositorySettingsPath -PathType Leaf)) {
+            throw (
+                "Windows Terminal ist als initialisiert markiert, aber die " +
+                "versionierte settings.json fehlt: $repositorySettingsPath"
+            )
+        }
+
+        Test-WindowsTerminalSettingsJson `
+            -Path $repositorySettingsPath
+
+        Set-FileSymbolicLink `
+            -Path $settingsPath `
+            -Target $repositorySettingsPath `
+            -ReplaceExistingFile
+
+        Write-Host "[OK] Windows Terminal bereits initialisiert." `
+            -ForegroundColor Green
+
+        return
     }
 
-    Write-Host "[CONFIG] Windows Terminal konfigurieren"
+    if (Test-Path -LiteralPath $repositorySettingsPath -PathType Leaf) {
+        Write-Host (
+            "[INIT] Versionierte Windows-Terminal-settings.json bereits vorhanden; " +
+            "sie wird unverändert übernommen."
+        )
 
-    $settings = Get-Content `
+        Test-WindowsTerminalSettingsJson `
+            -Path $repositorySettingsPath
+    }
+    else {
+        New-WindowsTerminalInitialSettings `
+            -Config $Config `
+            -Theme $Theme `
+            -Path $repositorySettingsPath
+    }
+
+    Backup-WindowsTerminalSettings `
+        -SettingsPath $settingsPath `
+        -RepositorySettingsPath $repositorySettingsPath
+
+    Set-FileSymbolicLink `
         -Path $settingsPath `
-        -Raw `
-        -Encoding UTF8 |
-    ConvertFrom-Json
+        -Target $repositorySettingsPath `
+        -ReplaceExistingFile
 
-    # ------------------------------------------------------------
-    # PowerShell 7 als Standardprofil
-    # ------------------------------------------------------------
+    $stateMarkerDirectory = Split-Path `
+        -Path $stateMarkerPath `
+        -Parent
 
-    $settings.defaultProfile = "{574e775e-4f2a-5b96-ac1e-a2962a402336}"
-
-    # ------------------------------------------------------------
-    # Globale Profil-Einstellungen
-    # ------------------------------------------------------------
-
-    if (-not $settings.profiles.defaults) {
-        $settings.profiles.defaults = [PSCustomObject]@{}
+    if (-not (Test-Path -LiteralPath $stateMarkerDirectory -PathType Container)) {
+        New-Item `
+            -ItemType Directory `
+            -Path $stateMarkerDirectory `
+            -Force |
+        Out-Null
     }
-
-    $settings.profiles.defaults | Add-Member `
-        -NotePropertyName "font" `
-        -NotePropertyValue ([PSCustomObject]@{
-            face = "JetBrainsMono Nerd Font"
-            size = 11
-        }) `
-        -Force
-
-    $settings.profiles.defaults | Add-Member `
-        -NotePropertyName "colorScheme" `
-        -NotePropertyValue "Catppuccin Mocha" `
-        -Force
-
-    $settings.profiles.defaults | Add-Member `
-        -NotePropertyName "padding" `
-        -NotePropertyValue "10" `
-        -Force
-
-    $settings.profiles.defaults | Add-Member `
-        -NotePropertyName "cursorShape" `
-        -NotePropertyValue "bar" `
-        -Force
-
-    $settings.profiles.defaults | Add-Member `
-        -NotePropertyName "useAcrylic" `
-        -NotePropertyValue $false `
-        -Force
-
-    $settings.profiles.defaults | Add-Member `
-        -NotePropertyName "opacity" `
-        -NotePropertyValue 100 `
-        -Force
-
-    $settings.profiles.defaults | Add-Member `
-        -NotePropertyName "padding" `
-        -NotePropertyValue "12, 10, 12, 10" `
-        -Force
-
-    $settings | Add-Member `
-        -NotePropertyName "alwaysShowTabs" `
-        -NotePropertyValue $true `
-        -Force
-
-    $settings | Add-Member `
-        -NotePropertyName "showTabsInTitlebar" `
-        -NotePropertyValue $false `
-        -Force
-
-    $settings | Add-Member `
-        -NotePropertyName "tabWidthMode" `
-        -NotePropertyValue "compact" `
-        -Force
-
-    $settings | Add-Member `
-        -NotePropertyName "useAcrylicInTabRow" `
-        -NotePropertyValue $false `
-        -Force
-
-    # ------------------------------------------------------------
-    # Catppuccin Mocha Scheme
-    # ------------------------------------------------------------
-
-    $catppuccin = [PSCustomObject]@{
-        name                = "Catppuccin Mocha"
-
-        foreground          = $Theme.Colors.Text
-        background          = $Theme.Colors.Base
-
-        cursorColor         = $Theme.Colors.Rosewater
-        selectionBackground = $Theme.Colors.Surface2
-
-        black               = "#45475A"
-        red                 = "#F38BA8"
-        green               = "#A6E3A1"
-        yellow              = "#F9E2AF"
-        blue                = "#89B4FA"
-        purple              = "#F5C2E7"
-        cyan                = "#94E2D5"
-        white               = "#BAC2DE"
-
-        brightBlack         = "#585B70"
-        brightRed           = "#F38BA8"
-        brightGreen         = "#A6E3A1"
-        brightYellow        = "#F9E2AF"
-        brightBlue          = "#89B4FA"
-        brightPurple        = "#F5C2E7"
-        brightCyan          = "#94E2D5"
-        brightWhite         = "#A6ADC8"
-    }
-
-    $existingSchemes = @($settings.schemes)
-
-    $existingSchemes = @(
-        $existingSchemes |
-        Where-Object {
-            $_.name -ne "Catppuccin Mocha"
-        }
-    )
-
-    $settings.schemes = @(
-        $existingSchemes
-        $catppuccin
-    )
-
-    # ------------------------------------------------------------
-    # Alte Windows PowerShell / CMD Profile ausblenden
-    # ------------------------------------------------------------
-
-    foreach ($terminalProfile in $settings.profiles.list) {
-        if (
-            $terminalProfile.name -eq "Windows PowerShell" -or
-            $terminalProfile.name -eq "Eingabeaufforderung"
-        ) {
-            $terminalProfile.hidden = $true
-        }
-    }
-
-    # ------------------------------------------------------------
-    # Speichern
-    # ------------------------------------------------------------
-
-    $json = $settings |
-    ConvertTo-Json `
-        -Depth 20
 
     [System.IO.File]::WriteAllText(
-        $settingsPath,
-        $json,
+        $stateMarkerPath,
+        "initialized",
         [System.Text.UTF8Encoding]::new($false)
     )
 
-    Write-Host "[OK] Windows Terminal konfiguriert." `
+    Write-Host "[OK] Windows Terminal initialisiert." `
         -ForegroundColor Green
+}
+
+
+function Set-WindowsTerminalPreferences {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Config,
+
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Theme,
+
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
+    )
+
+    Initialize-WindowsTerminalConfiguration `
+        -Config $Config `
+        -Theme $Theme `
+        -RepositoryPath $RepositoryPath
 }

@@ -26,6 +26,7 @@ Bereits umgesetzt sind unter anderem:
 - Git, GitHub CLI und GitHub Desktop
 - Visual Studio Code inklusive Extensions und Settings
 - Windows Terminal, Nushell und Starship
+- Windows-Terminal-`settings.json` als versioniertes Dotfile mit einmaliger Initialisierung und Symbolic-Link-Kompatibilitätsfallback
 - Neovim Nightly über Scoop `versions`
 - extern gepflegte Neovim-Konfiguration aus `jayzone91/nvim` als Submodule unter `external/nvim`
 - automatische Aktualisierung des Neovim-Submodules auf `main` bei jedem Bootstrap
@@ -69,7 +70,7 @@ Bereits umgesetzt sind unter anderem:
 - persistenter Initialisierungsstatus unter `.generated/state/default-apps/`
 - Datei-Dotfiles werden standardmäßig als NTFS-Hardlinks eingebunden
 - Verzeichnis-Dotfiles werden als NTFS-Junctions eingebunden
-- Symbolic Links werden nur als dokumentierter Kompatibilitäts-Fallback verwendet; VS Code settings.json nutzt diese Ausnahme
+- Symbolic Links werden nur als dokumentierter Kompatibilitäts-Fallback verwendet; VS Code und Windows Terminal `settings.json` nutzen diese praktisch bestätigte Ausnahme
 - Catppuccin Mocha als gemeinsame Designsprache
 - zentrale Catppuccin-Mocha-Palette unter `config/theme.psd1`
 - gemeinsame Desktop-Hauptfläche `Base #1e1e2e` für VS Code, Windows Terminal, Zebar und die Windhawk-Taskbar
@@ -183,6 +184,46 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .\bootstrap.ps1
 ```
 
 Der direkte PowerShell-Aufruf bleibt der technische Fallback. Für normale manuelle Nutzung ist `just update` der bevorzugte Einstiegspunkt.
+
+---
+
+# Windows Terminal
+
+Die Windows-Terminal-Konfiguration wird nach der ersten Einrichtung vollständig über die versionierte Datei verwaltet:
+
+```text
+dotfiles/terminal/settings.json
+```
+
+`config/terminal.psd1` enthält bewusst **nicht** die komplette JSON-Struktur. Dort stehen nur verständlich gruppierte Standardwerte, aus denen auf einem neuen System bei Bedarf einmalig eine initiale `settings.json` erzeugt werden kann.
+
+Dabei gelten folgende Regeln:
+
+- das Terminal-JSON-Schema wird vom Generator direkt gesetzt und ist kein konfigurierbarer Wert,
+- die Catppuccin-Farben werden aus der zentralen `config/theme.psd1` abgeleitet,
+- existiert bereits `dotfiles/terminal/settings.json`, hat diese Datei Vorrang und wird nicht aus den Initialwerten überschrieben,
+- nach erfolgreicher Initialisierung wird lokal `.generated/state/default-apps/terminal.initialized` angelegt,
+- spätere `just update`-Läufe regenerieren die versionierte Terminal-Konfiguration nicht.
+
+## Symbolic Link statt Hardlink
+
+Für einzelne Dotfiles bleiben NTFS-Hardlinks grundsätzlich der Projektstandard. Windows Terminal ist eine praktisch bestätigte Ausnahme.
+
+Beim Speichern über die Windows-Terminal-Settings-GUI wurde der Hardlink aufgetrennt. Deshalb verwendet die Terminal-`settings.json` den zentralen `Set-FileSymbolicLink`-Kompatibilitätsfallback.
+
+Änderungen über die Terminal-GUI landen dadurch direkt in:
+
+```text
+dotfiles/terminal/settings.json
+```
+
+und erscheinen anschließend als normale Git-Änderungen für einen bewussten Commit.
+
+## Änderungen übernehmen
+
+Windows Terminal liest geänderte Einstellungen nicht in jedem Fall vollständig im laufenden Prozess neu ein. Nach dem Speichern einer Änderung über die Settings-GUI muss Windows Terminal deshalb vollständig beendet und neu gestartet werden.
+
+Nach dem Neustart bleibt die Änderung aktiv und die versionierte `settings.json` ist weiterhin die maßgebliche Konfiguration.
 
 ---
 

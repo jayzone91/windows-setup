@@ -49,6 +49,26 @@ function Install-WindowsUpdates {
     )
 
 
+    $seenInstalledUpdates = @{}
+
+    $installedUpdates = @(
+        foreach ($update in $installedUpdates) {
+
+            $updateKey = "{0}`0{1}" -f `
+                [string] $update.KB, `
+                [string] $update.Title
+
+            if ($seenInstalledUpdates.ContainsKey($updateKey)) {
+                continue
+            }
+
+            $seenInstalledUpdates[$updateKey] = $true
+
+            $update
+        }
+    )
+
+
     $status.InstalledUpdates = $installedUpdates
 
 

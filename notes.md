@@ -82,11 +82,3 @@ just update
 ## Aktuelle Aufgabe
 
 Arbeite selbstständig nach den Regeln der Roadmap weiter.
-
-
----
-
-Repo Umbau:
-- Terminal:
-  - Die Konfig wird direkt im Modul gesetzt, windows terminal hat eine settings.json, die sollten wir stattdessen nehmen.
-  - Standard settings für die erstinstallation sollten in config/terminal.psd1 stehe und nicht direkt im modul!

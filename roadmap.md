@@ -148,6 +148,7 @@ Projektweite Regel:
 - [x] **Verzeichnisse werden als NTFS-Junctions eingebunden**
 - [x] Symbolic Links sind ausschließlich als expliziter Kompatibilitäts-Fallback erlaubt, wenn eine Anwendung Hardlinks technisch nicht zuverlässig unterstützt
 - [x] VS Code `settings.json` verwendet einen Symbolic Link, da VS Code beim Speichern die Datei ersetzt und dadurch einen NTFS-Hardlink auftrennt
+- [x] Windows Terminal `settings.json` verwendet ebenfalls den Symbolic-Link-Kompatibilitätsfallback; ein Hardlink wurde beim Speichern über die Settings-GUI praktisch als ungeeignet bestätigt
 - [x] `Set-FileHardLink` zentral als Standard-Helper
 - [x] `Set-FileSymbolicLink` zentral als Kompatibilitäts-Helper
 - [x] `Set-DirectoryJunction` zentral als Helper
@@ -161,6 +162,7 @@ Begründung:
 - Hardlinks bleiben der Standard für einzelne Dateien.
 - Symbolic Links werden nur verwendet, wenn das Verhalten einer Anwendung praktisch als inkompatibel mit Hardlinks bestätigt wurde.
 - VS Code ersetzt `settings.json` beim Speichern und trennt dadurch einen Hardlink auf; ein Symbolic Link bleibt dagegen erhalten und Änderungen landen direkt in der Repository-Datei.
+- Windows Terminal trennt einen Hardlink beim Speichern über die Settings-GUI ebenfalls auf. Mit dem Symbolic Link landen GUI-Änderungen direkt in `dotfiles/terminal/settings.json`; ein vollständiger Neustart von Windows Terminal ist erforderlich, damit geänderte Einstellungen zuverlässig neu eingelesen werden.
 
 ## Generierte Inhalte und lokaler Zustand
 
@@ -762,6 +764,28 @@ Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games 
 - [x] Acrylic / Transparenz
 - [x] Profil-Defaults
 - [x] alte Windows-PowerShell-/CMD-Profile bei Bedarf ausblenden
+- [x] `dotfiles/terminal/settings.json` als dauerhafte versionierte Source of Truth
+- [x] strukturierte Erstinstallationswerte in `config/terminal.psd1` statt fest verdrahteter Einstellungen im Modul
+- [x] Catppuccin-Farben für die initiale Konfiguration aus der zentralen `config/theme.psd1` ableiten
+- [x] Terminal-JSON-`$schema` beim Generieren direkt setzen und nicht als konfigurierbaren Wert behandeln
+- [x] initiale `settings.json` nur erzeugen, wenn noch keine versionierte Terminal-Konfiguration vorhanden ist
+- [x] lokalen Initialisierungsmarker `.generated/state/default-apps/terminal.initialized` verwenden
+- [x] eine bereits versionierte `settings.json` bei späteren Bootstrap-Läufen nicht aus den Initialwerten regenerieren oder überschreiben
+- [x] Windows-Terminal-`settings.json` per Symbolic Link einbinden; Hardlink-Inkompatibilität beim Speichern über die Settings-GUI praktisch bestätigt
+- [x] Änderungen über die Terminal-Settings-GUI landen in `dotfiles/terminal/settings.json`
+- [x] GUI-Änderungen bleiben nach vollständigem Neustart von Windows Terminal aktiv
+
+### Feste Entscheidung
+
+`config/terminal.psd1` ist ausschließlich die deklarative Quelle für die **erstmalige Erzeugung** einer Windows-Terminal-Konfiguration. Die Datei enthält verständlich strukturierte Standardwerte, aber keine Kopie der vollständigen `settings.json`.
+
+Das JSON-Schema wird vom Generator direkt gesetzt. Die Catppuccin-Farben werden bei der Ersterzeugung aus `config/theme.psd1` abgeleitet, damit die zentrale Palette maßgeblich bleibt.
+
+Nach der Initialisierung ist ausschließlich `dotfiles/terminal/settings.json` die versionierte Source of Truth. Der Bootstrap darf diese Datei bei späteren Läufen nicht wieder aus `config/terminal.psd1` erzeugen oder Benutzeränderungen überschreiben. Der lokale Marker `.generated/state/default-apps/terminal.initialized` kennzeichnet die abgeschlossene Initialisierung.
+
+Für die produktive Terminal-`settings.json` wird bewusst der projektweite Symbolic-Link-Kompatibilitätsfallback verwendet. Ein NTFS-Hardlink wurde praktisch getestet und verworfen, weil Windows Terminal ihn beim Speichern über die Settings-GUI auftrennt. Mit dem Symbolic Link werden Änderungen aus der GUI direkt im Repository-Dotfile gespeichert und können normal committed werden.
+
+Windows Terminal übernimmt geänderte Einstellungen nicht in jedem Fall vollständig im laufenden Prozess. Nach einer Änderung über die Settings-GUI ist deshalb ein vollständiges Beenden und erneutes Starten von Windows Terminal der dokumentierte Workflow.
 
 ## PowerShell
 
@@ -1745,6 +1769,7 @@ Das README soll den **aktuellen produktiven Stand** erklären.
 - [x] generischer Standard-App-Initialisierungsworkflow
 - [x] lokale State-Marker unter `.generated/state/default-apps/`
 - [x] Hardlinks/Junctions
+- [x] Windows-Terminal-Desired-State, Initialisierung und Symlink-Fallback dokumentiert
 - [x] Catppuccin
 - [x] Wartung
 - [ ] nach jeder größeren abgeschlossenen Phase aktualisieren
