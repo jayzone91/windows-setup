@@ -88,3 +88,11 @@ durlauf zeit während alles installiert ist: 3:41.67 Minuten
 ---
 
 PC Name in config einstellen und automatisch setzen.
+
+---
+
+Script bereinigung: Entfernen nicht genutzter Funktionen, verwaister Dateien.
+
+---
+
+Refactor des kompletten Projekts. Alle Dateien >500 Zeilen sollen gesplittet werden. Für gesplittete Dateien wird ein neuer Unterordner angelegt, die neuen Dateien werden in einer index.ps1 zusammengefasst und dann nur die Index im bootstrap importiert (Bsp.: modules/Drivers oder modules/Windows).
