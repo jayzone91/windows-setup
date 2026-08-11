@@ -64,20 +64,14 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File "$HOME\Downloads\patch-example.ps1
 
 Nach einem Patch:
 
-1. Zuerst den vom Projekt vorgesehenen statischen Check ausführen, typischerweise:
-
-```powershell
-just check
-```
-
-2. Danach den vorgesehenen Setup-/Integrationslauf, typischerweise:
+1. Mache den vorgesehenen Setup-/Integrationslauf, dieser Testet den Code auch auf Fehler, typischerweise:
 
 ```powershell
 just update
 ```
 
-3. Anschließend die Änderung praktisch testen.
-4. Erst nach bestätigtem praktischem Test darf ein zugehöriger Roadmap-Punkt als `[x]` markiert werden.
+2. Anschließend die Änderung praktisch testen.
+3. Erst nach bestätigtem praktischem Test darf ein zugehöriger Roadmap-Punkt als `[x]` markiert werden.
 
 ## Aktuelle Aufgabe
 
