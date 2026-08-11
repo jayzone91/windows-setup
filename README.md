@@ -46,7 +46,7 @@ Bereits umgesetzt sind unter anderem:
 - `just` als einheitliche Bedienoberfläche für manuelle Projektaktionen
 - `just update` für den vollständigen manuellen Wartungs-/Setup-Lauf
 - `just check` für die rekursive PSScriptAnalyzer-Prüfung
-- `just desktop-restart` für einen definierten Neustart von komorebi, whkd, masir und Zebar
+- `just desktop-restart` für einen definierten Neustart von komorebi, whkd, masir, Zebar und Volume-OSD
 - `just ghub-backup` und `just ghub-restore` für bewusste G-HUB-Konfigurations-Snapshots
 - Bootstrap-Ausführung mit `ExecutionPolicy Bypass` ausschließlich auf Prozessebene
 - komorebi + whkd als Tiling Window Manager
@@ -78,6 +78,11 @@ Bereits umgesetzt sind unter anderem:
 - kompakter Mauve-Punkt unter dem aktiven Taskbar-Fenster statt des RosePine-Aktivrahmens
 - Windows 11 Start Menu Styler über Windhawk mit RosePine als Layout-Basis und Catppuccin-Mocha-Farboverrides
 - Startmenü und Suchansicht mit `Base #1e1e2e`, dezentem `Surface1 #45475a`-Außenrahmen und Mauve-Fokusakzent
+- eigenes Catppuccin-Mocha-Volume-OSD für Volume Up/Down und Mute/Unmute
+- vollständige Interception der Volume-Tasten verhindert das parallele native Windows-Volume-OSD
+- persistente Volume-Pill aktualisiert bei schnellen Eingaben nur ihren Zustand und flackert dadurch nicht durch wiederholtes Neu-Rendern
+- produktive Implementierung als `modules/VolumeOsd.ps1` mit Bootstrap-registriertem Scheduled Task `Windows Setup Volume OSD`
+- Lock-Key-Anzeigen bleiben beim Windhawk-Mod `Lock Keys Notifier`; Brightness ist auf dem aktuellen externen Monitorpfad vorerst zurückgestellt
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 - Zen-Mod-Precheck: Browser-Neustart nur, wenn konfigurierte Mods tatsächlich fehlen
 
@@ -162,7 +167,7 @@ Invoke-ScriptAnalyzer -Path . -Recurse
 just desktop-restart
 ```
 
-Die Recipe beendet Zebar und die komorebi-Komponenten kontrolliert. Anschließend werden komorebi, whkd und masir gestartet; erst danach startet Zebar. Derselbe Ablauf wird am Ende des Bootstrap verwendet, damit die Bar nach Änderungen wieder zuverlässig in der korrekten Z-Order liegt.
+Die Recipe beendet Volume-OSD, Zebar und die komorebi-Komponenten kontrolliert. Anschließend werden komorebi, whkd und masir gestartet, danach Zebar und anschließend das Volume-OSD. Derselbe Ablauf wird am Ende des Bootstrap verwendet, damit die Desktop-Komponenten nach Änderungen in einem definierten Zustand laufen.
 
 ## Logitech G HUB sichern und wiederherstellen
 
@@ -727,7 +732,7 @@ Waybar                         Zebar
 Focus follows mouse            masir
 Fuzzel                         Raycast
 Dolphin                        OneCommander
-SwayOSD                        eigenes OSD (geplant)
+SwayOSD                        eigenes Volume-/Mute-OSD
 Catppuccin Mocha               Catppuccin Mocha
 ```
 
@@ -760,15 +765,40 @@ Windows Desktop
 │       ├── Start Menu Styler
 │       └── Notification Center Styler
 │
-└── OSD (geplant)
-    └── eigenes Catppuccin OSD
-        ├── Volume
-        ├── Mute
-        ├── Brightness
-        ├── Media
+└── OSD
+    ├── eigenes Catppuccin OSD
+    │   └── Volume / Mute
+    └── Windhawk Lock Keys Notifier
         ├── Caps Lock
-        └── Num Lock
+        ├── Num Lock
+        └── Scroll Lock
 ```
+
+## Volume-OSD
+
+Das eigene Volume-OSD übernimmt ausschließlich **Volume Up/Down und Mute/Unmute**. Die produktive Implementierung liegt unter:
+
+```text
+modules/VolumeOsd.ps1
+```
+
+Die Volume-Hardwaretasten werden über einen Low-Level-Keyboard-Hook vollständig abgefangen. Das Modul setzt Lautstärke und Mute anschließend direkt über Windows Core Audio. Dadurch erscheint nicht zusätzlich das native Windows-Volume-OSD; die Lautstärkeänderung reagiert auf dem praktisch getesteten System ohne merkbare Verzögerung.
+
+Die Anzeige orientiert sich bewusst am Windhawk `Lock Keys Notifier`: eine kompakte Catppuccin-Mocha-Pill mit dünner Mauve-Border und hervorgehobenem Statusfeld. Ein zusätzlicher Fortschrittsbalken oder Audio-Icon ist für den finalen reduzierten Entwurf nicht vorgesehen.
+
+Beim ersten Volume-Event eines Eingabe-Bursts wird das Fenster einmal eingeblendet. Weitere Eingaben aktualisieren nur Prozent-/Mute-Zustand und verlängern die Anzeigezeit. Das Fenster wird nicht bei jedem Tastendruck neu gerendert; dadurch bleibt das OSD auch bei schnellem wiederholtem Drücken flackerfrei.
+
+Der Bootstrap registriert den Scheduled Task:
+
+```text
+Windows Setup Volume OSD
+```
+
+Der Task läuft im interaktiven Benutzerkontext, startet PowerShell mit `-STA`, lädt `modules/VolumeOsd.ps1` und ruft `Start-VolumeOsd` auf. Das OSD ist außerdem in den vorhandenen kontrollierten Desktop-Stop-/Start-Workflow integriert.
+
+`just update` lief nach der Produktivintegration fehlerfrei durch und das Volume-OSD lief anschließend korrekt. Noch offen ist ausschließlich die praktische Bestätigung des `AtLogOn`-Triggers nach einer echten Ab-/Anmeldung oder einem Windows-Neustart.
+
+Caps Lock, Num Lock und Scroll Lock bleiben beim Windhawk-Mod `Lock Keys Notifier`. Ein eigenes Media-OSD ist nicht vorgesehen. Brightness wurde nach dem erfolglosen WMI-/DDC-/VCP-Test auf dem aktuellen Samsung G93SD vorerst zurückgestellt.
 
 ## komorebi
 
@@ -1146,6 +1176,9 @@ Folgende Entscheidungen sind bewusst getroffen und sollen nicht ohne technischen
 - kein automatischer Windows-Neustart
 - keine aggressiven pauschalen Service-/Debloat-Tweaks
 - Catppuccin Mocha als gemeinsame Designsprache
+- eigenes OSD ausschließlich für Volume/Mute; Lock Keys bleiben bei Windhawk und Media erhält kein eigenes OSD
+- Brightness-OSD nach erfolglosem WMI-/DDC-/VCP-Test vorerst zurückstellen und nur bei neuem praktisch funktionierendem Pfad wieder aufnehmen
+- produktives Volume-OSD als `modules/VolumeOsd.ps1` mit Bootstrap-registriertem Scheduled Task betreiben
 - Funktionalität und Wartbarkeit vor rein optischem Styling
 
 ---
@@ -1156,9 +1189,8 @@ Die ausführliche Priorisierung befindet sich in [`roadmap.md`](roadmap.md).
 
 Aktuell sind die nächsten Arbeitspakete:
 
-1. weitere Windhawk-Shell-Mods für Startmenü und Notification Center
-2. Taskbar-Auto-Hide-Tuning
-3. Lock Keys Notifier mit Catppuccin-Anpassung
-4. verbleibendes Catppuccin-OSD für Volume, Mute, Brightness und Media
-5. Gaming
-6. Logging, Tests und weitere Qualitätssicherung
+1. echten `AtLogOn`-Start des produktiven Volume-OSD nach Ab-/Anmeldung oder Neustart praktisch bestätigen
+2. Brightness nur bei einem neuen, praktisch funktionierenden Hardware-/Softwarepfad erneut prüfen
+3. Gaming
+4. Logging, Tests und weitere Qualitätssicherung
+5. weiterer Catppuccin-Polish

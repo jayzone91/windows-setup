@@ -25,6 +25,7 @@ $modules = @(
     "Storage.ps1"
     "Terminal.ps1"
     "VSCode.ps1"
+    "VolumeOsd.ps1"
     "Windhawk.ps1"
     "WindowsUpdate.ps1"
     "Zebar.ps1"

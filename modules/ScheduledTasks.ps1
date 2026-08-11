@@ -1,4 +1,4 @@
-﻿function Register-WindowsSetupScheduledTask {
+function Register-WindowsSetupScheduledTask {
 
     param(
         [Parameter(Mandatory)]
@@ -274,6 +274,104 @@ function Register-ZebarStartupTask {
         -ForegroundColor Green
 }
 
+function Register-VolumeOsdStartupTask {
+
+    param(
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
+    )
+
+    Write-Host ""
+    Write-Host "========================================"
+    Write-Host " Volume OSD Autostart"
+    Write-Host "========================================"
+
+    $taskName = "Windows Setup Volume OSD"
+    $osdPath = Join-Path `
+        $RepositoryPath `
+        "modules\VolumeOsd.ps1"
+
+    if (-not (
+        Test-Path `
+            -LiteralPath $osdPath `
+            -PathType Leaf
+    )) {
+        throw "Volume-OSD-Skript nicht gefunden: $osdPath"
+    }
+
+    $pwsh = (
+        Get-Command `
+            -Name "pwsh" `
+            -ErrorAction Stop
+    ).Source
+
+    $escapedOsdPath = $osdPath.Replace(
+        "'",
+        "''"
+    )
+
+    $command =
+        ". '$escapedOsdPath'; Start-VolumeOsd"
+
+    $argument =
+        '-NoProfile -STA -WindowStyle Hidden ' +
+        '-ExecutionPolicy Bypass -Command "' +
+        $command +
+        '"'
+
+    $action = New-ScheduledTaskAction `
+        -Execute $pwsh `
+        -Argument $argument
+
+    $trigger = New-ScheduledTaskTrigger `
+        -AtLogOn `
+        -User $env:USERNAME
+
+    $principal = New-ScheduledTaskPrincipal `
+        -UserId $env:USERNAME `
+        -LogonType Interactive `
+        -RunLevel Limited
+
+    $settings = New-ScheduledTaskSettingsSet `
+        -StartWhenAvailable `
+        -AllowStartIfOnBatteries `
+        -DontStopIfGoingOnBatteries `
+        -MultipleInstances IgnoreNew `
+        -ExecutionTimeLimit ([TimeSpan]::Zero)
+
+    $existingTask = Get-ScheduledTask `
+        -TaskName $taskName `
+        -ErrorAction SilentlyContinue
+
+    if ($existingTask) {
+        Write-Host "[UPDATE] Bestehende Volume-OSD-Aufgabe."
+
+        Set-ScheduledTask `
+            -TaskName $taskName `
+            -Action $action `
+            -Trigger $trigger `
+            -Principal $principal `
+            -Settings $settings |
+        Out-Null
+    }
+    else {
+        Write-Host "[CREATE] Volume-OSD-Autostart-Aufgabe."
+
+        Register-ScheduledTask `
+            -TaskName $taskName `
+            -Action $action `
+            -Trigger $trigger `
+            -Principal $principal `
+            -Settings $settings |
+        Out-Null
+    }
+
+    Write-Host (
+        "[OK] Aufgabe '{0}' eingerichtet." `
+            -f $taskName
+    ) -ForegroundColor Green
+}
+
 function Stop-WindowsDesktopEnvironment {
     [CmdletBinding()]
     param()
@@ -282,6 +380,33 @@ function Stop-WindowsDesktopEnvironment {
     Write-Host "========================================"
     Write-Host " Desktop Environment stoppen"
     Write-Host "========================================"
+
+    $volumeOsdTask = Get-ScheduledTask `
+        -TaskName "Windows Setup Volume OSD" `
+        -ErrorAction SilentlyContinue
+
+    if ($volumeOsdTask) {
+        Stop-ScheduledTask `
+            -TaskName "Windows Setup Volume OSD" `
+            -ErrorAction SilentlyContinue
+    }
+
+    Get-CimInstance `
+        -ClassName Win32_Process `
+        -Filter "Name = 'pwsh.exe'" `
+        -ErrorAction SilentlyContinue |
+    Where-Object {
+        $_.CommandLine -like "*modules\VolumeOsd.ps1*"
+    } |
+    ForEach-Object {
+        Stop-Process `
+            -Id $_.ProcessId `
+            -Force `
+            -ErrorAction SilentlyContinue
+    }
+
+    Write-Host "[OK] Volume OSD beendet." `
+        -ForegroundColor Green
 
     $zebarTask = Get-ScheduledTask `
         -TaskName "Zebar Desktop" `
@@ -364,7 +489,7 @@ function Start-WindowsDesktopEnvironment {
     Write-Host " Desktop Environment starten"
     Write-Host "========================================"
 
-    foreach ($taskName in @("komorebi Desktop", "Zebar Desktop")) {
+    foreach ($taskName in @("komorebi Desktop", "Zebar Desktop", "Windows Setup Volume OSD")) {
         if (-not (
             Get-ScheduledTask `
                 -TaskName $taskName `
@@ -438,6 +563,40 @@ function Start-WindowsDesktopEnvironment {
     }
 
     Write-Host "[OK] Zebar läuft." `
+        -ForegroundColor Green
+
+    Start-ScheduledTask `
+        -TaskName "Windows Setup Volume OSD"
+
+    $volumeOsdReady = $false
+
+    for ($attempt = 0; $attempt -lt 20; $attempt++) {
+        $volumeOsdProcesses = @(
+            Get-CimInstance `
+                -ClassName Win32_Process `
+                -Filter "Name = 'pwsh.exe'" `
+                -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.CommandLine -like "*modules\VolumeOsd.ps1*"
+            }
+        )
+
+        if ($volumeOsdProcesses.Count -gt 0) {
+            $volumeOsdReady = $true
+            break
+        }
+
+        Start-Sleep -Milliseconds 250
+    }
+
+    if (-not $volumeOsdReady) {
+        throw (
+            "Volume OSD wurde nach dem Start " +
+            "nicht rechtzeitig erkannt."
+        )
+    }
+
+    Write-Host "[OK] Volume OSD läuft." `
         -ForegroundColor Green
 }
 

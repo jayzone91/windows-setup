@@ -54,7 +54,7 @@ Die Windows-Umgebung soll funktional und optisch möglichst nah an die vorhanden
 | Focus follows mouse              | masir                                 |
 | Fuzzel / Launcher                | Raycast + Everything                  |
 | Dolphin                          | OneCommander                          |
-| SwayOSD                          | eigenes Catppuccin-OSD                |
+| SwayOSD                          | eigenes Volume-/Mute-OSD              |
 | Catppuccin Mocha                 | Catppuccin Mocha                      |
 | native Wayland-Tiling-Funktionen | komorebi + whkd                       |
 | dotfiles                         | Repository + NTFS-Hardlinks/Junctions |
@@ -89,13 +89,12 @@ Windows Desktop
 │       └── Notification Center Styler
 │
 ├── OSD
-│   └── eigenes Catppuccin-OSD
-│       ├── Volume
-│       ├── Mute
-│       ├── Brightness
-│       ├── Media
-│       ├── Caps Lock Toggle
-│       └── Num Lock Toggle
+│   ├── eigenes Catppuccin-OSD
+│   │   └── Volume / Mute
+│   └── Windhawk Lock Keys Notifier
+│       ├── Caps Lock
+│       ├── Num Lock
+│       └── Scroll Lock
 │
 └── Theme
     └── Catppuccin Mocha
@@ -1322,7 +1321,7 @@ Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwalte
   - `Mauve #cba6f7` nur als dünne Border, nicht als große Flächenfarbe
   - `Green #a6e3a1` als ON-Akzent für Lock-Key-Zustände
   - Installation, `just check`, `just update` und optische Sichtprüfung auf dem aktuellen System erfolgreich getestet
-  - dient aktuell als Lock-Key-OSD; ein späteres gemeinsames OSD für Volume, Mute, Brightness, Media und Lock Keys bleibt als eigener Roadmap-Punkt bestehen
+  - bleibt dauerhaft das zuständige Lock-Key-OSD; Caps Lock, Num Lock und Scroll Lock werden nicht zusätzlich im eigenen OSD implementiert
 - [ ] Settings-Drift vor dem Schreiben erkennen und unveränderte Mod-Settings unangetastet lassen
 
 ### Zentrale Catppuccin-Palette
@@ -1339,77 +1338,101 @@ Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwalte
 
 ## Ziel
 
-Windows soll ein eigenes, optisch zu Catppuccin Mocha passendes OSD erhalten, funktional ähnlich zu SwayOSD unter Linux.
+Windows verwendet für Lautstärke/Mute ein eigenes, optisch zu Catppuccin Mocha passendes OSD, funktional ähnlich zu SwayOSD unter Linux.
 
-Das OSD soll sich unaufdringlich, schnell und modern verhalten.
+Das finale Design orientiert sich bewusst am bereits eingerichteten Windhawk `Lock Keys Notifier`: eine kompakte Pill mit Catppuccin-Flächen, dünner Mauve-Border und einem hervorgehobenen Statusfeld. Ein Fortschrittsbalken oder zusätzliches Audio-Icon ist für diesen finalen reduzierten Entwurf nicht vorgesehen.
 
-## Pflichtfunktionen
+Lock-Key-Zustände bleiben bewusst beim praktisch getesteten Windhawk-Mod `Lock Keys Notifier`. Media-Steuerung benötigt kein zusätzliches eigenes OSD.
 
-### Audio
+Brightness wird auf dem aktuellen System vorerst nicht als eigener OSD-Bereich umgesetzt. Der Samsung G93SD meldet DDC/CI-Brightness zwar formal über High-Level-API und VCP `0x10`, die Werte ändern sich beim praktischen Helligkeitstest jedoch nicht. Die vorhandenen Helligkeitstasten öffnen lediglich das Windows-OSD und ändern die Displayhelligkeit nicht. Eine spätere Wiederaufnahme erfolgt nur bei einem neuen, praktisch funktionierenden Hardware-/Softwarepfad.
 
-- [ ] Volume Up OSD
-- [ ] Volume Down OSD
-- [ ] aktuelle Lautstärke als Prozent
-- [ ] grafischer Fortschrittsbalken
-- [ ] Mute OSD
-- [ ] Unmute OSD
-- [ ] passendes Audio-/Mute-Icon
+## Feste Zuständigkeit
 
-### Helligkeit
+- [x] Caps Lock, Num Lock und Scroll Lock bleiben beim Windhawk-Mod `Lock Keys Notifier`
+- [x] kein zweites Lock-Key-OSD im eigenen OSD implementieren
+- [x] Media nicht als eigenen OSD-Bereich implementieren
+- [x] Brightness auf dem aktuellen System nach erfolglosem WMI-/DDC-/VCP-Test vorerst zurückstellen
+- [x] eigenes OSD ausschließlich für Volume/Mute umsetzen
+- [x] finales Volume-OSD bewusst als reduzierte Pill ohne Fortschrittsbalken und zusätzliches Audio-Icon gestalten
 
-- [ ] Brightness Up OSD
-- [ ] Brightness Down OSD
-- [ ] aktuelle Helligkeit als Prozent
-- [ ] grafischer Fortschrittsbalken
-- [ ] passendes Helligkeits-Icon
+## Produktive Architektur
 
-### Medien
+- [x] produktive Implementierung liegt unter `modules/VolumeOsd.ps1`
+- [x] `modules/VolumeOsd.ps1` wird über `modules/index.ps1` in die bestehende Modularchitektur geladen
+- [x] Modul definiert `Start-VolumeOsd` und startet beim normalen Dot-Sourcing nicht selbst
+- [x] Volume Up, Volume Down und Mute werden über einen Low-Level-Keyboard-Hook abgefangen
+- [x] auf dem aktuellen System auftretende injizierte Volume-Events werden ebenfalls verarbeitet
+- [x] Lautstärke und Mute werden direkt über Windows Core Audio gesetzt
+- [x] abgefangene Volume-Tasten werden nicht an Windows weitergereicht
+- [x] das native Windows-Volume-OSD erscheint dadurch nicht parallel
+- [x] doppelte laufende OSD-Instanzen werden vermieden
 
-- [ ] Play OSD
-- [ ] Pause OSD
-- [ ] Next OSD
-- [ ] Previous OSD
-- [ ] optional Titel/Artist, wenn zuverlässig und ohne unnötige Verzögerung verfügbar
+## Anzeige und Verhalten
 
-### Tastatur-Toggles
-
-- [ ] **Caps Lock Toggle OSD**
-- [ ] Caps Lock aktiviert klar anzeigen
-- [ ] Caps Lock deaktiviert klar anzeigen
-- [ ] **Num Lock Toggle OSD**
-- [ ] Num Lock aktiviert klar anzeigen
-- [ ] Num Lock deaktiviert klar anzeigen
-- [ ] Statusänderung unmittelbar nach Tastendruck anzeigen
-
-## Design
-
-- [ ] Catppuccin Mocha
-- [ ] gleiche Rundungen/Abstände wie restlicher Desktop
-- [ ] Nerd-/SVG-Icons
-- [ ] Animationen dezent
-- [ ] keine unnötigen Fensterrahmen
-- [ ] immer im Vordergrund
-- [ ] kein Fokusraub
-- [ ] automatisch nach kurzer Zeit ausblenden
-- [ ] korrekte Darstellung auf dem gewünschten Monitor
-- [ ] DPI-/Scaling-Unterstützung
+- [x] Volume Up
+- [x] Volume Down
+- [x] Mute
+- [x] Unmute
+- [x] aktuelle Lautstärke als Prozent
+- [x] Mute-Zustand als `MUTE`
+- [x] Catppuccin Mocha
+- [x] Pill-Geometrie passend zum Windhawk `Lock Keys Notifier`
+- [x] keine unnötigen Fensterrahmen
+- [x] keine Taskbar-Anzeige
+- [x] kein Fokusraub im finalen WPF-Pfad praktisch beanstandet
+- [x] automatisch nach kurzer Zeit ausblenden
+- [x] beim ersten Event eines Eingabe-Bursts das Fenster einmal einblenden
+- [x] weitere Events aktualisieren nur den Zustand und verlängern die Anzeigezeit
+- [x] kein erneutes Fade-in/Neu-Rendern bei jedem Tastendruck
+- [x] schnelles wiederholtes Drücken ohne störendes Flackern praktisch bestätigt
 
 ## Integration
 
-- [ ] prüfen, welche Windows-Hotkeys bereits vom System behandelt werden
-- [ ] bestehende Keyboard-Hardware-Events zuverlässig erkennen
-- [ ] OSD automatisch starten
-- [ ] reproduzierbar über Bootstrap installieren/konfigurieren
-- [ ] Windows-eigenes OSD nur dann deaktivieren/umgehen, wenn dies stabil möglich ist
-- [ ] keine doppelte OSD-Anzeige
+- [x] Scheduled Task `Windows Setup Volume OSD`
+- [x] nicht erhöhter Start im interaktiven Benutzerkontext
+- [x] PowerShell-Start mit `-STA`
+- [x] Task lädt `modules/VolumeOsd.ps1` und ruft `Start-VolumeOsd` auf
+- [x] Registrierung/Aktualisierung über den bestehenden Bootstrap
+- [x] Volume-OSD in `Stop-WindowsDesktopEnvironment` und `Start-WindowsDesktopEnvironment` einbezogen
+- [x] produktiver `just update` nach der Integration fehlerfrei
+- [x] produktives Volume-OSD läuft nach dem Bootstrap und funktioniert praktisch
+- [x] natives Windows-Volume-OSD bleibt im produktiven Pfad aus
+- [x] Lautstärkeänderung ohne merkbare Verzögerung praktisch bestätigt
+- [ ] `AtLogOn` nach echter Ab-/Anmeldung oder Windows-Neustart praktisch bestätigen
+
+## Verworfen / zurückgestellt
+
+- [x] separates Brightness-OSD auf dem aktuellen System zurückgestellt
+  - kein `WmiMonitorBrightness`-Provider
+  - DDC/CI/VCP `0x10` formal lesbar, aber keine Änderung beim Betätigen der vorhandenen Helligkeitstasten
+  - die Helligkeitstasten ändern am aktuellen Display tatsächlich keine Helligkeit
+- [x] gemeinsames eigenes Lock-Key-OSD verworfen; Windhawk `Lock Keys Notifier` bleibt zuständig
+- [x] eigenes Media-OSD nicht erforderlich
+- [x] früherer Fortschrittsbalken-/Icon-Plan zugunsten der praktisch gewünschten reduzierten Pill verworfen
+- [x] OSD-Testskripte nach erfolgreicher Produktivintegration entfernt
+
+## Praktisch bestätigter Stand
+
+Die Eingabe-Architektur wurde zunächst separat getestet: 61 von 61 beobachteten Volume-KeyDown-Events waren auf dem aktuellen System `Injected=True`; nach vollständiger Interception reagierte die Lautstärke ohne merkbare Verzögerung und das Windows-OSD erschien nicht mehr.
+
+Die finale WPF-Pill wurde anschließend praktisch geprüft. Nach der Umstellung auf ein persistentes Fenster pro Eingabe-Burst werden schnelle Lautstärkeänderungen ohne störendes Flackern dargestellt.
+
+Nach der Migration in `modules/VolumeOsd.ps1` und der Scheduled-Task-/Bootstrap-Integration lief `just update` fehlerfrei durch und das produktive OSD lief anschließend korrekt.
+
+Offen bleibt ausschließlich der separate Akzeptanztest des `AtLogOn`-Triggers nach einer echten neuen Benutzeranmeldung oder einem Windows-Neustart.
 
 ## Akzeptanzkriterien
 
-- alle sechs Kernbereiche funktionieren: Volume, Mute, Brightness, Media, Caps Lock, Num Lock
-- keine merkbare Verzögerung
-- kein Fokuswechsel
-- keine störende Taskbar-Anzeige
-- Catppuccin-Design konsistent
+- [x] Volume Up/Down und Mute/Unmute werden zuverlässig angezeigt
+- [x] aktuelle Lautstärke wird korrekt dargestellt
+- [x] keine merkbare Verzögerung
+- [x] kein natives Windows-Volume-OSD parallel sichtbar
+- [x] keine störende Taskbar-Anzeige
+- [x] Catppuccin-Design konsistent
+- [x] schnelle Eingaben flackern nicht
+- [x] Lock-Key-Anzeigen bleiben ausschließlich beim Windhawk `Lock Keys Notifier`
+- [x] produktiver Bootstrap-Lauf erfolgreich
+- [ ] automatischer Start bei echtem neuen Windows-Logon praktisch bestätigt
 
 ---
 
@@ -1785,7 +1808,7 @@ Die Roadmap ist ausführlicher als das README und enthält auch offene Ziele.
 - [x] Home Office
 - [x] Gaming
 - [x] NanaZip
-- [x] OSD inklusive Caps Lock und Num Lock
+- [x] OSD-Zuständigkeit inklusive Abgrenzung zum Windhawk `Lock Keys Notifier` dokumentiert
 - [x] Just-Workflow
 - [x] Execution-Policy-Architektur
 - [x] Desktop-Neustart-Architektur
@@ -1926,15 +1949,15 @@ Noch offen aus dem Paketmanager-Umbau:
 
 ## Priorität 3 – eigenes OSD
 
-1. [ ] technische Architektur festlegen
-2. [ ] Volume/Mute
-3. [ ] Brightness
-4. [ ] Media
-5. [ ] Caps Lock Toggle
-6. [ ] Num Lock Toggle
-7. [ ] Catppuccin-Design
-8. [ ] Autostart/Bootstrap
-9. [ ] Windows-OSD-Doppelanzeige vermeiden
+1. [x] technische Architektur für Volume/Mute festlegen
+2. [x] Volume/Mute produktiv umsetzen
+3. [x] Catppuccin-Pill und flackerfreies Burst-Verhalten
+4. [x] Bootstrap- und Scheduled-Task-Integration
+5. [x] Windows-OSD-Doppelanzeige vermeiden
+6. [ ] echten `AtLogOn`-Start nach Ab-/Anmeldung oder Neustart praktisch bestätigen
+7. [ ] Brightness nur bei neuem, praktisch funktionierendem Hardware-/Softwarepfad erneut prüfen
+
+Lock Keys bleiben beim bereits getesteten Windhawk `Lock Keys Notifier`; ein eigenes Media-OSD ist nicht vorgesehen. Brightness ist auf dem aktuellen System nach WMI-/DDC-/VCP-Test vorerst zurückgestellt.
 
 ## Priorität 4 – Gaming
 
@@ -2062,7 +2085,7 @@ Nach Abschluss der Roadmap soll ein frisch installiertes Windows 11 nach möglic
 - OneCommander mit vollständigem Catppuccin-Theme und Dev-File-Icons
 - Raycast + Everything als primärer Launcher-/Suchworkflow
 - Windhawk für verbleibende Shell-Bereiche
-- eigenes Catppuccin-OSD inklusive Caps Lock und Num Lock
+- eigenes Catppuccin-OSD für Volume/Mute; Brightness nur bei künftig praktisch funktionierendem Hardware-/Softwarepfad
 - NanaZip
 - generischer, interaktiver Standard-App-Initialisierungsworkflow für geschützte Windows-Dateizuordnungen
 - lokale Initialisierungsmarker unter `.generated/state/`
