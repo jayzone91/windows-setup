@@ -39,6 +39,10 @@
             "program": "pwsh"
           },
           {
+            "argsRegex": ".*Get-LogitechMouseBattery\\.ps1.*",
+            "program": "pwsh"
+          },
+          {
             "argsRegex": "focus-workspace [0-9]+",
             "program": "komorebic"
           }

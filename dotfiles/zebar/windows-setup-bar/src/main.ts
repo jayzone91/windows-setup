@@ -17,6 +17,10 @@ import { renderNetwork } from "./system/network";
 import { bindAudioControls, renderAudio } from "./system/audio";
 import { bindMediaControls, renderMedia } from "./system/media";
 import { renderDateTime, startDateTimeUpdates } from "./system/date-time";
+import {
+  renderLogitechMouseBattery,
+  startLogitechMouseBatteryMonitor,
+} from "./system/logitech-mouse-battery";
 
 type ProviderOutput = typeof providers.outputMap;
 
@@ -48,6 +52,8 @@ function renderRight(output: ProviderOutput): void {
 
   ${output.audio ? renderAudio(output.audio) : ""}
 
+  ${renderLogitechMouseBattery()}
+
   ${renderDateTime()}
   `;
 
@@ -67,3 +73,7 @@ providers.onOutput(() => {
 });
 
 render(providers.outputMap);
+
+startLogitechMouseBatteryMonitor(() => {
+  renderRight(providers.outputMap);
+});

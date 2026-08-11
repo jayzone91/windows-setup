@@ -177,6 +177,17 @@ Begründung:
 ## Theme
 
 - [x] Catppuccin Mocha ist die gemeinsame Designsprache
+- [x] Zebar zeigt den Akku der Logitech G502 X Plus über eine lokale PowerShell-Bridge zur G-HUB-WebSocket-API
+  - G HUB wird über `ws://127.0.0.1:9010` mit `Origin: file://` abgefragt; der direkte WebSocket-Zugriff aus dem Zebar-WebView wird nicht verwendet
+  - Zebar ruft die Bridge über den bereits etablierten `zebar.shellExec`-/PowerShell-Weg auf
+  - angezeigt werden Maus-Icon und Akkustand in Prozent; Wireless benötigt kein zusätzliches Statussymbol
+  - direkte USB-Verbindung wird zusätzlich mit einem USB-Symbol dargestellt
+  - beim Laden wird ein Catppuccin-Yellow-Blitz langsam von unten nach oben gefüllt
+  - bei vollständig geladenem Akku wird derselbe Blitz statisch in Catppuccin Green dargestellt
+  - der Prozentwert verwendet regulär Catppuccin Text, bei `<= 30 %` Catppuccin Peach und bei von G HUB gemeldetem `criticalLevel` Catppuccin Red
+  - fehlende bzw. nicht erreichbare G-HUB-/Mausdaten blenden das Widget aus, statt veraltete Werte anzuzeigen
+  - PowerShell-Bridge, Zebar-Build, Wireless-/USB-/Ladeanzeige und `just update` wurden auf dem aktuellen System praktisch getestet
+  - `just check` läuft nach der Umsetzung ohne neue relevante PSScriptAnalyzer-Probleme
 - [x] Keine künstliche universelle CSS-Datei für alle Programme
 - [x] Jedes Programm nutzt seine native bzw. stabilste Theme-Methode
 - [x] Funktionalität und Wartbarkeit haben Vorrang vor rein optischem Styling

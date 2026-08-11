@@ -394,6 +394,100 @@ body {
   color: var(--subtext0);
 }
 
+/* Logitech G502 X Plus */
+
+.mouse-battery-pill {
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.mouse-battery-icon {
+  color: var(--blue);
+}
+
+.mouse-battery-status-icon {
+  width: 18px;
+  height: 24px;
+  font-size: 18px;
+}
+
+.mouse-battery-usb-icon {
+  color: var(--sapphire);
+}
+
+.mouse-battery-charge-icon {
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 18px;
+
+  width: 18px;
+  height: 24px;
+
+  font-family: "JetBrainsMono Nerd Font", monospace;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.mouse-battery-charge-base,
+.mouse-battery-charge-fill {
+  position: absolute;
+  inset: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mouse-battery-charge-base {
+  color: var(--surface2);
+}
+
+.mouse-battery-charge-fill {
+  color: var(--yellow);
+
+  clip-path: inset(100% 0 0 0);
+
+  animation: mouse-battery-charge-fill 4000ms ease-in-out infinite;
+}
+
+.mouse-battery-charge-full {
+  color: var(--green);
+}
+
+.mouse-battery-level {
+  min-width: 34px;
+
+  color: var(--text);
+
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.mouse-battery-level.low {
+  color: var(--peach);
+}
+
+.mouse-battery-level.critical {
+  color: var(--red);
+}
+
+@keyframes mouse-battery-charge-fill {
+  0% {
+    clip-path: inset(100% 0 0 0);
+  }
+
+  75% {
+    clip-path: inset(0 0 0 0);
+  }
+
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
 /* Datum / Uhrzeit */
 
 .date-time-pill {

@@ -87,13 +87,10 @@ Arbeite selbstständig nach den Regeln der Roadmap weiter.
 ---
 
 
-Für Zebar:
-Neues Widget: Aktueller Akku Stand der Logitech Maus (falls auslesbar)
-
 Divers:
 - Prüfen ob man iMessage unter Windows gescheit zum laufen bekommt. Keine Bastelei, die Windows Phone App sagt zwar, das es gehen würde, die verliert jedoch regelmäßig die Verbindung zum telefon und dann geht gar nichts mehr.
 
-Umbau:
+Repo Umbau:
 - Terminal:
   - Die Konfig wird direkt im Modul gesetzt, windows terminal hat eine settings.json, die sollten wir stattdessen nehmen.
   - Standard settings für die erstinstallation sollten in config/terminal.psd1 stehe und nicht direkt im modul!

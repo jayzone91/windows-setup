@@ -54,6 +54,7 @@ Bereits umgesetzt sind unter anderem:
 - Everything als schneller Datei-/Ordnerindex für die Raycast-Extension
 - PowerToys Command Palette und PowerToys Run deaktiviert; PowerToys bleibt für weiterhin verwendete Module installiert
 - Zebar als eigene interaktive Desktop-Bar
+- Zebar-Akkuanzeige für die Logitech G502 X Plus über eine lokale PowerShell-Bridge zur G-HUB-WebSocket-API, inklusive Wireless-/USB-Erkennung, Lade-/Vollgeladen-Status und Catppuccin-Farbzuständen
 - definierter Desktop-Neustart nach dem Bootstrap zur Wiederherstellung der korrekten Zebar-Z-Order
 - OneCommander als Explorer-Ersatz
 - OneCommander-Desired-State-Precheck: Neustart nur bei tatsächlichem Konfigurations-Drift
