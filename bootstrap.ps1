@@ -158,6 +158,9 @@ try {
 
     Install-PackageGroup -Packages $Packages.Development -GroupName "Dev-Tools"
 
+    Install-PackageGroup `
+        -Packages $Packages.Gaming `
+        -GroupName "Gaming"
     Install-PackageGroup -Packages $Packages.Browser -GroupName "Browser"
 }
 finally {
@@ -254,6 +257,8 @@ Set-LanguageEnvironment
 Initialize-DevelopmentStorage `
     -Config $Storage
 
+Initialize-GamesDriveDirectories `
+    -Config $Storage
 Install-CodexCli
 
 
@@ -381,3 +386,4 @@ Send-WindowsSetupNotifications `
     -PendingReboot $rebootRequired `
     -RepositoryStatus $repositoryStatus `
     -RepositoryPath $Root
+

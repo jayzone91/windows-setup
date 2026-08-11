@@ -11,7 +11,26 @@
     }
 
     MinimumGamesSize = 100
+
 
+
+    GameLibraries     = @{
+
+        Root      = "G:\Games"
+
+        Steam     = "G:\Games\Steam"
+
+        Epic      = "G:\Games\Epic"
+
+        GOG       = "G:\Games\GOG"
+
+        EA        = "G:\Games\EA"
+
+        BattleNet = "G:\Games\Battle.net"
+
+        Ubisoft   = "G:\Games\Ubisoft"
+
+    }
     Paths            = @{
         Projects     = "D:\Projects"
         Build        = "D:\Build"

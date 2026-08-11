@@ -17,6 +17,10 @@ Bereits umgesetzt sind unter anderem:
 - Scoop-Buckets werden aus den Paketdefinitionen abgeleitet; pro Scoop-Paket ist der gewünschte Bucket explizit definiert
 - Paketmanager-Cleanup für Chocolatey und Scoop bei jedem Bootstrap-Lauf
 - eigene Home-Office-Paketgruppe mit Remote Desktop Manager und FileZilla
+- eigene Gaming-Paketgruppe mit Steam, Epic Games Launcher, GOG GALAXY, EA app, Battle.net und Ubisoft Connect
+- Battle.net-Installation über den generischen Winget-`InstallLocation`-Pfad
+- Steam, GOG GALAXY, EA app und Battle.net mit normalem Windows-Fensterverhalten außerhalb des komorebi-Tilings
+- komorebi-Movement-Animationen bewusst deaktiviert, da sie selbst bei 240 FPS sichtbar ruckelten; ohne Animationen reagiert das Tiling deutlich schneller
 - PCVisit Supporter Modul mit Installation-bei-Bedarf und PCVisit-eigenem Auto-Update
 - Versions-Pinning einzelner Pakete
 - Windows-Debloat und Grundkonfiguration
@@ -86,7 +90,7 @@ Bereits umgesetzt sind unter anderem:
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 - Zen-Mod-Precheck: Browser-Neustart nur, wenn konfigurierte Mods tatsächlich fehlen
 
-Die nächsten größeren Arbeitspakete sind Gaming, anschließend Logging/Tests und weitere Qualitätssicherung sowie verbleibender Catppuccin-Polish.
+Die Gaming-Launcher sind eingerichtet und praktisch getestet. Als Nächstes folgen die Game-Library-Pfade auf `G:`, sinnvolle Windows-Gaming-Einstellungen sowie anschließend Logging/Tests und weitere Qualitätssicherung.
 
 Siehe auch [`roadmap.md`](roadmap.md).
 
@@ -720,6 +724,45 @@ Ein wiederholter Lauf wurde praktisch verifiziert und meldet bei unverändertem 
 ```
 
 ---
+# Gaming
+
+Die benötigten Game-Launcher werden über die eigene Paketgruppe `Gaming` bereitgestellt:
+
+- Steam
+- Epic Games Launcher
+- GOG GALAXY
+- EA app
+- Battle.net
+- Ubisoft Connect
+
+Alle sechs Launcher wurden auf dem aktuellen System installiert und angemeldet.
+
+Battle.net benötigt im aktuellen Winget-Manifest einen expliziten Installationspfad. Der generische Winget-Paketworkflow unterstützt dafür optional `InstallLocation`; die Battle.net-Installation über diesen Pfad wurde praktisch erfolgreich getestet.
+
+Das Games-Laufwerk ist `G:`. Die eigentlichen Launcher-internen Library-/Default-Spielpfade werden erst als abgeschlossen betrachtet, nachdem sie über die offiziell unterstützten Launcher-Einstellungen praktisch auf `G:` gesetzt und getestet wurden. Undokumentierte interne Launcher-Datenbanken oder private Konfigurationsformate werden dafür nicht manipuliert.
+
+## Gaming-Launcher und komorebi
+
+Launcher, die normales freies Windows-Fensterverhalten benötigen, werden vollständig vom komorebi-Tiling ausgeschlossen.
+
+Praktisch bestätigt sind:
+
+- Steam-Hauptfenster über `steamwebhelper.exe`
+- GOG GALAXY über `GalaxyClient.exe`
+- EA app über `EADesktop.exe`
+- Battle.net über `Battle.net.exe`
+
+Für GOG GALAXY wird ausschließlich eine generelle `Exe = GalaxyClient.exe`-Ignore-Regel verwendet. Gleichzeitig vorhandene `manage`- und `tray_and_multi_window`-Regeln für dieselbe EXE führten weiterhin zum Tiling und wurden deshalb entfernt.
+
+## komorebi-Animationen
+
+Die komorebi-Movement-Animationen sind im produktiven Setup deaktiviert.
+
+Die ursprüngliche Konfiguration verwendete 60 FPS. Ein praktischer Vergleich mit 240 FPS beseitigte das sichtbare Ruckeln beim schnellen Öffnen und Neu-Tilen mehrerer Fenster nicht. Nach vollständigem Deaktivieren der Animationen und einem komorebi-Neustart reagierte derselbe Workflow deutlich schneller und flüssiger.
+
+Für dieses Setup hat deshalb direktes, reaktionsschnelles Tiling Vorrang vor Movement-Animationen. Weitere FPS-, Duration- oder Easing-Anpassungen werden nicht verfolgt, solange der Animationspfad selbst der praktisch bestätigte Engpass ist.
+
+---
 # Desktop Experience
 
 ## Zielbild
@@ -821,6 +864,7 @@ Umgesetzt sind:
 - Konfigurationsdateien als Hardlinks
 - Autostart über die Windows-Aufgabenplanung
 - erhöhte Ausführung, damit auch erhöhte Fenster getiled werden können
+- Movement-Animationen deaktiviert, da der Animationspfad praktisch als Ursache für sichtbares Ruckeln beim schnellen Tiling bestätigt wurde
 
 ## Focus Follows Mouse mit masir
 
@@ -1191,8 +1235,9 @@ Die ausführliche Priorisierung befindet sich in [`roadmap.md`](roadmap.md).
 
 Aktuell sind die nächsten Arbeitspakete:
 
-1. Gaming-Paketgruppe, Steam und Game-Library-Pfade
+1. Game-Library-Pfade der Launcher auf `G:` praktisch konfigurieren und testen
 2. sinnvolle Windows-Gaming-Einstellungen
 3. Logging, Tests und weitere Qualitätssicherung
 4. weiterer Catppuccin-Polish
+
 Brightness bleibt bewusst zurückgestellt und wird nur bei einem neuen, praktisch funktionierenden Hardware-/Softwarepfad erneut verfolgt.

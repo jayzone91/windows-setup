@@ -1,91 +1,85 @@
 {
   "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/v0.1.41/schema.bar.json",
-  "monitor": 0,
+  "center_widgets": [
+    {
+      "Komorebi": {
+        "focused_container": {
+          "display": "IconAndText",
+          "enable": true
+        }
+      }
+    }
+  ],
   "font_family": "JetBrainsMono Nerd Font",
   "font_size": 13,
-  "icon_scale": 1.5,
-  "height": 42,
-  "margin": {
-    "top": 6,
-    "bottom": 0,
-    "left": 8,
-    "right": 8
-  },
-  "padding": {
-    "horizontal": 6,
-    "vertical": 4
-  },
-  "widget_spacing": 8,
   "grouping": {
     "kind": "Widget",
     "rounding": 10,
     "style": "Default",
     "transparency_alpha": 220
   },
-  "theme": {
-    "palette": "Catppuccin",
-    "name": "Mocha",
-    "accent": "Maroon"
-  },
+  "height": 42,
+  "icon_scale": 1.5,
   "left_widgets": [
     {
       "Komorebi": {
+        "layout": {
+          "display": "Icon",
+          "enable": true
+        },
         "workspaces": {
           "enable": true,
           "hide_empty_workspaces": false
-        },
-        "layout": {
-          "enable": true,
-          "display": "Icon"
         }
       }
     }
   ],
-  "center_widgets": [
-    {
-      "Komorebi": {
-        "focused_container": {
-          "enable": true,
-          "display": "IconAndText"
-        }
-      }
-    }
-  ],
+  "margin": {
+    "bottom": 0,
+    "left": 8,
+    "right": 8,
+    "top": 6
+  },
+  "monitor": 0,
+  "padding": {
+    "horizontal": 6,
+    "vertical": 4
+  },
   "right_widgets": [
     {
       "Media": {
-        "enable": true,
-        "display": "Full"
+        "display": "Full",
+        "enable": true
       }
     },
     {
       "Cpu": {
-        "enable": true,
-        "data_refresh_interval": 2
+        "data_refresh_interval": 2,
+        "enable": true
       }
     },
     {
       "Memory": {
-        "enable": true,
-        "data_refresh_interval": 2
+        "data_refresh_interval": 2,
+        "enable": true
       }
     },
     {
       "Storage": {
-        "enable": true,
         "data_refresh_interval": 10,
-        "show_removable_disks": false,
+        "enable": true,
         "show_read_only_disks": false,
+        "show_removable_disks": false,
         "storage_display_name": "Mount"
       }
     },
     {
       "Network": {
+        "data_refresh_interval": 2,
         "enable": true,
         "show_activity": true,
-        "show_total_activity": false,
         "show_default_interface": true,
-        "data_refresh_interval": 2
+        "show_total_activity": false
       }
     },
     {
@@ -110,8 +104,6 @@
     {
       "Systray": {
         "enable": true,
-        "info_button": "Overflow",
-        "overflow_toggle_position": "Right",
         "hidden_icons": [
           {
             "guid": "ba82e2dc-f405-47ad-b032-cf0faa0e3933"
@@ -129,8 +121,16 @@
               "value": "Logitech"
             }
           }
-        ]
+        ],
+        "info_button": "Overflow",
+        "overflow_toggle_position": "Right"
       }
     }
-  ]
+  ],
+  "theme": {
+    "accent": "Maroon",
+    "name": "Mocha",
+    "palette": "Catppuccin"
+  },
+  "widget_spacing": 8
 }

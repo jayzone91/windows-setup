@@ -1,4 +1,4 @@
-﻿function Test-WingetPackage {
+function Test-WingetPackage {
     param(
         [Parameter(Mandatory)]
         [string]$Id
@@ -25,6 +25,8 @@ function Install-WingetPackage {
         [Parameter(Mandatory)]
         [ValidateSet("winget", "msstore")]
         [string]$Source,
+
+        [string]$InstallLocation,
 
         [string]$Version,
 
@@ -59,6 +61,18 @@ function Install-WingetPackage {
             "--accept-source-agreements"
             "--disable-interactivity"
         )
+
+        if ($InstallLocation) {
+            $expandedInstallLocation = (
+                [Environment]::ExpandEnvironmentVariables(
+                    $InstallLocation
+                )
+            )
+
+            $installArguments += @(
+                "--location", $expandedInstallLocation
+            )
+        }
 
         if ($Version) {
             $installArguments += @(
@@ -721,6 +735,8 @@ function Install-WingetPackage {
         [ValidateSet("winget", "msstore")]
         [string]$Source,
 
+        [string]$InstallLocation,
+
         [string]$Version,
 
         [bool]$Update = $true
@@ -754,6 +770,18 @@ function Install-WingetPackage {
             "--accept-source-agreements"
             "--disable-interactivity"
         )
+
+        if ($InstallLocation) {
+            $expandedInstallLocation = (
+                [Environment]::ExpandEnvironmentVariables(
+                    $InstallLocation
+                )
+            )
+
+            $installArguments += @(
+                "--location", $expandedInstallLocation
+            )
+        }
 
         if ($Version) {
             $installArguments += @(
@@ -1469,8 +1497,13 @@ function Install-PackageGroup {
         }
 
         $source = [string]$package.Source
+        $installLocation = $null
         $version = $null
         $update = $true
+
+        if ($package.ContainsKey("InstallLocation")) {
+            $installLocation = [string]$package.InstallLocation
+        }
 
         if ($package.ContainsKey("Version")) {
             $version = [string]$package.Version
@@ -1486,6 +1519,7 @@ function Install-PackageGroup {
                     -Id $package.Id `
                     -Name $package.Name `
                     -Source $source `
+                    -InstallLocation $installLocation `
                     -Version $version `
                     -Update $update
 
@@ -1689,8 +1723,13 @@ function Install-PackageGroup {
         }
 
         $source = [string]$package.Source
+        $installLocation = $null
         $version = $null
         $update = $true
+
+        if ($package.ContainsKey("InstallLocation")) {
+            $installLocation = [string]$package.InstallLocation
+        }
 
         if ($package.ContainsKey("Version")) {
             $version = [string]$package.Version
@@ -1706,6 +1745,7 @@ function Install-PackageGroup {
                     -Id $package.Id `
                     -Name $package.Name `
                     -Source $source `
+                    -InstallLocation $installLocation `
                     -Version $version `
                     -Update $update
 

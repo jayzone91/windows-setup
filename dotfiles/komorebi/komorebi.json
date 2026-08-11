@@ -1,53 +1,53 @@
 {
   "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/v0.1.41/schema.json",
-  "app_specific_configuration_path": "$Env:USERPROFILE/applications.json",
-  "window_hiding_behaviour": "Cloak",
-  "cross_monitor_move_behaviour": "Insert",
-  "default_workspace_padding": 6,
-  "default_container_padding": 6,
-  "border": true,
-  "border_width": 3,
-  "border_offset": -1,
   "animation": {
-    "enabled": true,
     "duration": 200,
-    "fps": 60,
+    "enabled": false,
+    "fps": 240,
     "style": "EaseOutSine"
   },
-  "theme": {
-    "palette": "Catppuccin",
-    "name": "Mocha",
-    "unfocused_border": "Overlay0",
-    "bar_accent": "Maroon",
-    "floating_border": "Green",
-    "single_border": "Maroon",
-    "monocle_border": "Rosewater",
-    "stack_border": "Green"
-  },
+  "app_specific_configuration_path": "$Env:USERPROFILE/applications.json",
+  "border": true,
+  "border_offset": -1,
+  "border_width": 3,
+  "cross_monitor_move_behaviour": "Insert",
+  "default_container_padding": 6,
+  "default_workspace_padding": 6,
   "monitors": [
     {
       "workspaces": [
         {
-          "name": "1",
-          "layout": "UltrawideVerticalStack"
+          "layout": "UltrawideVerticalStack",
+          "name": "1"
         },
         {
-          "name": "2",
-          "layout": "UltrawideVerticalStack"
+          "layout": "UltrawideVerticalStack",
+          "name": "2"
         },
         {
-          "name": "3",
-          "layout": "UltrawideVerticalStack"
+          "layout": "UltrawideVerticalStack",
+          "name": "3"
         },
         {
-          "name": "4",
-          "layout": "UltrawideVerticalStack"
+          "layout": "UltrawideVerticalStack",
+          "name": "4"
         },
         {
-          "name": "5",
-          "layout": "UltrawideVerticalStack"
+          "layout": "UltrawideVerticalStack",
+          "name": "5"
         }
       ]
     }
-  ]
+  ],
+  "theme": {
+    "bar_accent": "Maroon",
+    "floating_border": "Green",
+    "monocle_border": "Rosewater",
+    "name": "Mocha",
+    "palette": "Catppuccin",
+    "single_border": "Maroon",
+    "stack_border": "Green",
+    "unfocused_border": "Overlay0"
+  },
+  "window_hiding_behaviour": "Cloak"
 }

@@ -1,147 +1,147 @@
 {
-  "schemaVersion": 1,
   "raycast": {
-    "sourceSchemaVersion": 2,
+    "nodeExtensions": {
+      "extensions": [
+        {
+          "author": "anastasiy_safari",
+          "name": "everything-search",
+          "uuid": "6b600d96-2484-4f5c-ba8b-b5754e3aa9ba"
+        },
+        {
+          "author": "thomas",
+          "name": "visual-studio-code",
+          "uuid": "95e41a2e-a943-4d49-b0df-152c3db2f7e0"
+        },
+        {
+          "author": "abielzulio",
+          "name": "chatgpt",
+          "uuid": "35fa3856-f360-465f-885c-acf4ebcf19b1"
+        },
+        {
+          "author": "mblode",
+          "name": "google-search",
+          "uuid": "6ca71a12-3d6f-4dba-95d0-1d187c8706d4"
+        },
+        {
+          "author": "asubbotin",
+          "name": "shell",
+          "uuid": "e387a763-b755-406b-ade3-fe5add1718a0"
+        },
+        {
+          "author": "Keyruu",
+          "name": "zen-browser",
+          "uuid": "4f82f18c-51bc-4b7d-a1fa-342a5d5e2fc8"
+        },
+        {
+          "author": "Sn0wye",
+          "name": "lucide-icons",
+          "uuid": "92bc435d-4a6e-41d8-b316-b6241a7a7b80"
+        }
+      ],
+      "schemaVersion": 1
+    },
     "settings": {
-      "schemaVersion": 1,
+      "commands": [
+        {
+          "enabled": true,
+          "extensionId": "e:n:6ca71a12-3d6f-4dba-95d0-1d187c8706d4",
+          "id": "c:n:6ca71a12-3d6f-4dba-95d0-1d187c8706d4::-::index"
+        },
+        {
+          "enabled": false,
+          "extensionId": "e:n:95e41a2e-a943-4d49-b0df-152c3db2f7e0",
+          "id": "c:n:95e41a2e-a943-4d49-b0df-152c3db2f7e0::-::commandpalette"
+        }
+      ],
+      "frecency": [],
       "general": {
-        "openAtLogin": true,
-        "showInMenuBar": true,
+        "additionalCertificateAuthorities": [],
         "appearance": "dark",
-        "themeDarkId": "01KZPDNQ5TRDGCX7PB249BWNHX",
-        "windowMode": "compact",
-        "windowPresentationMode": "mouse-screen",
-        "windowActivationBehavior": "move-to-active-space",
+        "builtinHotkeysPreset": "improved",
+        "escapeKeyBehavior": "pop-back-or-close",
         "globalHotkey": {
           "kind": {
-            "type": "SingleStep",
             "shortcut": {
+              "key": {
+                "code": 57,
+                "type": "LayoutIndependent"
+              },
               "modifiers": [
                 {
                   "modifier": "Meta"
                 }
-              ],
-              "key": {
-                "type": "LayoutIndependent",
-                "code": 57
-              }
-            }
+              ]
+            },
+            "type": "SingleStep"
           },
           "locality": "Global"
         },
-        "popToRootTimeout": 90,
-        "escapeKeyBehavior": "pop-back-or-close",
         "navigationBindings": "vim-motions",
+        "openAtLogin": true,
         "pageNavigationKeys": "arrow-keys",
-        "useSystemProxySettings": false,
-        "additionalCertificateAuthorities": [],
+        "popToRootTimeout": 90,
         "rootSearchSensitivity": "high",
-        "builtinHotkeysPreset": "improved"
+        "showInMenuBar": true,
+        "themeDarkId": "01KZPDNQ5TRDGCX7PB249BWNHX",
+        "useSystemProxySettings": false,
+        "windowActivationBehavior": "move-to-active-space",
+        "windowMode": "compact",
+        "windowPresentationMode": "mouse-screen"
       },
+      "internalExtensions": [],
+      "nodeExtensions": [
+        {
+          "enabled": true,
+          "id": "e:n:35fa3856-f360-465f-885c-acf4ebcf19b1"
+        },
+        {
+          "enabled": true,
+          "id": "e:n:4f82f18c-51bc-4b7d-a1fa-342a5d5e2fc8"
+        },
+        {
+          "enabled": true,
+          "id": "e:n:6b600d96-2484-4f5c-ba8b-b5754e3aa9ba"
+        },
+        {
+          "enabled": true,
+          "id": "e:n:6ca71a12-3d6f-4dba-95d0-1d187c8706d4"
+        },
+        {
+          "enabled": true,
+          "id": "e:n:92bc435d-4a6e-41d8-b316-b6241a7a7b80"
+        },
+        {
+          "enabled": true,
+          "id": "e:n:95e41a2e-a943-4d49-b0df-152c3db2f7e0"
+        },
+        {
+          "enabled": true,
+          "id": "e:n:e387a763-b755-406b-ade3-fe5add1718a0"
+        }
+      ],
+      "schemaVersion": 1,
       "themes": [
         {
-          "id": "01KZPDNQ5TRDGCX7PB249BWNHX",
-          "name": "Catppuccin Mocha",
+          "accent": "#4FA3F8",
           "appearance": "dark",
           "background": "#1E1E2E",
           "backgroundSecondary": "#1E1E2E",
-          "foreground": "#CDD6F4",
-          "accent": "#4FA3F8",
-          "selection": "#6C7086",
-          "loader": "#7F849C",
-          "red": "#F38BA8",
-          "orange": "#FAB387",
-          "yellow": "#F9E2AF",
-          "green": "#A6E3A1",
           "blue": "#89B4FA",
+          "foreground": "#CDD6F4",
+          "green": "#A6E3A1",
+          "id": "01KZPDNQ5TRDGCX7PB249BWNHX",
+          "loader": "#7F849C",
+          "magenta": "#CBA6F7",
+          "name": "Catppuccin Mocha",
+          "orange": "#FAB387",
           "purple": "#B4BEFE",
-          "magenta": "#CBA6F7"
-        }
-      ],
-      "nodeExtensions": [
-        {
-          "id": "e:n:35fa3856-f360-465f-885c-acf4ebcf19b1",
-          "enabled": true
-        },
-        {
-          "id": "e:n:4f82f18c-51bc-4b7d-a1fa-342a5d5e2fc8",
-          "enabled": true
-        },
-        {
-          "id": "e:n:6b600d96-2484-4f5c-ba8b-b5754e3aa9ba",
-          "enabled": true
-        },
-        {
-          "id": "e:n:6ca71a12-3d6f-4dba-95d0-1d187c8706d4",
-          "enabled": true
-        },
-        {
-          "id": "e:n:92bc435d-4a6e-41d8-b316-b6241a7a7b80",
-          "enabled": true
-        },
-        {
-          "id": "e:n:95e41a2e-a943-4d49-b0df-152c3db2f7e0",
-          "enabled": true
-        },
-        {
-          "id": "e:n:e387a763-b755-406b-ade3-fe5add1718a0",
-          "enabled": true
-        }
-      ],
-      "commands": [
-        {
-          "id": "c:n:6ca71a12-3d6f-4dba-95d0-1d187c8706d4::-::index",
-          "extensionId": "e:n:6ca71a12-3d6f-4dba-95d0-1d187c8706d4",
-          "enabled": true
-        },
-        {
-          "id": "c:n:95e41a2e-a943-4d49-b0df-152c3db2f7e0::-::commandpalette",
-          "extensionId": "e:n:95e41a2e-a943-4d49-b0df-152c3db2f7e0",
-          "enabled": false
-        }
-      ],
-      "internalExtensions": [],
-      "frecency": []
-    },
-    "nodeExtensions": {
-      "schemaVersion": 1,
-      "extensions": [
-        {
-          "uuid": "6b600d96-2484-4f5c-ba8b-b5754e3aa9ba",
-          "name": "everything-search",
-          "author": "anastasiy_safari"
-        },
-        {
-          "uuid": "95e41a2e-a943-4d49-b0df-152c3db2f7e0",
-          "name": "visual-studio-code",
-          "author": "thomas"
-        },
-        {
-          "uuid": "35fa3856-f360-465f-885c-acf4ebcf19b1",
-          "name": "chatgpt",
-          "author": "abielzulio"
-        },
-        {
-          "uuid": "6ca71a12-3d6f-4dba-95d0-1d187c8706d4",
-          "name": "google-search",
-          "author": "mblode"
-        },
-        {
-          "uuid": "e387a763-b755-406b-ade3-fe5add1718a0",
-          "name": "shell",
-          "author": "asubbotin"
-        },
-        {
-          "uuid": "4f82f18c-51bc-4b7d-a1fa-342a5d5e2fc8",
-          "name": "zen-browser",
-          "author": "Keyruu"
-        },
-        {
-          "uuid": "92bc435d-4a6e-41d8-b316-b6241a7a7b80",
-          "name": "lucide-icons",
-          "author": "Sn0wye"
+          "red": "#F38BA8",
+          "selection": "#6C7086",
+          "yellow": "#F9E2AF"
         }
       ]
-    }
-  }
+    },
+    "sourceSchemaVersion": 2
+  },
+  "schemaVersion": 1
 }

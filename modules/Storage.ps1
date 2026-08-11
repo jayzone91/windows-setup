@@ -646,3 +646,54 @@ function Add-UserPathEntry {
         $env:Path = "$Path;$env:Path"
     }
 }
+
+function Initialize-GamesDriveDirectories {
+
+    param(
+        [Parameter(Mandatory)]
+        $Config
+    )
+
+    Write-Host ""
+    Write-Host "========================================"
+    Write-Host " Games Drive Verzeichnisse"
+    Write-Host "========================================"
+
+    $gamesVolume = Get-Volume `
+        -DriveLetter $Config.GamesDrive.Letter `
+        -ErrorAction SilentlyContinue
+
+    if (-not $gamesVolume) {
+        Write-Warning (
+            "Games Drive {0}: wurde nicht gefunden." `
+                -f $Config.GamesDrive.Letter
+        )
+
+        return
+    }
+
+    if ($gamesVolume.FileSystem -ne "NTFS") {
+        throw (
+            "Laufwerk {0}: ist kein NTFS Volume." `
+                -f $Config.GamesDrive.Letter
+        )
+    }
+
+    foreach ($path in $Config.GameLibraries.Values) {
+        if (Test-Path -LiteralPath $path) {
+            Write-Host "[SKIP] $path bereits vorhanden."
+            continue
+        }
+
+        New-Item `
+            -Path $path `
+            -ItemType Directory `
+            -Force |
+        Out-Null
+
+        Write-Host "[CREATE] $path"
+    }
+
+    Write-Host "[OK] Games-Library-Verzeichnisse vorbereitet." `
+        -ForegroundColor Green
+}

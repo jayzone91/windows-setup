@@ -30,6 +30,7 @@
 # Winget unterstützt zusätzlich:
 #
 #   Version = "1.2.3"               # feste Version
+#   InstallLocation = "%PROGRAMFILES%\App" # optionaler Installationspfad
 #
 # Beispiele:
 #
@@ -206,6 +207,49 @@
         }
     )
 
+    Gaming      = @(
+        @{
+            Name   = "Steam"
+            Id     = "Valve.Steam"
+            Source = "winget"
+            Update = $true
+        },
+
+        @{
+            Name   = "Epic Games Launcher"
+            Id     = "EpicGames.EpicGamesLauncher"
+            Source = "winget"
+            Update = $true
+        },
+
+        @{
+            Name   = "GOG GALAXY"
+            Id     = "GOG.Galaxy"
+            Source = "winget"
+            Update = $true
+        },
+
+        @{
+            Name   = "EA app"
+            Id     = "ElectronicArts.EADesktop"
+            Source = "winget"
+            Update = $true
+        },
+
+        @{
+            Name   = "Battle.net"
+            Id     = "Blizzard.BattleNet"
+            Source = "winget"
+            InstallLocation = "%PROGRAMFILES(X86)%\Battle.net"
+            Update = $true
+        },
+
+        @{
+            Name   = "Ubisoft Connect"
+            Id     = "Ubisoft.Connect"
+            Source = "winget"
+            Update = $true
+        })
     Browser     = @(
         @{
             Name   = "Zen Browser"
@@ -365,3 +409,4 @@
         }
     )
 }
+

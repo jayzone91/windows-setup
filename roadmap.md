@@ -955,7 +955,15 @@ Grund:
 - [x] Workspace-Steuerung
 - [x] Layout-Wechsel
 - [x] Konfiguration im Repository
+
+## Animationen / Performance
 
+- [x] komorebi-Movement-Animationen praktisch auf Ruckeln untersucht
+- [x] vorhandene 60-FPS-Konfiguration als nicht ausreichend flüssig bestätigt
+- [x] 240 FPS als Vergleich getestet; Ruckeln beim schnellen Fenster-Spawn und Neu-Tilen blieb bestehen
+- [x] Animationen vollständig deaktiviert
+- [x] nach komorebi-Neustart deutlich schnelleres und flüssigeres Tiling praktisch bestätigt
+- [x] produktiver Desired State verwendet keine Movement-Animationen
 ## Rechte / erhöhte Anwendungen
 
 - [x] komorebi über Scheduled Task mit erhöhten Rechten starten
@@ -1670,19 +1678,53 @@ Remote Desktop Manager verwendet eine externe Datenbank als zentrale Quelle der 
 
 Das System soll nach Neuinstallation auch als Gaming-PC möglichst schnell einsatzbereit sein.
 
-## Bereits vorhanden
+## Bereits vorhanden / praktisch bestätigt
 
 - [x] separates `G:`-Games-Laufwerk
 - [x] Gaming-Funktionen im Debloat nicht aggressiv entfernen
 - [x] NVIDIA-Treiber-/App-Workflow
+- [x] eigene Paketgruppe `Gaming`
+- [x] Steam installiert und angemeldet
+- [x] Epic Games Launcher installiert und angemeldet
+- [x] GOG GALAXY installiert und angemeldet
+- [x] EA app installiert und angemeldet
+- [x] Battle.net installiert und angemeldet
+- [x] Ubisoft Connect installiert und angemeldet
+- [x] Battle.net über den generischen Winget-`InstallLocation`-Pfad erfolgreich installiert
+- [x] Steam vollständig aus komorebi-Tiling ausgeschlossen
+- [x] GOG GALAXY vollständig aus komorebi-Tiling ausgeschlossen
+- [x] EA app vollständig aus komorebi-Tiling ausgeschlossen
+- [x] Battle.net vollständig aus komorebi-Tiling ausgeschlossen
+
+## Launcher-/komorebi-Entscheidungen
+
+Launcher, die normales freies Windows-Fensterverhalten benötigen, werden über stabile EXE-Matcher mit `matching_strategy = Equals` vollständig von komorebi ignoriert.
+
+Praktisch bestätigte Fensteridentitäten:
+
+- Steam-Hauptfenster: `steamwebhelper.exe`
+- GOG GALAXY: `GalaxyClient.exe`
+- EA app: `EADesktop.exe`
+- Battle.net: `Battle.net.exe`
+
+Für GOG GALAXY wird bewusst ausschließlich eine generelle `Exe = GalaxyClient.exe`-Ignore-Regel verwendet. Gleichzeitig vorhandene `manage`- bzw. `tray_and_multi_window`-Regeln für dieselbe EXE wurden verworfen, weil GOG damit weiterhin getiled wurde.
+
+## komorebi-Animationen
+
+- [x] Ausgangszustand mit aktivierten Movement-Animationen praktisch untersucht
+- [x] 60 FPS als vorhandene Konfiguration identifiziert
+- [x] 240 FPS praktisch getestet; sichtbares Ruckeln beim schnellen Öffnen und Neu-Tilen blieb bestehen
+- [x] Animationen vollständig deaktiviert und komorebi neu gestartet
+- [x] Tiling ohne Animationen praktisch als deutlich schneller und flüssiger bestätigt
+- [x] Movement-Animationen für den produktiven Desired State bewusst deaktiviert lassen
+- [x] keine weitere FPS-/Duration-/Easing-Optimierung verfolgen, solange der Animationspfad selbst der bestätigte Engpass ist
 
 ## Offen
 
-- [ ] eigene Paketgruppe `Gaming`
-- [ ] Steam installieren
-- [ ] ggf. weitere Launcher nur nach tatsächlichem Bedarf
-- [ ] Steam Library auf `G:` vorbereiten
-- [ ] Standard-Installationspfade prüfen
+- [ ] Steam Library auf `G:\Games\Steam` praktisch einrichten
+- [ ] Launcher-spezifische Spielebibliotheken unter `G:\Games\` praktisch einrichten
+- [ ] Default-Spielpfade in Steam, Epic, GOG, EA, Battle.net und Ubisoft Connect über offiziell unterstützte Launcher-Einstellungen soweit möglich auf `G:` setzen
+- [ ] keine undokumentierten internen Launcher-Datenbanken oder privaten Konfigurationsformate manipulieren
 - [ ] Xbox-/Gaming-Komponenten nur behalten, wenn benötigt
 - [ ] Game Mode prüfen/konfigurieren
 - [ ] Hardware Accelerated GPU Scheduling prüfen
@@ -1691,7 +1733,6 @@ Das System soll nach Neuinstallation auch als Gaming-PC möglichst schnell einsa
 - [ ] keine unnötigen "Gaming Tweaks", die Stabilität verschlechtern
 
 ---
-
 # 27. Phase 24 – Apple / iCloud Integration
 
 - [x] iCloud installieren
@@ -1967,11 +2008,10 @@ Lock Keys bleiben beim bereits getesteten Windhawk `Lock Keys Notifier`; ein eig
 
 ## Priorität 4 – Gaming
 
-1. [ ] Paketgruppe
-2. [ ] Steam
-3. [ ] Game-Library-Pfade
+1. [x] Paketgruppe
+2. [x] Steam und weitere benötigte Launcher
+3. [ ] Game-Library-Pfade auf `G:`
 4. [ ] sinnvolle Windows-Gaming-Einstellungen
-
 ## Priorität 5 – Qualität
 
 1. [ ] Logging

@@ -273,6 +273,15 @@
       }
     ]
   },
+  "Battle.net": {
+    "ignore": [
+      {
+        "id": "Battle.net.exe",
+        "kind": "Exe",
+        "matching_strategy": "Equals"
+      }
+    ]
+  },
   "Battlestate Games Launcher": {
     "floating": [
       {
@@ -601,6 +610,13 @@
     ]
   },
   "EA Desktop": {
+    "ignore": [
+      {
+        "id": "EADesktop.exe",
+        "kind": "Exe",
+        "matching_strategy": "Equals"
+      }
+    ],
     "tray_and_multi_window": [
       {
         "id": "EADesktop.exe",
@@ -900,20 +916,6 @@
   },
   "GOG Galaxy": {
     "ignore": [
-      {
-        "id": "Chrome_RenderWidgetHostHWND",
-        "kind": "Class",
-        "matching_strategy": "Legacy"
-      }
-    ],
-    "manage": [
-      {
-        "id": "GalaxyClient.exe",
-        "kind": "Exe",
-        "matching_strategy": "Equals"
-      }
-    ],
-    "tray_and_multi_window": [
       {
         "id": "GalaxyClient.exe",
         "kind": "Exe",
@@ -2437,44 +2439,14 @@
     ]
   },
   "Steam": {
-    "floating": [
-      [
-        {
-          "id": "steam.exe",
-          "kind": "Exe",
-          "matching_strategy": "Equals"
-        },
-        {
-          "id": "BootstrapUpdateUIClass",
-          "kind": "Class",
-          "matching_strategy": "Equals"
-        }
-      ]
-    ],
     "ignore": [
-      [
-        {
-          "id": "steamwebhelper.exe",
-          "kind": "Exe",
-          "matching_strategy": "Equals"
-        },
-        {
-          "id": "Steam",
-          "kind": "Title",
-          "matching_strategy": "DoesNotEqual"
-        }
-      ]
-    ],
-    "layered": [
       {
         "id": "steam.exe",
         "kind": "Exe",
         "matching_strategy": "Equals"
-      }
-    ],
-    "tray_and_multi_window": [
+      },
       {
-        "id": "steam.exe",
+        "id": "steamwebhelper.exe",
         "kind": "Exe",
         "matching_strategy": "Equals"
       }
