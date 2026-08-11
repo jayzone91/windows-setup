@@ -537,6 +537,28 @@ function Set-WindhawkModSettings {
             $currentValue = if ($rawValue -is [bool]) {
                 $rawValue.ToString().ToLowerInvariant()
             }
+            elseif (
+                $desiredValue -in @("true", "false") -and
+                $rawValue -is [IConvertible]
+            ) {
+                $numericValue = [Convert]::ToInt32(
+                    $rawValue,
+                    [Globalization.CultureInfo]::InvariantCulture
+                )
+
+                if ($numericValue -eq 0) {
+                    "false"
+                }
+                elseif ($numericValue -eq 1) {
+                    "true"
+                }
+                else {
+                    [Convert]::ToString(
+                        $rawValue,
+                        [Globalization.CultureInfo]::InvariantCulture
+                    )
+                }
+            }
             elseif ($null -eq $rawValue) {
                 ""
             }

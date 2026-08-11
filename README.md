@@ -49,6 +49,8 @@ Bereits umgesetzt sind unter anderem:
 - ReFS Dev Drive und separates Games-Laufwerk
 - Microsoft Defender Dev Drive Performance Mode
 - automatische wöchentliche Wartung
+- Scheduled Tasks werden vor dem Registrieren gegen Action, Trigger, Principal und Settings verglichen und bei unverändertem Desired State nicht neu geschrieben
+- der Weekly-Maintenance-Task normalisiert die Trigger-Uhrzeit auf lokale Wall-Clock-Zeit, damit UTC-/Offset-Darstellungen keinen künstlichen Drift erzeugen
 - Desktop-Benachrichtigungen
 - fingerprint-gesteuerte PSScriptAnalyzer-Codeprüfung: der Bootstrap verwendet einen schnellen Git-basierten Codezustand und startet den vollständigen Analyzer nur bei geändertem PowerShell-Code
 - `just` als einheitliche Bedienoberfläche für manuelle Projektaktionen
@@ -60,6 +62,7 @@ Bereits umgesetzt sind unter anderem:
 - `just desktop-restart` für einen definierten Neustart von komorebi, whkd, masir, Zebar und Volume-OSD
 - `just ghub-backup` und `just ghub-restore` für bewusste G-HUB-Konfigurations-Snapshots
 - Bootstrap-Ausführung mit `ExecutionPolicy Bypass` ausschließlich auf Prozessebene
+- interaktive Benutzerabfragen bleiben über zentrale Helper in allen Ausgabemodi sichtbar, auch im normalen stillen Bootstrap
 - komorebi + whkd als Tiling Window Manager
 - masir für Focus Follows Mouse
 - Raycast als primärer Launcher über `Win + Space`, inklusive Catppuccin-Mocha-Theme und reproduzierbarem Desired-State-/Backup-/Restore-Workflow
@@ -69,7 +72,8 @@ Bereits umgesetzt sind unter anderem:
 - Zebar führt `npm ci` nur bei Dependency-Drift aus und baut das TypeScript-Bundle nur bei geändertem Build-Input oder fehlenden Build-Artefakten neu
 - Dev-Drive-Paketcache-Konfiguration für npm/pnpm/Yarn sowie Bun-/Go-Umgebungswerte wird über lokalen State nur bei geändertem Desired State erneut geschrieben
 - Zebar-Akkuanzeige für die Logitech G502 X Plus über eine lokale PowerShell-Bridge zur G-HUB-WebSocket-API, inklusive Wireless-/USB-Erkennung, Lade-/Vollgeladen-Status und Catppuccin-Farbzuständen
-- definierter Desktop-Neustart nach dem Bootstrap zur Wiederherstellung der korrekten Zebar-Z-Order
+- komorebi/whkd/masir/Zebar werden als gekoppelter Desktop-Stack nur bei relevantem Konfigurations-, Task-, Build- oder Runtime-Drift neu gestartet; die definierte Startreihenfolge bleibt erhalten
+- Volume OSD wird bei eigenständigem Drift gezielt neu gestartet, ohne dafür unnötig den kompletten Desktop-Stack zu beenden
 - OneCommander als Explorer-Ersatz
 - OneCommander-Desired-State-Precheck: Neustart nur bei tatsächlichem Konfigurations-Drift
 - Catppuccin-Mocha-Theme für OneCommander
@@ -91,6 +95,11 @@ Bereits umgesetzt sind unter anderem:
 - kompakter Mauve-Punkt unter dem aktiven Taskbar-Fenster statt des RosePine-Aktivrahmens
 - Windows 11 Start Menu Styler über Windhawk mit RosePine als Layout-Basis und Catppuccin-Mocha-Farboverrides
 - Startmenü und Suchansicht mit `Base #1e1e2e`, dezentem `Surface1 #45475a`-Außenrahmen und Mauve-Fokusakzent
+- Windhawk-Mod-Settings werden gegen den tatsächlichen Runtime-Zustand verglichen; unveränderte Settings und Enable-Zustände werden nicht erneut geschrieben
+- Windows-Shell-, Theme-, Power- und Wallpaper-Einstellungen werden vor Schreiboperationen auf Drift geprüft; Debloat bleibt bewusst bei jedem Bootstrap aktiv
+- Windows Explorer wird nur noch bei tatsächlichem Shell-Drift neu gestartet
+- Chromium-/Zen-Browser-Policies werden nur bei tatsächlichem Drift neu geschrieben
+- Zig-`cc`-/`c++`-Scoop-Shims werden über Desired-State-/Shim-State geprüft und bei unverändertem Zustand nicht neu erzeugt
 - eigenes Catppuccin-Mocha-Volume-OSD für Volume Up/Down und Mute/Unmute
 - vollständige Interception der Volume-Tasten verhindert das parallele native Windows-Volume-OSD
 - persistente Volume-Pill aktualisiert bei schnellen Eingaben nur ihren Zustand und flackert dadurch nicht durch wiederholtes Neu-Rendern
@@ -175,6 +184,7 @@ Dabei gilt projektweit:
 - `just update-log` zeigt die vollständige Ausgabe einschließlich `OK`, `SKIP`, Paketstatus und Diagnoseinformationen. **Funktionale Bootstrap-Tests werden mit diesem Modus durchgeführt.**
 - `just update-performance` startet denselben stillen Bootstrap über `scripts/Measure-BootstrapPerformance.ps1` und gibt anschließend nur Laufzeit und `TotalSeconds` aus. **Performance-Tests werden ausschließlich mit diesem Modus durchgeführt.**
 - Der Scheduled Task startet `bootstrap.ps1` ohne Ausgabeparameter und bleibt damit im Hintergrund still.
+- Interaktive Benutzerkommunikation ist davon ausgenommen: erforderliche Hinweise und Eingabeaufforderungen werden über `Write-WindowsSetupInteractive` / `Read-WindowsSetupPrompt` unabhängig vom Ausgabemodus sichtbar ausgegeben, damit ein Erstlauf im stillen Modus nicht unsichtbar auf Eingaben wartet.
 
 Die persistente Protokollierung ist davon getrennt. Eine zentrale Log-Funktion für Warnungen/Fehler mit Timestamp sowie eine automatische Log-Retention sind als nächste Qualitätsstufen vorgesehen.
 
@@ -186,14 +196,21 @@ Ausgangsmessung vor der Optimierungsrunde auf dem vollständig eingerichteten Sy
 03:41.67
 ```
 
-Nach den bisher praktisch getesteten Optimierungen benötigt der stille Performance-Lauf:
+Nach der ersten praktisch getesteten Optimierungsrunde lag der stille Performance-Lauf bei:
 
 ```text
 01:10.73
 70,73 Sekunden
 ```
 
-Das entspricht einer Reduktion der gemessenen Laufzeit um rund **68,1 %**. Konsolenausgabe ist bei Performance-Messungen bewusst deaktiviert, damit Terminal-I/O den Vergleich nicht verfälscht.
+Nach der anschließenden Desired-State-Runde mit Driftprüfungen für Windhawk, Scheduled Tasks, Windows-Konfiguration, Desktop-Restarts, Zig-Shims und Browser-Policies liegt der aktuell praktisch bestätigte Lauf bei:
+
+```text
+00:58.36
+58,36 Sekunden
+```
+
+Damit wurde die gemessene Laufzeit gegenüber dem ursprünglichen Stand von 221,67 Sekunden um rund **73,7 %** reduziert. Gegenüber dem bereits optimierten 70,73-Sekunden-Stand entspricht die zweite Runde nochmals rund **17,5 %** weniger Laufzeit. Konsolenausgabe ist bei Performance-Messungen bewusst deaktiviert, damit Terminal-I/O den Vergleich nicht verfälscht.
 
 ## Projekt prüfen
 
@@ -211,7 +228,9 @@ Der Bootstrap vergleicht denselben Zustand. Ist der PowerShell-Code unverändert
 just desktop-restart
 ```
 
-Die Recipe beendet Volume-OSD, Zebar und die komorebi-Komponenten kontrolliert. Anschließend werden komorebi, whkd und masir gestartet, danach Zebar und anschließend das Volume-OSD. Derselbe Ablauf wird am Ende des Bootstrap verwendet, damit die Desktop-Komponenten nach Änderungen in einem definierten Zustand laufen.
+Die Recipe erzwingt bewusst einen kontrollierten Neustart von Volume-OSD, Zebar und den komorebi-Komponenten. Anschließend werden komorebi, whkd und masir gestartet, danach Zebar und anschließend das Volume-OSD.
+
+Der normale Bootstrap führt diesen Neustart dagegen nur bei tatsächlichem Drift aus. komorebi, whkd, masir und Zebar bleiben funktional gekoppelt und werden gemeinsam neu gestartet, wenn sich ein relevanter Teil des Desktop-Stacks geändert hat oder ein erwarteter Prozess fehlt. Ist ausschließlich das Volume OSD betroffen, wird nur dieses gezielt neu gestartet.
 
 ## Logitech G HUB sichern und wiederherstellen
 

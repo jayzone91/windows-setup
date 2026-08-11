@@ -134,6 +134,7 @@ Windows Desktop
 - [x] `just update-performance` führt über `scripts/Measure-BootstrapPerformance.ps1` denselben parameterlosen/stillen Bootstrap aus und misst reproduzierbar die Laufzeit
 - [x] Performance-Tests werden ohne reguläre Bootstrap-Ausgabe durchgeführt; funktionale Tests verwenden `-Log`
 - [x] `just check` und Bootstrap verwenden denselben zentralen `Test-PowerShellCode`-Workflow; `just check` führt den vollständigen strikten Analyzer aus und aktualisiert danach den Git-basierten Codezustand, während der Bootstrap den Analyzer nur bei geändertem PowerShell-Code ausführt
+- [x] interaktive Bootstrap-Kommunikation wird zentral über `Write-WindowsSetupInteractive` und `Read-WindowsSetupPrompt` geführt, wenn sie unabhängig vom gewählten Ausgabemodus sichtbar bleiben muss
 - [x] interne PSScriptAnalyzer-Runtimefehler einzelner Dateien werden einmal in einem frischen `pwsh -NoProfile`-Prozess erneut geprüft
 - [x] `just desktop-restart` startet die Desktop-Umgebung kontrolliert neu
 - [x] `just ghub-backup` sichert die G-HUB-Konfiguration bewusst ins Repository
@@ -250,6 +251,8 @@ Begründung:
 - [x] `-Warning` zeigt nur Warnungen und Fehler
 - [x] `-Log` zeigt die vollständige Konsolenausgabe
 - [x] Weekly-Maintenance-Task ruft den Bootstrap weiterhin ohne Ausgabeparameter auf
+- [x] interaktive Hinweise und Benutzerabfragen werden über zentrale Always-Output-Helper unabhängig von `silent` / `-Warning` / `-Log` sichtbar ausgegeben
+- [x] Always-Output-Verhalten praktisch mit `just update`, `just update-warning` und `just update-log` getestet
 - [x] funktionale Bootstrap-Tests verwenden `-Log`
 - [x] Performance-Tests verwenden den stillen `just update-performance`-Pfad
 - [ ] zentrale persistente Logging-Strategie für komplette Bootstrap-Läufe
@@ -283,7 +286,14 @@ Praktisch bestätigter Stand nach der ersten Optimierungsrunde:
 70,73 Sekunden
 ```
 
-Damit wurde die gemessene Laufzeit bislang um rund **68,1 %** reduziert.
+Praktisch bestätigter Stand nach der zweiten Desired-State-/Idempotenz-Runde:
+
+```text
+00:58.36
+58,36 Sekunden
+```
+
+Damit wurde die gemessene Laufzeit gegenüber dem ursprünglichen Stand von 221,67 Sekunden um rund **73,7 %** reduziert. Gegenüber dem 70,73-Sekunden-Zwischenstand reduziert die zweite Runde die Laufzeit nochmals um rund **17,5 %**.
 
 Feste Architekturentscheidungen:
 
@@ -308,15 +318,30 @@ Feste Architekturentscheidungen:
 - [x] Wiederherstellungspunkt wird vor der eigentlichen Setup-Logik erstellt; Erstellung auf dem aktuellen System praktisch bestätigt
 - [ ] Erkennung eines bereits frischen Wiederherstellungspunkts korrigieren: die aktuelle CIM-Abfrage meldet auf dem Testsystem `Zugriff verweigert`, wodurch derzeit erneut ein Restore Point angelegt wird
 
-Offene nächste Performance-/Desired-State-Runde:
+Zweite Performance-/Desired-State-Runde:
 
-- [ ] Windhawk-Mod-Settings vor dem Schreiben gegen den tatsächlichen Runtime-Zustand vergleichen
-- [ ] Scheduled Tasks nur bei tatsächlichem Drift von Action, Trigger, Principal oder Settings neu registrieren
-- [ ] Windows-Shell-/Theme-/Power-/Wallpaper-Konfiguration nur bei Drift schreiben; Debloat bleibt bewusst bei jedem Bootstrap aktiv
-- [ ] Explorer-Neustart auf tatsächliche Shell-Änderungen begrenzen und den ursprünglichen Grund für den bisherigen unbedingten Restart dokumentieren
-- [ ] komorebi/whkd/Zebar gemeinsam nur neu starten, wenn sich ein relevanter Teil des Desktop-Stacks geändert hat; die funktionale Kopplung und Startreihenfolge bleiben erhalten
-- [ ] Zig-`cc`-/`c++`-Shims vor dem Neuschreiben auf den gewünschten Zustand prüfen
-- [ ] Browser-Policies nur bei tatsächlichem Drift neu schreiben
+- [x] Windhawk-Mod-Settings vor dem Schreiben gegen den tatsächlichen Runtime-Zustand vergleichen
+  - Boolean-Settings werden entsprechend Windhawks Runtime-Repräsentation semantisch normalisiert
+  - wiederholter `just update-log` bestätigt für alle verwalteten Mods unveränderte Settings und Enable-Zustände als `CURRENT`
+- [x] Scheduled Tasks nur bei tatsächlichem Drift von Action, Trigger, Principal oder Settings neu registrieren
+  - komorebi, Zebar und Volume OSD melden bei unverändertem Zustand `CURRENT`
+  - Weekly Maintenance normalisiert Weekly-Trigger vor dem Vergleich auf lokale Wall-Clock-Zeit, damit UTC-/Offset-Darstellungen desselben Zeitpunkts keinen False Positive erzeugen
+  - Diagnosevergleich sowie vollständiger `just update-log` bestätigen `Windows Setup Weekly Maintenance` als `CURRENT`
+- [x] Windows-Shell-/Theme-/Power-/Wallpaper-Konfiguration nur bei Drift schreiben; Debloat bleibt bewusst bei jedem Bootstrap aktiv
+- [x] Explorer-Neustart auf tatsächliche Shell-Änderungen begrenzen
+  - der bisherige Restart diente der zuverlässigen Übernahme von Shell-/Taskleistenänderungen; bei unverändertem Shell-Desired-State bleibt Explorer nun geöffnet
+- [x] komorebi/whkd/masir/Zebar gemeinsam nur neu starten, wenn sich ein relevanter Teil des Desktop-Stacks geändert hat; die funktionale Kopplung und Startreihenfolge bleiben erhalten
+  - Desktop-Konfiguration, Zebar-Build, Runtime-Versionen und Startup-Tasks fließen in die Driftentscheidung ein
+  - Volume OSD kann bei eigenständigem Drift separat neu gestartet werden
+  - wiederholter `just update-log` bestätigt den vollständigen Skip des Desktop-Neustarts bei unverändertem Zustand
+- [x] Zig-`cc`-/`c++`-Shims vor dem Neuschreiben auf den gewünschten Zustand prüfen
+  - gewünschtes Zig-Ziel/Argumente und tatsächlicher Shim-Zustand werden verglichen
+  - wiederholter `just update-log` bestätigt beide Shims als `CURRENT`
+- [x] Browser-Policies nur bei tatsächlichem Drift neu schreiben
+  - Chromium-Extension-Policies und Zen-`policies.json` bleiben bei identischem Desired State unangetastet
+- [x] zweiter unmittelbar folgender `just update-log` bestätigt die Desired-State-Runde ohne unnötige Windhawk-/Task-/Explorer-/Desktop-/Zig-/Browser-Schreiboperationen bzw. Neustarts
+- [x] finaler strikter `just check` mit 68 PowerShell-Dateien ohne PSScriptAnalyzer-Probleme
+- [x] finaler stiller Performance-Lauf mit `58,36 Sekunden` praktisch bestätigt
 ---
 
 # 5. Phase 2 – Paketverwaltung
@@ -1862,7 +1887,9 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [x] Zebar Build
 - [x] OneCommander-Desired-State vor möglichem Neustart prüfen
 - [x] initialisiertes Raycast ohne erneuten Restore behandeln und aktuellen lokalen Export in den generischen Desired State sanitizen
-- [x] Desktop-Environment am Ende definiert neu starten
+- [x] Desktop-Environment bei tatsächlichem Desktop-Drift definiert neu starten; unveränderter gekoppelter komorebi/whkd/masir/Zebar-Stack bleibt laufend
+- [x] Volume OSD bei eigenständigem Drift gezielt neu starten, ohne unnötig den restlichen Desktop-Stack zu beenden
+- [x] Scheduled Tasks vor dem Schreiben gegen ihren tatsächlichen Desired State vergleichen
 - [x] PSScriptAnalyzer nur bei geändertem PowerShell-Code über den gemeinsamen strikten Preflight ausführen
 - [x] parameterloser/stiller Bootstrap für die automatische Wartung; Konsolenausgabe wird für den Hintergrundtask nicht benötigt
 - [x] Rebootstatus

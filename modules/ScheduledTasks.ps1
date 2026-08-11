@@ -72,7 +72,7 @@ function ConvertTo-WindowsScheduledTaskSignature {
                         [ref]$parsed
                     )
                 ) {
-                    $signature.StartTime = $parsed.ToString("HH:mm:ss")
+                    $signature.StartTime = $parsed.ToLocalTime().ToString("HH:mm:ss")
                 }
                 else {
                     $signature.StartTime = $startBoundary
@@ -481,6 +481,7 @@ function Register-WindowsSetupScheduledTask {
 
     $trigger = New-ScheduledTaskTrigger `
         -Weekly `
+        -WeeksInterval 1 `
         -DaysOfWeek Sunday `
         -At 12:00
 
