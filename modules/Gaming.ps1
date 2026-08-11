@@ -146,37 +146,39 @@ function Initialize-GamingLauncherInstallPaths {
             continue
         }
 
-        Write-Host ""
-        Write-Host (
-            "[ACTION] Bitte {0} einmalig öffnen und den " +
-            "Standard-Installationspfad festlegen." `
-                -f $package.Name
-        ) -ForegroundColor Cyan
-
-        Write-Host (
-            "[INFO] Gewünschter Pfad: {0}" `
-                -f $libraryPath
-        ) -ForegroundColor Yellow
-
-        Write-Host (
-            "[INFO] Das Setup fährt für diesen Launcher erst nach " +
-            "deiner Bestätigung fort."
-        )
-
-        do {
-            $confirmation = Read-Host (
-                "Ist der Installationspfad für '{0}' auf '{1}' gesetzt? [Y]" `
-                    -f `
-                    $package.Name,
-                $libraryPath
+        Write-WindowsSetupInteractive
+        Write-WindowsSetupInteractive `
+            -Message (
+                "[ACTION] Bitte {0} einmalig öffnen und den " +
+                "Standard-Installationspfad festlegen." `
+                    -f $package.Name
             )
 
+        Write-WindowsSetupInteractive `
+            -Message ("[INFO] Gewünschter Pfad: {0}" -f $libraryPath)
+
+        Write-WindowsSetupInteractive `
+            -Message (
+                "[INFO] Das Setup fährt für diesen Launcher erst nach " +
+                "deiner Bestätigung fort."
+            )
+
+        do {
+            $confirmation = Read-WindowsSetupPrompt `
+                -Prompt (
+                    "Ist der Installationspfad für '{0}' auf '{1}' gesetzt? [Y]" `
+                        -f `
+                        $package.Name,
+                    $libraryPath
+                )
+
             if ($confirmation -cne "Y") {
-                Write-Host (
-                    "[WAIT] Bitte den Pfad in {0} festlegen und " +
-                    "anschließend mit Y bestätigen." `
-                        -f $package.Name
-                ) -ForegroundColor Yellow
+                Write-WindowsSetupInteractive `
+                    -Message (
+                        "[WAIT] Bitte den Pfad in {0} festlegen und " +
+                        "anschließend mit Y bestätigen." `
+                            -f $package.Name
+                    )
             }
         }
         until ($confirmation -ceq "Y")

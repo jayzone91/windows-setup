@@ -1,3 +1,61 @@
+function Write-WindowsSetupInteractive {
+    param(
+        [AllowEmptyString()]
+        [string] $Message = "",
+
+        [switch] $NoNewline
+    )
+
+    $stream = $null
+    $writer = $null
+
+    try {
+        $stream = [IO.File]::Open(
+            "CONOUT$",
+            [IO.FileMode]::Open,
+            [IO.FileAccess]::Write,
+            [IO.FileShare]::ReadWrite
+        )
+
+        $encoding = [Text.UTF8Encoding]::new($false)
+
+        $writer = [IO.StreamWriter]::new(
+            $stream,
+            $encoding
+        )
+
+        $writer.AutoFlush = $true
+
+        if ($NoNewline) {
+            $writer.Write($Message)
+        }
+        else {
+            $writer.WriteLine($Message)
+        }
+    }
+    finally {
+        if ($writer) {
+            $writer.Dispose()
+        }
+        elseif ($stream) {
+            $stream.Dispose()
+        }
+    }
+}
+
+function Read-WindowsSetupPrompt {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Prompt
+    )
+
+    Write-WindowsSetupInteractive `
+        -Message ("{0}: " -f $Prompt) `
+        -NoNewline
+
+    return [Console]::ReadLine()
+}
+
 function Get-TextFingerprint {
     param(
         [Parameter(Mandatory)]

@@ -279,21 +279,19 @@ function Initialize-RaycastConfiguration {
         return
     }
 
-    Write-Host ''
-    Write-Host (
-        '[INFO] Raycast-Backups können persönliche und sensible Daten enthalten.'
-    ) -ForegroundColor Yellow
-    Write-Host (
-        '[INFO] Dieses Setup geht davon aus, dass das vollständige .rayconfig-' +
-        'Archiv ausschließlich lokal gespeichert wird.'
-    ) -ForegroundColor Yellow
-    Write-Host (
-        '[INFO] Ins Repository gelangt ausschließlich der bereinigte Desired State.'
-    ) -ForegroundColor Yellow
+    Write-WindowsSetupInteractive
+    Write-WindowsSetupInteractive `
+        -Message '[INFO] Raycast-Backups können persönliche und sensible Daten enthalten.'
+    Write-WindowsSetupInteractive `
+        -Message (
+            '[INFO] Dieses Setup geht davon aus, dass das vollständige .rayconfig-' +
+            'Archiv ausschließlich lokal gespeichert wird.'
+        )
+    Write-WindowsSetupInteractive `
+        -Message '[INFO] Ins Repository gelangt ausschließlich der bereinigte Desired State.'
 
-    $confirmation = Read-Host (
-        'Lokales Backup-Modell verstanden und bestätigt? [j/N]'
-    )
+    $confirmation = Read-WindowsSetupPrompt `
+        -Prompt 'Lokales Backup-Modell verstanden und bestätigt? [j/N]'
 
     if ($confirmation -notmatch '^(?i:j|ja|y|yes)$') {
         Write-Warning 'Raycast-Initialisierung wurde nicht bestätigt.'
@@ -318,10 +316,17 @@ function Initialize-RaycastConfiguration {
             return
         }
 
-        $configured = Read-Host (
-            'Raycast ist bereits vollständig eingerichtet und Daily Backup ' +
-            'verwendet BackupPath/ExportPassword aus config/raycast.psd1? [j/N]'
-        )
+        Write-WindowsSetupInteractive `
+            -Message (
+                "[INFO] Vorhandenes lokales Raycast-Backup: {0}" -f
+                $existingBackup.FullName
+            )
+
+        $configured = Read-WindowsSetupPrompt `
+            -Prompt (
+                'Raycast ist bereits vollständig eingerichtet und Daily Backup ' +
+                'verwendet BackupPath/ExportPassword aus config/raycast.psd1? [j/N]'
+            )
 
         if ($configured -notmatch '^(?i:j|ja|y|yes)$') {
             Write-Warning 'Raycast wird noch nicht als initialisiert markiert.'
@@ -362,22 +367,27 @@ function Initialize-RaycastConfiguration {
         -RepositoryPath $RepositoryPath `
         -Package $package
 
-    Write-Host ''
-    Write-Host '[ACTION] Raycast-Erstinitialisierung erforderlich.' `
-        -ForegroundColor Cyan
-    Write-Host "  1. In Raycast 'Import Settings & Data' öffnen."
-    Write-Host "  2. Diese lokale Datei importieren: $importPath"
-    Write-Host "  3. Export-Passwort aus config/raycast.psd1 verwenden."
-    Write-Host "  4. Scheduled Backup auf Daily stellen."
-    Write-Host "  5. Backup Location auf '$backupPath' setzen."
-    Write-Host "  6. Auto-Delete auf 'Keep Latest' stellen."
-    Write-Host ''
+    Write-WindowsSetupInteractive
+    Write-WindowsSetupInteractive `
+        -Message '[ACTION] Raycast-Erstinitialisierung erforderlich.'
+    Write-WindowsSetupInteractive `
+        -Message "  1. In Raycast 'Import Settings & Data' öffnen."
+    Write-WindowsSetupInteractive `
+        -Message "  2. Diese lokale Datei importieren: $importPath"
+    Write-WindowsSetupInteractive `
+        -Message "  3. Export-Passwort aus config/raycast.psd1 verwenden."
+    Write-WindowsSetupInteractive `
+        -Message "  4. Scheduled Backup auf Daily stellen."
+    Write-WindowsSetupInteractive `
+        -Message "  5. Backup Location auf '$backupPath' setzen."
+    Write-WindowsSetupInteractive `
+        -Message "  6. Auto-Delete auf 'Keep Latest' stellen."
+    Write-WindowsSetupInteractive
 
     Start-Process explorer.exe -ArgumentList "/select,`"$importPath`""
 
-    $completed = Read-Host (
-        'Import und Daily-Backup-Konfiguration erfolgreich abgeschlossen? [j/N]'
-    )
+    $completed = Read-WindowsSetupPrompt `
+        -Prompt 'Import und Daily-Backup-Konfiguration erfolgreich abgeschlossen? [j/N]'
 
     if ($completed -notmatch '^(?i:j|ja|y|yes)$') {
         Write-Warning 'Raycast wird noch nicht als initialisiert markiert.'

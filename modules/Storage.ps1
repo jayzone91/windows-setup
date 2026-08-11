@@ -166,76 +166,58 @@ function Initialize-DevelopmentStorage {
     # Planung anzeigen
     #
 
-    Write-Host ""
-    Write-Host "Gefundener leerer Datenträger:"
-    Write-Host ""
+    Write-WindowsSetupInteractive
+    Write-WindowsSetupInteractive `
+        -Message "Gefundener leerer Datenträger:"
+    Write-WindowsSetupInteractive
 
-    Write-Host (
-        "  Disk:          {0}" `
-            -f $disk.Number
-    )
+    Write-WindowsSetupInteractive `
+        -Message ("  Disk:          {0}" -f $disk.Number)
+    Write-WindowsSetupInteractive `
+        -Message ("  Modell:        {0}" -f $disk.FriendlyName)
+    Write-WindowsSetupInteractive `
+        -Message ("  Bus:           {0}" -f $disk.BusType)
+    Write-WindowsSetupInteractive `
+        -Message ("  Größe:         {0:N1} GB" -f ($disk.Size / 1GB))
+    Write-WindowsSetupInteractive `
+        -Message "  Partitionen:   keine"
+    Write-WindowsSetupInteractive `
+        -Message ("  Boot-Disk:     {0}" -f $disk.IsBoot)
+    Write-WindowsSetupInteractive `
+        -Message ("  System-Disk:   {0}" -f $disk.IsSystem)
 
-    Write-Host (
-        "  Modell:        {0}" `
-            -f $disk.FriendlyName
-    )
+    Write-WindowsSetupInteractive
+    Write-WindowsSetupInteractive `
+        -Message "Geplante Änderungen:"
+    Write-WindowsSetupInteractive
 
-    Write-Host (
-        "  Bus:           {0}" `
-            -f $disk.BusType
-    )
+    Write-WindowsSetupInteractive `
+        -Message (
+            "  {0}:  {1} GB  ReFS Dev Drive  Label: {2}" `
+                -f `
+                $Config.DevDrive.Letter,
+            $Config.DevDrive.SizeGB,
+            $Config.DevDrive.Label
+        )
 
-    Write-Host (
-        "  Größe:         {0:N1} GB" `
-            -f ($disk.Size / 1GB)
-    )
+    Write-WindowsSetupInteractive `
+        -Message (
+            "  {0}:  ~{1} GB  NTFS            Label: {2}" `
+                -f `
+                $Config.GamesDrive.Letter,
+            $gamesSizeGB,
+            $Config.GamesDrive.Label
+        )
 
-    Write-Host "  Partitionen:   keine"
+    Write-WindowsSetupInteractive
+    Write-WindowsSetupInteractive `
+        -Message (
+            "WARNUNG: Der ausgewählte Datenträger wird partitioniert und formatiert."
+        )
+    Write-WindowsSetupInteractive
 
-    Write-Host (
-        "  Boot-Disk:     {0}" `
-            -f $disk.IsBoot
-    )
-
-    Write-Host (
-        "  System-Disk:   {0}" `
-            -f $disk.IsSystem
-    )
-
-
-    Write-Host ""
-    Write-Host "Geplante Änderungen:"
-    Write-Host ""
-
-    Write-Host (
-        "  {0}:  {1} GB  ReFS Dev Drive  Label: {2}" `
-            -f `
-            $Config.DevDrive.Letter,
-        $Config.DevDrive.SizeGB,
-        $Config.DevDrive.Label
-    )
-
-    Write-Host (
-        "  {0}:  ~{1} GB  NTFS            Label: {2}" `
-            -f `
-            $Config.GamesDrive.Letter,
-        $gamesSizeGB,
-        $Config.GamesDrive.Label
-    )
-
-
-    Write-Host ""
-    Write-Host (
-        "WARNUNG: Der ausgewählte Datenträger wird partitioniert und formatiert."
-    ) `
-        -ForegroundColor Yellow
-
-
-    Write-Host ""
-
-    $confirmation = Read-Host (
-        "Änderungen wirklich durchführen? [Y/N]"
-    )
+    $confirmation = Read-WindowsSetupPrompt `
+        -Prompt "Änderungen wirklich durchführen? [Y/N]"
 
 
     if ($confirmation -cne "Y") {

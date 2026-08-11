@@ -24,8 +24,8 @@ function Set-GitPreferences {
 
     if ([string]::IsNullOrWhiteSpace($gitName)) {
 
-        $gitName = Read-Host `
-            "Git Benutzername"
+        $gitName = Read-WindowsSetupPrompt `
+            -Prompt "Git Benutzername"
 
         if (-not [string]::IsNullOrWhiteSpace($gitName)) {
 
@@ -42,7 +42,8 @@ function Set-GitPreferences {
     if ([string]::IsNullOrWhiteSpace($gitEmail)) {
 
         do {
-            $gitEmail = Read-Host "Git E-Mail"
+            $gitEmail = Read-WindowsSetupPrompt `
+                -Prompt "Git E-Mail"
 
             if ($gitEmail -notmatch '^[^@\s]+@[^@\s]+\.[^@\s]+$') {
                 Write-Warning "Ungültige E-Mail-Adresse."
