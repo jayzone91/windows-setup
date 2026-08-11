@@ -86,10 +86,6 @@ Arbeite selbstständig nach den Regeln der Roadmap weiter.
 
 ---
 
-
-Divers:
-- Prüfen ob man iMessage unter Windows gescheit zum laufen bekommt. Keine Bastelei, die Windows Phone App sagt zwar, das es gehen würde, die verliert jedoch regelmäßig die Verbindung zum telefon und dann geht gar nichts mehr.
-
 Repo Umbau:
 - Terminal:
   - Die Konfig wird direkt im Modul gesetzt, windows terminal hat eine settings.json, die sollten wir stattdessen nehmen.
