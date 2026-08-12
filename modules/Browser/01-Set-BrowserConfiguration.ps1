@@ -33,6 +33,12 @@ function Set-BrowserConfiguration {
             Set-ZenMods `
                 -Mods $Config.Zen.Mods
         }
+
+        $zenThemeChanged = Set-ZenCatppuccinTheme
+
+        if ($zenThemeChanged) {
+            $configurationChanged = $true
+        }
     }
 
     Write-Host ""

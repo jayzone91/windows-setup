@@ -334,6 +334,13 @@ function Set-ZenConfiguration {
             }
         }
 
+        if ($preferences.EnableUserStyles) {
+            $browserPreferences["toolkit.legacyUserProfileCustomizations.stylesheets"] = [ordered]@{
+                Value  = $true
+                Status = "user"
+            }
+        }
+
         if ($browserPreferences.Count -gt 0) {
             $policies.Preferences = $browserPreferences
         }

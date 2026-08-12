@@ -2,6 +2,7 @@ $parts = @(
     "01-Set-BrowserConfiguration.ps1"
     "02-Get-MissingZenMods.ps1"
     "03-Install-ZenMod.ps1"
+    "04-Set-ZenCatppuccinTheme.ps1"
 )
 
 foreach ($part in $parts) {

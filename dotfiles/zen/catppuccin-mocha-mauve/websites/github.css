@@ -1,0 +1,83 @@
+/*
+ * Catppuccin Mocha / Mauve for GitHub
+ * Basis: https://github.com/catppuccin/userstyles/tree/5ef4cc64231826f46d12a2721fa72571f5aa8a27/styles/github
+ * Static Zen userContent.css adaptation; no Stylus/LESS runtime required.
+ */
+@-moz-document domain("github.com") {
+  :root,
+  [data-color-mode="dark"],
+  [data-dark-theme] {
+    color-scheme: dark !important;
+
+    --bgColor-default: #1e1e2e !important;
+    --bgColor-muted: #181825 !important;
+    --bgColor-inset: #11111b !important;
+    --bgColor-emphasis: #585b70 !important;
+
+    --fgColor-default: #cdd6f4 !important;
+    --fgColor-muted: #a6adc8 !important;
+    --fgColor-accent: #cba6f7 !important;
+    --fgColor-open: #a6e3a1 !important;
+    --fgColor-danger: #f38ba8 !important;
+    --fgColor-attention: #f9e2af !important;
+
+    --borderColor-default: #45475a !important;
+    --borderColor-muted: #313244 !important;
+    --borderColor-accent-emphasis: #cba6f7 !important;
+
+    --button-default-bgColor-rest: #313244 !important;
+    --button-default-bgColor-hover: #45475a !important;
+    --button-default-borderColor-rest: #585b70 !important;
+    --button-primary-bgColor-rest: #a6e3a1 !important;
+    --button-primary-bgColor-hover: #94e2d5 !important;
+    --button-primary-fgColor-rest: #11111b !important;
+
+    --control-bgColor-rest: #181825 !important;
+    --control-bgColor-hover: #313244 !important;
+    --control-borderColor-rest: #45475a !important;
+
+    --color-canvas-default: #1e1e2e !important;
+    --color-canvas-subtle: #181825 !important;
+    --color-canvas-inset: #11111b !important;
+    --color-border-default: #45475a !important;
+    --color-border-muted: #313244 !important;
+    --color-fg-default: #cdd6f4 !important;
+    --color-fg-muted: #a6adc8 !important;
+    --color-accent-fg: #cba6f7 !important;
+    --color-accent-emphasis: #cba6f7 !important;
+    --color-success-fg: #a6e3a1 !important;
+    --color-danger-fg: #f38ba8 !important;
+    --color-attention-fg: #f9e2af !important;
+  }
+
+  body,
+  .application-main,
+  .AppHeader,
+  .Header,
+  .Box,
+  .Box-row,
+  .Overlay,
+  .Popover-message {
+    border-color: #45475a !important;
+  }
+
+  a,
+  .Link--primary:hover,
+  .Link--secondary:hover {
+    text-decoration-color: #cba6f7 !important;
+  }
+
+  .markdown-body code,
+  .markdown-body pre,
+  .highlight {
+    background-color: #181825 !important;
+  }
+
+  input,
+  textarea,
+  select {
+    background-color: #181825 !important;
+    color: #cdd6f4 !important;
+    border-color: #45475a !important;
+  }
+}

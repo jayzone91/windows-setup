@@ -46,6 +46,7 @@
             DisableTelemetry       = $true
             DisableFirefoxStudies  = $true
             DisablePocket          = $true
+            EnableUserStyles       = $true
         }
 
         Mods        = @(

@@ -1,0 +1,76 @@
+/*
+ * Catppuccin Mocha / Mauve for Google Search
+ * Basis: https://github.com/catppuccin/userstyles/tree/5ef4cc64231826f46d12a2721fa72571f5aa8a27/styles/google
+ * Restricted to the Google Search web frontend, not all *.google.com services.
+ */
+@-moz-document url-prefix("https://www.google.com/"), url-prefix("https://google.com/") {
+  :root {
+    color-scheme: dark !important;
+  }
+
+  html,
+  body,
+  #search,
+  #main,
+  .sfbg,
+  .appbar,
+  .M8OgIe,
+  .CvDJxb,
+  .minidiv .sfbg {
+    background-color: #1e1e2e !important;
+    color: #cdd6f4 !important;
+  }
+
+  a,
+  a:visited h3,
+  h3 {
+    color: #cba6f7 !important;
+  }
+
+  a:visited {
+    color: #b4befe !important;
+  }
+
+  .VwiC3b,
+  .IsZvec,
+  .MUxGbd,
+  .yXK7lf,
+  .kb0PBd,
+  .LEwnzc {
+    color: #bac2de !important;
+  }
+
+  .g,
+  .MjjYud,
+  .ULSxyf,
+  .Ww4FFb,
+  .kp-wholepage,
+  .knowledge-panel,
+  .commercial-unit-desktop-top {
+    background-color: transparent !important;
+    border-color: #45475a !important;
+  }
+
+  textarea,
+  input,
+  .RNNXgb,
+  .aajZCb,
+  .iblpc,
+  .fM33ce {
+    background-color: #181825 !important;
+    color: #cdd6f4 !important;
+    border-color: #45475a !important;
+  }
+
+  .RNNXgb:hover,
+  .RNNXgb:focus-within {
+    border-color: #cba6f7 !important;
+    box-shadow: 0 0 0 1px #cba6f7 !important;
+  }
+
+  .gb_A,
+  .gb_Ha,
+  .gb_Qa {
+    background-color: #181825 !important;
+  }
+}

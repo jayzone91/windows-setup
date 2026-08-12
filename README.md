@@ -50,6 +50,8 @@ Bereits umgesetzt sind unter anderem:
 - Zoxide-Integration für schnelle Verzeichnisnavigation
 - dynamische Git-Root-basierte Projektcommands für `windows-setup`
 - Zen Browser und Google Chrome Beta
+- Zen Browser mit versioniertem Catppuccin-Mocha/Mauve-UI über `userChrome.css` / `userContent.css`
+- selektive Catppuccin-Website-Styles für GitHub, ChatGPT, YouTube, Google Search, PayPal und Reddit
 - Logitech G HUB mit einmaliger Initialisierung sowie bewusstem Backup/Restore
 - ReFS Dev Drive und separates Games-Laufwerk
 - Microsoft Defender Dev Drive Performance Mode
@@ -441,6 +443,29 @@ Die Taskbar wird durch den Windhawk-Mod **Windows 11 Taskbar Styler** gestaltet.
 Das Startmenü wird durch **Windows 11 Start Menu Styler** ebenfalls auf Basis von **RosePine** gestaltet. Eigene Farb-Overrides setzen Hauptflächen auf Catppuccin `Base #1e1e2e`, abgesetzte Flächen auf `Surface0 #313244` und die Außenrahmen von Startmenü und Suchansicht auf `Surface1 #45475a`. Das fokussierte Suchfeld behält `Mauve #cba6f7` als gezielten Aktivitätsakzent.
 
 Zebar besitzt derzeit weiterhin eigene CSS-Variablen für die Palette, und die Windhawk-Mod-Settings enthalten die benötigten Hex-Werte. Die spätere direkte Ableitung dieser Werte aus `config/theme.psd1` ist als Folgearbeit in der Roadmap dokumentiert.
+
+## Zen Browser
+
+Zen verwendet Catppuccin Mocha mit Mauve als Akzent über versionierte Browser-CSS-Dateien unter:
+
+```text
+dotfiles/zen/catppuccin-mocha-mauve/
+```
+
+`userChrome.css` gestaltet die Browser-UI, `userContent.css` interne Zen-/Firefox-Seiten und bindet gezielt gepflegte Website-Styles ein. Die Dateien werden über den bestehenden Hardlink-/Junction-Workflow mit dem aktiven Zen-Profil verbunden; der Bootstrap prüft den Theme-Zustand und vermeidet unnötige Browser-Neustarts bei unverändertem Desired State.
+
+Produktiv gepflegte Website-Styles:
+
+- GitHub
+- ChatGPT
+- YouTube
+- Google Search
+- PayPal
+- Reddit
+
+Website-Styling bleibt bewusst hostbezogen und selektiv. Es existiert kein globaler CSS-Override für beliebige Webseiten.
+
+Eigene Styles für iCloud, Exchange OWA (`compex.msxremote.de`) und das Intrexx-11-Frontend (`cenet.msxremote.de:446`) wurden praktisch getestet, erwiesen sich aber als nicht zuverlässig bzw. nicht vollständig genug und wurden wieder entfernt. Sie gehören nicht zum produktiven Desired State.
 
 ---
 # Konfigurations-Synchronisierung

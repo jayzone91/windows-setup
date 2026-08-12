@@ -1025,8 +1025,16 @@ Integration:
 - [x] nur tatsächlich fehlende Mods an Marionette übergeben
 - [x] Zen bei vollständig vorhandenen Mods geöffnet lassen
 - [x] Zen nur bei erforderlicher Mod-Konfiguration schließen und danach normal neu starten
-- [ ] Browser-UI weiter an Catppuccin Mocha anpassen
-- [ ] stabile eigene CSS-Anpassungen versionieren
+- [x] Browser-UI an Catppuccin Mocha/Mauve angepasst
+- [x] stabile eigene CSS-Anpassungen versioniert
+  - Zen-UI und interne Browserseiten werden über versionierte `userChrome.css` / `userContent.css` gestaltet
+  - Catppuccin Mocha mit Mauve bleibt der definierte Zen-Desired-State
+  - Theme-Dateien werden über den bestehenden Hardlink-/Junction-Workflow in das aktive Zen-Profil eingebunden
+  - ausgewählte Website-Styles werden hostbezogen unter `dotfiles/zen/catppuccin-mocha-mauve/websites/` gepflegt
+  - produktiv beibehalten werden GitHub, ChatGPT, YouTube, Google Search, PayPal und Reddit
+  - iCloud, Exchange OWA (`compex.msxremote.de`) und Intrexx 11 (`cenet.msxremote.de:446`) wurden praktisch getestet und wegen unzuverlässiger bzw. unvollständiger Darstellung wieder aus dem Desired State entfernt
+  - für diese drei Weboberflächen wird kein weiterer eigener CSS-Override verfolgt, solange kein neuer stabiler technischer Ansatz vorliegt
+  - Website-Styling bleibt bewusst selektiv; es gibt keinen universellen CSS-Override für beliebige Webseiten
 
 ### Akzeptanzkriterien für Zen-Mods
 
@@ -1953,7 +1961,7 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [x] OneCommander Theme
 - [x] OneCommander Folder Icons
 - [x] OneCommander File Icons
-- [x] Zen teilweise
+- [x] Zen Browser inklusive ausgewählter Website-Styles
 
 ## Offen
 
@@ -1962,7 +1970,7 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [x] Windhawk Start Menu
 - [x] Windhawk Notification Center
 - [x] eigenes OSD
-- [ ] Browser-Feinschliff
+- [x] Browser-Feinschliff
 - [ ] weitere Anwendungen nur themen, wenn die Anpassung stabil und wartbar ist
 
 ---
@@ -2081,6 +2089,11 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
   - vollständige Exporte können persönliche und sensible Daten enthalten
   - im Repository liegt ausschließlich der sanitizte generische Desired State
   - `.rayconfig` bleibt ein lokales Transport-/Backup-Artefakt
+- [x] eigene Catppuccin-CSS-Overrides für iCloud, Exchange OWA und Intrexx 11 weiterverfolgen
+  - die drei Weboberflächen wurden praktisch mit hostbezogenen `userContent.css`-Regeln getestet
+  - das Ergebnis war unvollständig bzw. nicht zuverlässig genug für einen wartbaren produktiven Desired State
+  - die Styles wurden deshalb wieder entfernt
+  - ein erneuter Versuch erfolgt nur bei einem neuen stabilen technischen Ansatz
 
 ---
 

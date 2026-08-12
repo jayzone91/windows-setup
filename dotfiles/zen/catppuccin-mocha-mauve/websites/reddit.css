@@ -1,0 +1,63 @@
+/*
+ * Catppuccin Mocha / Mauve for Reddit
+ * Basis: https://github.com/catppuccin/userstyles/tree/5ef4cc64231826f46d12a2721fa72571f5aa8a27/styles/reddit
+ * Static Zen userContent.css adaptation; no Stylus/LESS runtime required.
+ */
+@-moz-document domain("reddit.com") {
+  :root,
+  body {
+    color-scheme: dark !important;
+
+    --color-neutral-background: #1e1e2e !important;
+    --color-neutral-background-weak: #181825 !important;
+    --color-neutral-background-strong: #313244 !important;
+    --color-neutral-content: #cdd6f4 !important;
+    --color-neutral-content-weak: #a6adc8 !important;
+    --color-neutral-border: #45475a !important;
+    --color-neutral-border-weak: #313244 !important;
+
+    --color-primary: #cba6f7 !important;
+    --color-primary-hover: #b4befe !important;
+    --color-primary-background: #cba6f7 !important;
+    --color-primary-background-hover: #b4befe !important;
+
+    --color-secondary-background: #313244 !important;
+    --color-secondary-background-hover: #45475a !important;
+
+    --color-danger-content: #f38ba8 !important;
+    --color-success-content: #a6e3a1 !important;
+
+    --shreddit-content-background: #1e1e2e !important;
+    --shreddit-header-background: #181825 !important;
+  }
+
+  html,
+  body,
+  shreddit-app,
+  #main-content,
+  faceplate-tracker {
+    background-color: #1e1e2e !important;
+    color: #cdd6f4 !important;
+  }
+
+  shreddit-header,
+  reddit-sidebar-nav,
+  shreddit-feed,
+  shreddit-post,
+  shreddit-comment-tree,
+  shreddit-composer {
+    border-color: #45475a !important;
+  }
+
+  a {
+    text-decoration-color: #cba6f7 !important;
+  }
+
+  textarea,
+  input,
+  [contenteditable="true"] {
+    background-color: #181825 !important;
+    color: #cdd6f4 !important;
+    border-color: #45475a !important;
+  }
+}
