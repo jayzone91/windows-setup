@@ -48,6 +48,12 @@
             Source = "winget"
             Update = $true
         },
+        @{
+            Id     = "Microsoft.DotNet.SDK.10"
+            Name   = ".NET 10 SDK"
+            Source = "winget"
+            Update = $true
+        },
 
         @{
             Id     = "Microsoft.PowerShell"

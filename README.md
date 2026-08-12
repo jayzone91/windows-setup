@@ -34,7 +34,7 @@ Bereits umgesetzt sind unter anderem:
 - Computername als deklarativer Desired State in `config/windows.psd1`; Umbenennung nur bei Drift und ohne automatischen Neustart
 - Windows- und Microsoft-Updates
 - Treiberlogik für NVIDIA und Intel
-- PowerShell-, Node.js-, Bun- und Go-Entwicklungsumgebung
+- PowerShell-, Node.js-, Bun-, Go- und C#/.NET-Entwicklungsumgebung mit .NET 10 LTS, C# Dev Kit in VS Code und modernem WPF-Workflow
 - Node.js wird über fnm auf die aktuelle LTS-Version geprüft; npm, pnpm und Yarn werden separat gegen die Registry geprüft und nur bei Versions-Drift aktualisiert
 - Git, GitHub CLI und GitHub Desktop
 - Visual Studio Code inklusive Extensions und Settings

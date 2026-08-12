@@ -722,6 +722,25 @@ Offen / zu testen:
 
 # 11. Phase 8 – Entwicklerumgebung
 
+## C# / .NET / WPF
+
+Feste Entscheidung:
+
+- moderne C#-Entwicklung erfolgt in Visual Studio Code mit dem Microsoft `C# Dev Kit`
+- produktiver SDK-Track ist `.NET 10` LTS
+- WPF-Entwicklung verwendet moderne SDK-Style-Projekte mit `Microsoft.NET.Sdk`, Windows-TFM und `UseWPF = true`
+- klassisches `.NET Framework` ist nicht Teil des Standard-Workflows und wird nur bei einem konkreten Legacy-Projekt ergänzt
+- der vorhandene Repository-Compilecheck für lose verwaltete `.cs`-Dateien bleibt als eigener Qualitätscheck bestehen und wird nicht durch Projekt-Builds ersetzt
+
+Umsetzung / Teststatus:
+
+- [x] `.NET 10 SDK` über den bestehenden deklarativen Development-Paketworkflow installieren und aktualisieren
+- [x] vorhandenes `ms-dotnettools.csdevkit` als VS-Code-C#-Workflow praktisch mit installiertem System-SDK bestätigen
+- [x] `dotnet --info` nach dem Bootstrap prüfen
+- [x] neues C#-Console-Projekt mit `dotnet new console`, `dotnet build` und `dotnet run` praktisch testen
+- [x] neues WPF-Projekt mit `dotnet new wpf`, `dotnet build` und Start der Anwendung praktisch testen
+- [x] WPF-Projekt in VS Code öffnen und C#-Bearbeitung, Solution Explorer und Debugging praktisch bestätigen
+- [x] `just check` und vollständigen `just update-log` nach der Integration erfolgreich ausführen
 ## Node.js
 
 - [x] fnm installieren
