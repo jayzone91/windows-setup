@@ -20,6 +20,33 @@ function ConvertTo-WindowsTaskUserIdentity {
     }
 }
 
+function ConvertTo-WindowsTaskDurationSignature {
+    param(
+        [AllowNull()]
+        $Value
+    )
+
+    if ($null -eq $Value) {
+        return [TimeSpan]::Zero.Ticks
+    }
+
+    if ($Value -is [TimeSpan]) {
+        return ([TimeSpan]$Value).Ticks
+    }
+
+    $text = ([string]$Value).Trim()
+
+    if ([string]::IsNullOrWhiteSpace($text)) {
+        return [TimeSpan]::Zero.Ticks
+    }
+
+    try {
+        return [System.Xml.XmlConvert]::ToTimeSpan($text).Ticks
+    }
+    catch {
+        return $text.ToUpperInvariant()
+    }
+}
 function ConvertTo-WindowsScheduledTaskSignature {
     param(
         [Parameter(Mandatory)]
@@ -57,7 +84,8 @@ function ConvertTo-WindowsScheduledTaskSignature {
                 $signature.UserId = ConvertTo-WindowsTaskUserIdentity `
                     -UserId ([string]$item.UserId)
 
-                $signature.Delay = [string] $item.Delay
+                $signature.Delay = ConvertTo-WindowsTaskDurationSignature `
+                    -Value $item.Delay
             }
             elseif ($className -eq "MSFT_TaskWeeklyTrigger") {
                 $signature.DaysOfWeek = [int] $item.DaysOfWeek
@@ -101,7 +129,8 @@ function ConvertTo-WindowsScheduledTaskSignature {
             DisallowStartIfOnBatteries  = [bool] $Settings.DisallowStartIfOnBatteries
             StopIfGoingOnBatteries      = [bool] $Settings.StopIfGoingOnBatteries
             MultipleInstances           = [string] $Settings.MultipleInstances
-            ExecutionTimeLimit          = [string] $Settings.ExecutionTimeLimit
+            ExecutionTimeLimit          = ConvertTo-WindowsTaskDurationSignature `
+                -Value $Settings.ExecutionTimeLimit
             AllowHardTerminate          = [bool] $Settings.AllowHardTerminate
             Enabled                     = [bool] $Settings.Enabled
             Hidden                      = [bool] $Settings.Hidden
@@ -146,7 +175,16 @@ function Test-WindowsScheduledTaskDesiredState {
         -Principal $Principal `
         -Settings $Settings
 
-    return $currentSignature -ceq $desiredSignature
+    if ($currentSignature -ceq $desiredSignature) {
+        return $true
+    }
+
+    Write-WindowsScheduledTaskSignatureDifference `
+        -TaskName ([string]$ExistingTask.TaskName) `
+        -CurrentSignature $currentSignature `
+        -DesiredSignature $desiredSignature
+
+    return $false
 }
 
 function Set-WindowsScheduledTaskDesiredState {

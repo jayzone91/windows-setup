@@ -42,41 +42,6 @@ function Test-VSCodeExtension {
     return $extensions -contains $ExtensionId.ToLowerInvariant()
 }
 
-
-function Install-VSCodeExtension {
-    param(
-        [Parameter(Mandatory)]
-        [string] $ExtensionId
-    )
-
-    $code = Get-VSCodeCommand
-
-    if (-not $code) {
-        throw "Visual Studio Code wurde nicht gefunden"
-    }
-
-    Write-Host ""
-    Write-Host "[CHECK] VS Code Extension: $ExtensionId"
-
-    if (Test-VSCodeExtension -ExtensionId $ExtensionId) {
-        Write-Host "[OK] Bereits installiert." -ForegroundColor Green
-        return
-    }
-
-    Write-Host "[INSTALL] $ExtensionId" -ForegroundColor Cyan
-
-    & $code `
-        --install-extension $ExtensionId `
-        --force
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "VS Code Extension konnte nicht installiert werden: $ExtensionId"
-    }
-
-    Write-Host "[OK] $ExtensionId installiert." -ForegroundColor Green
-}
-
-
 function Install-VSCodeExtensions {
     param(
         [Parameter(Mandatory)]

@@ -29,34 +29,6 @@ function Test-PowerToysJsonEqual {
     return $currentJson -eq $desiredJson
 }
 
-function Set-PowerToysJsonProperty {
-    param(
-        [Parameter(Mandatory)]
-        [pscustomobject]$Object,
-
-        [Parameter(Mandatory)]
-        [string]$Name,
-
-        [AllowNull()]
-        [object]$Value,
-
-        [ref]$Changed
-    )
-
-    $property = $Object.PSObject.Properties[$Name]
-
-    if ($null -eq $property) {
-        $Object | Add-Member -MemberType NoteProperty -Name $Name -Value $Value
-        $Changed.Value = $true
-        return
-    }
-
-    if (-not (Test-PowerToysJsonEqual -Current $property.Value -Desired $Value)) {
-        $property.Value = $Value
-        $Changed.Value = $true
-    }
-}
-
 function Backup-UnmanagedPowerToysFile {
     param(
         [Parameter(Mandatory)]

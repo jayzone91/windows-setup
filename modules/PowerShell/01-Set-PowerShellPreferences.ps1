@@ -183,7 +183,7 @@ function Get-PowerShellCodeFingerprint {
     ).Trim()
 
     if ($LASTEXITCODE -ne 0 -or -not $head) {
-        throw "Git-HEAD konnte für den PowerShell-Codezustand nicht ermittelt werden."
+        throw "Git-HEAD konnte für den Source-Codezustand nicht ermittelt werden."
     }
 
     $pathSpecs = @(
@@ -352,5 +352,5 @@ function Save-PowerShellCodeFingerprint {
         -Encoding utf8NoBOM `
         -NoNewline
 
-    Write-Host "[STATE] PowerShell-Code-Fingerprint aktualisiert."
+    Write-Host "[STATE] Source-Code-Fingerprint aktualisiert."
 }

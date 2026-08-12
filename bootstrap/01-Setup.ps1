@@ -55,7 +55,7 @@ if (Test-Path (Join-Path $Root ".git")) {
 
 Write-Host ""
 Write-Host "========================================"
-Write-Host " PowerShell Preflight"
+Write-Host " Source Code Preflight"
 Write-Host "========================================"
 
 $helpersModulePath = Join-Path $Root "modules\Helpers\index.ps1"
@@ -73,11 +73,11 @@ foreach ($modulePath in @(
 }
 
 if (Test-PowerShellCodeFingerprint -Path $Root) {
-    Write-Host "[SKIP] PowerShell-Code seit letztem erfolgreichen Check unverändert." `
+    Write-Host "[SKIP] Source-Code seit letztem erfolgreichen Check unverändert." `
         -ForegroundColor Green
 }
 else {
-    Write-Host "[CHECK] PowerShell-Code-Fingerprint geändert."
+    Write-Host "[CHECK] Source-Code-Fingerprint geändert."
 
     if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
         Write-Host "[PREREQUISITE] PSScriptAnalyzer installieren"

@@ -93,28 +93,6 @@ function Start-LogitechGHub {
         -RedirectStandardError $stderrLog
 }
 
-
-function Get-FileSha256 {
-
-    param(
-        [Parameter(Mandatory)]
-        [string] $Path
-    )
-
-
-    if (-not (Test-Path $Path)) {
-        return $null
-    }
-
-
-    return (
-        Get-FileHash `
-            -Path $Path `
-            -Algorithm SHA256
-    ).Hash
-}
-
-
 function Get-LogitechGHubConfigurationPaths {
     [CmdletBinding()]
     [OutputType([hashtable])]
