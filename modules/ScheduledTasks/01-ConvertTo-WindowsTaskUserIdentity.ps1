@@ -8,16 +8,60 @@ function ConvertTo-WindowsTaskUserIdentity {
         return ""
     }
 
+    $normalized = $UserId.Trim()
+
     try {
         return (
-            [Security.Principal.NTAccount]::new($UserId)
+            [Security.Principal.SecurityIdentifier]::new($normalized)
+        ).Value
+    }
+    catch {
+        Write-Verbose (
+            "UserId '$normalized' ist keine direkt parsebare SID. " +
+            "Versuche NTAccount-Auflösung."
+        )
+    }
+
+    try {
+        return (
+            [Security.Principal.NTAccount]::new($normalized)
         ).Translate(
             [Security.Principal.SecurityIdentifier]
         ).Value
     }
     catch {
-        return $UserId.Trim().ToLowerInvariant()
+        Write-Verbose (
+            "NTAccount-Auflösung für '$normalized' fehlgeschlagen. " +
+            "Versuche lokalen Benutzer als Fallback."
+        )
     }
+
+    $accountName = if ($normalized.Contains("\")) {
+        ($normalized -split "\\", 2)[1]
+    }
+    else {
+        $normalized
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($accountName)) {
+        try {
+            $localUser = Get-LocalUser `
+                -Name $accountName `
+                -ErrorAction Stop
+
+            if ($null -ne $localUser.SID) {
+                return $localUser.SID.Value
+            }
+        }
+        catch {
+            Write-Verbose (
+                "Lokaler Benutzer '$accountName' konnte nicht aufgelöst werden. " +
+                "Verwende normalisierte Textrepräsentation."
+            )
+        }
+    }
+
+    return $normalized.ToLowerInvariant()
 }
 
 function ConvertTo-WindowsTaskDurationSignature {
@@ -175,16 +219,7 @@ function Test-WindowsScheduledTaskDesiredState {
         -Principal $Principal `
         -Settings $Settings
 
-    if ($currentSignature -ceq $desiredSignature) {
-        return $true
-    }
-
-    Write-WindowsScheduledTaskSignatureDifference `
-        -TaskName ([string]$ExistingTask.TaskName) `
-        -CurrentSignature $currentSignature `
-        -DesiredSignature $desiredSignature
-
-    return $false
+    return $currentSignature -ceq $desiredSignature
 }
 
 function Set-WindowsScheduledTaskDesiredState {
