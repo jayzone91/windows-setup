@@ -1,0 +1,428 @@
+function Test-DirectoryJunctionTarget {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path,
+
+        [Parameter(Mandatory)]
+        [string] $Target
+    )
+
+    $item = Get-Item `
+        -LiteralPath $Path `
+        -Force `
+        -ErrorAction SilentlyContinue
+
+    if (
+        -not $item -or
+        -not $item.PSIsContainer -or
+        $item.LinkType -ne "Junction"
+    ) {
+        return $false
+    }
+
+    try {
+        $currentTarget = [IO.Path]::GetFullPath(
+            [string] $item.Target
+        ).TrimEnd("\")
+
+        $desiredTarget = [IO.Path]::GetFullPath(
+            $Target
+        ).TrimEnd("\")
+
+        return $currentTarget.Equals(
+            $desiredTarget,
+            [StringComparison]::OrdinalIgnoreCase
+        )
+    }
+    catch {
+        return $false
+    }
+}
+
+function Set-WindowsSetupGeneratedTextFile {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path,
+
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string] $Content,
+
+        [ValidateSet("Utf8NoBom", "Ascii")]
+        [string] $Encoding = "Utf8NoBom"
+    )
+
+    $parent = Split-Path `
+        -Path $Path `
+        -Parent
+
+    if (-not (Test-Path -LiteralPath $parent -PathType Container)) {
+        New-Item `
+            -ItemType Directory `
+            -Path $parent `
+            -Force |
+        Out-Null
+    }
+
+    if (Test-Path -LiteralPath $Path -PathType Leaf) {
+        $currentContent = [IO.File]::ReadAllText($Path)
+
+        if ($currentContent -ceq $Content) {
+            return $false
+        }
+    }
+
+    $textEncoding = if ($Encoding -eq "Ascii") {
+        [Text.Encoding]::ASCII
+    }
+    else {
+        [Text.UTF8Encoding]::new($false)
+    }
+
+    [IO.File]::WriteAllText(
+        $Path,
+        $Content,
+        $textEncoding
+    )
+
+    return $true
+}
+
+function Write-WindowsSetupInteractive {
+    param(
+        [AllowEmptyString()]
+        [string] $Message = "",
+
+        [switch] $NoNewline
+    )
+
+    $stream = $null
+    $writer = $null
+
+    try {
+        $stream = [IO.File]::Open(
+            "CONOUT$",
+            [IO.FileMode]::Open,
+            [IO.FileAccess]::Write,
+            [IO.FileShare]::ReadWrite
+        )
+
+        $encoding = [Text.UTF8Encoding]::new($false)
+
+        $writer = [IO.StreamWriter]::new(
+            $stream,
+            $encoding
+        )
+
+        $writer.AutoFlush = $true
+
+        if ($NoNewline) {
+            $writer.Write($Message)
+        }
+        else {
+            $writer.WriteLine($Message)
+        }
+    }
+    finally {
+        if ($writer) {
+            $writer.Dispose()
+        }
+        elseif ($stream) {
+            $stream.Dispose()
+        }
+    }
+}
+
+function Read-WindowsSetupPrompt {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Prompt
+    )
+
+    Write-WindowsSetupInteractive `
+        -Message ("{0}: " -f $Prompt) `
+        -NoNewline
+
+    return [Console]::ReadLine()
+}
+
+function Get-TextFingerprint {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Text
+    )
+
+    $bytes = [Text.Encoding]::UTF8.GetBytes($Text)
+    $hash = [Security.Cryptography.SHA256]::HashData($bytes)
+
+    return [Convert]::ToHexString($hash).ToLowerInvariant()
+}
+
+
+function Get-FileSetFingerprint {
+    param(
+        [Parameter(Mandatory)]
+        [string] $RootPath,
+
+        [Parameter(Mandatory)]
+        [System.IO.FileInfo[]] $Files
+    )
+
+    $entries = foreach ($file in @($Files | Sort-Object FullName)) {
+        $relativePath = [System.IO.Path]::GetRelativePath(
+            $RootPath,
+            $file.FullName
+        )
+
+        $hash = (
+            Get-FileHash `
+                -LiteralPath $file.FullName `
+                -Algorithm SHA256
+        ).Hash.ToLowerInvariant()
+
+        "{0}|{1}" -f $relativePath.Replace("\", "/"), $hash
+    }
+
+    return Get-TextFingerprint -Text ($entries -join "`n")
+}
+
+
+function Test-FileHardLinkTarget {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        "PSAvoidUsingPositionalParameters",
+        "",
+        Justification = "fsutil ist ein natives Windows-Programm und verwendet positionsbasierte Argumente."
+    )]
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path,
+
+        [Parameter(Mandatory)]
+        [string] $Target
+    )
+
+    $item = Get-Item `
+        -LiteralPath $Path `
+        -Force `
+        -ErrorAction SilentlyContinue
+
+    if (-not $item -or $item.LinkType -ne "HardLink") {
+        return $false
+    }
+
+    $pathFull = [System.IO.Path]::GetFullPath($Path)
+    $targetFull = [System.IO.Path]::GetFullPath($Target)
+
+    foreach ($reportedTarget in @($item.Target)) {
+        if ([string]::IsNullOrWhiteSpace([string]$reportedTarget)) {
+            continue
+        }
+
+        try {
+            $reportedFull = [System.IO.Path]::GetFullPath(
+                [string]$reportedTarget
+            )
+
+            if ($reportedFull -eq $targetFull) {
+                return $true
+            }
+        }
+        catch {
+            Write-Verbose (
+                "Hardlink-Ziel konnte nicht direkt normalisiert werden; " +
+                "verwende fsutil-Fallback. Fehler: {0}" `
+                    -f $_.Exception.Message
+            )
+        }
+    }
+
+    $fsutil = Get-Command `
+        -Name "fsutil.exe" `
+        -ErrorAction SilentlyContinue
+
+    if (-not $fsutil) {
+        return $false
+    }
+
+    $hardLinks = @(
+        & $fsutil.Source hardlink list $pathFull 2>$null
+    )
+
+    if ($LASTEXITCODE -ne 0) {
+        return $false
+    }
+
+    $driveRoot = [System.IO.Path]::GetPathRoot($pathFull)
+
+    foreach ($hardLink in $hardLinks) {
+        $candidate = ([string]$hardLink).Trim()
+
+        if ([string]::IsNullOrWhiteSpace($candidate)) {
+            continue
+        }
+
+        if ($candidate.StartsWith("\")) {
+            $candidate = Join-Path `
+                $driveRoot `
+                $candidate.TrimStart("\")
+        }
+
+        try {
+            if (
+                [System.IO.Path]::GetFullPath($candidate) -eq
+                $targetFull
+            ) {
+                return $true
+            }
+        }
+        catch {
+            continue
+        }
+    }
+
+    return $false
+}
+
+function Update-SessionPath {
+
+    Write-Host ""
+    Write-Host "[CONFIG] Aktualisiere PATH"
+
+
+    $machinePath =
+    [Environment]::GetEnvironmentVariable(
+        "Path",
+        "Machine"
+    )
+
+    $userPath =
+    [Environment]::GetEnvironmentVariable(
+        "Path",
+        "User"
+    )
+
+    $currentPath =
+    $env:Path
+
+
+    $paths = @(
+        $currentPath
+        $machinePath
+        $userPath
+    ) |
+    Where-Object {
+        -not [string]::IsNullOrWhiteSpace($_)
+    } |
+    ForEach-Object {
+        $_ -split ";"
+    } |
+    Where-Object {
+        -not [string]::IsNullOrWhiteSpace($_)
+    } |
+    Select-Object -Unique
+
+
+    $env:Path =
+    $paths -join ";"
+
+
+    Write-Host "[OK] PATH aktualisiert."
+}
+
+
+function Set-FileHardLink {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path,
+
+        [Parameter(Mandatory)]
+        [string] $Target,
+
+        [switch] $ReplaceExistingFile
+    )
+
+    if (-not (Test-Path -LiteralPath $Target -PathType Leaf)) {
+        throw "Hardlink-Ziel existiert nicht oder ist keine Datei: $Target"
+    }
+
+    $parent = Split-Path `
+        -Path $Path `
+        -Parent
+
+    if (-not (Test-Path -LiteralPath $parent)) {
+        New-Item `
+            -ItemType Directory `
+            -Path $parent `
+            -Force |
+        Out-Null
+    }
+
+    $existingItem = Get-Item `
+        -LiteralPath $Path `
+        -Force `
+        -ErrorAction SilentlyContinue
+
+    if ($existingItem) {
+        if ($existingItem.PSIsContainer) {
+            throw "Hardlink-Zielpfad ist ein Verzeichnis: $Path"
+        }
+
+        if ($existingItem.LinkType -eq "HardLink") {
+            if (
+                Test-FileHardLinkTarget `
+                    -Path $Path `
+                    -Target $Target
+            ) {
+                Write-Host "[OK] Hardlink bereits korrekt: $Path"
+                return
+            }
+
+            Write-Host "[REMOVE] Bestehender Hardlink mit falschem Ziel: $Path"
+
+            Remove-Item `
+                -LiteralPath $Path `
+                -Force
+        }
+        elseif ($existingItem.LinkType -eq "SymbolicLink") {
+            Write-Host "[REMOVE] Bestehender Symlink: $Path"
+
+            Remove-Item `
+                -LiteralPath $Path `
+                -Force
+        }
+        elseif (
+            $existingItem.Attributes -band
+            [System.IO.FileAttributes]::ReparsePoint
+        ) {
+            throw "Nicht unterstützte ReparsePoint-Datei vorhanden: $Path"
+        }
+        elseif ($ReplaceExistingFile) {
+            Write-Host "[REMOVE] Bestehende Datei: $Path"
+
+            Remove-Item `
+                -LiteralPath $Path `
+                -Force
+        }
+        else {
+            throw (
+                "Pfad existiert bereits als normale Datei: " +
+                $Path
+            )
+        }
+    }
+
+    New-Item `
+        -ItemType HardLink `
+        -Path $Path `
+        -Target $Target |
+    Out-Null
+
+    Write-Host (
+        "[LINK] Hardlink: $Path -> $Target"
+    ) -ForegroundColor Green
+}

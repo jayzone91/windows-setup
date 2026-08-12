@@ -1,7 +1,7 @@
-﻿$windowsModuleRoot = $PSScriptRoot
+$windowsModuleRoot = $PSScriptRoot
 
 $windowsModules = @(
-    "WindowsWallpaper.ps1"
+    "WindowsWallpaper\index.ps1"
     "WindowsShell.ps1"
     "WindowsSystem.ps1"
     "SetupTemp.ps1"

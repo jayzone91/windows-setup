@@ -20,7 +20,7 @@ update-performance:
 
 # Vollständiger manueller Codecheck; erfolgreicher Lauf aktualisiert den Bootstrap-Fingerprint
 check:
-    pwsh -NoProfile -ExecutionPolicy Bypass -Command ". ./modules/Helpers.ps1; . ./modules/PowerShell.ps1; Test-PowerShellCode -Path . -FailOnAnyIssue -UpdateFingerprint"
+    pwsh -NoProfile -ExecutionPolicy Bypass -Command ". ./modules/Helpers/index.ps1; . ./modules/PowerShell/index.ps1; Test-PowerShellCode -Path . -FailOnAnyIssue -UpdateFingerprint"
 
 # komorebi, whkd, masir und Zebar sauber neu starten
 desktop-restart:

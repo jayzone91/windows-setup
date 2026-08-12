@@ -9,5 +9,6 @@
         "openai.chatgpt"
         "esbenp.prettier-vscode"
         "yzhang.markdown-all-in-one"
+        "ms-dotnettools.csdevkit"
     )
 }
