@@ -305,6 +305,9 @@ if ($script:DriverRebootRequired) {
 
 Set-WindowsDebloat -Config $Debloat
 
+$null = Set-WindowsComputerName `
+    -Config $Windows
+
 $taskbarChanged = Set-TaskbarPreferences `
     -Config $Windows
 

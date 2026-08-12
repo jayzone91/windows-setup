@@ -120,9 +120,28 @@ function Get-OneCommanderMachineSettings {
     Select-Object -First 1
 
     if (-not $machineKey) {
-        throw (
-            "Maschinenspezifische OneCommander-Einstellungen " +
-            "für '$machineName' wurden nicht gefunden."
+        $machineCandidates = @(
+            $Settings.userSettings.PSObject.Properties |
+            Where-Object {
+                $_.Name -ne "roaming" -and
+                $null -ne $_.Value."Rapidrive.Properties.Settings"
+            }
+        )
+
+        if ($machineCandidates.Count -ne 1) {
+            throw (
+                "Maschinenspezifische OneCommander-Einstellungen " +
+                "für '$machineName' wurden nicht gefunden. " +
+                "Als Fallback wurde kein eindeutiger vorhandener Maschinenblock " +
+                "ermittelt; Kandidaten: $($machineCandidates.Count)."
+            )
+        }
+
+        $machineKey = $machineCandidates[0].Name
+
+        Write-Host (
+            "[INFO] OneCommander verwendet den eindeutigen vorhandenen " +
+            "Maschinenblock '$machineKey' für '$machineName'."
         )
     }
 

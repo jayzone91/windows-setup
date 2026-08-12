@@ -1,9 +1,11 @@
 @{
-    Taskbar = @{
+    ComputerName = "Jay-PC"
+
+    Taskbar      = @{
         AutoHide = $true
     }
 
-    StartMenu = @{
+    StartMenu    = @{
         ShowRecentlyAddedApps = $false
         ShowRecentItems       = $false
         ShowRecommendations   = $false

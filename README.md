@@ -27,6 +27,7 @@ Bereits umgesetzt sind unter anderem:
 - PCVisit Supporter Modul mit Installation-bei-Bedarf und PCVisit-eigenem Auto-Update
 - Versions-Pinning einzelner Pakete
 - Windows-Debloat und Grundkonfiguration
+- Computername als deklarativer Desired State in `config/windows.psd1`; Umbenennung nur bei Drift und ohne automatischen Neustart
 - Windows- und Microsoft-Updates
 - Treiberlogik für NVIDIA und Intel
 - PowerShell-, Node.js-, Bun- und Go-Entwicklungsumgebung
@@ -76,6 +77,7 @@ Bereits umgesetzt sind unter anderem:
 - Volume OSD wird bei eigenständigem Drift gezielt neu gestartet, ohne dafür unnötig den kompletten Desktop-Stack zu beenden
 - OneCommander als Explorer-Ersatz
 - OneCommander-Desired-State-Precheck: Neustart nur bei tatsächlichem Konfigurations-Drift
+- OneCommander verwendet nach einer Windows-Computerumbenennung einen eindeutig vorhandenen maschinenspezifischen Settings-Block als Fallback, ohne den anwendungseigenen Schlüssel umzuschreiben
 - Catppuccin-Mocha-Theme für OneCommander
 - Catppuccin-Mocha-Folder-Icons für OneCommander
 - automatisch generiertes Catppuccin-Mocha-File-Icon-Pack aus `catppuccin/vscode-icons`

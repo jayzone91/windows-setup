@@ -1,3 +1,65 @@
+function Set-WindowsComputerName {
+    param(
+        [Parameter(Mandatory)]
+        [hashtable] $Config
+    )
+
+    Write-Host ""
+    Write-Host "========================================"
+    Write-Host " Computername"
+    Write-Host "========================================"
+
+    if (-not $Config.ContainsKey("ComputerName")) {
+        throw "ComputerName fehlt in config/windows.psd1."
+    }
+
+    $desiredName = [string] $Config.ComputerName
+
+    if ([string]::IsNullOrWhiteSpace($desiredName)) {
+        throw "ComputerName in config/windows.psd1 darf nicht leer sein."
+    }
+
+    if ($desiredName.Length -gt 15) {
+        throw "ComputerName darf maximal 15 Zeichen lang sein: '$desiredName'."
+    }
+
+    if ($desiredName -notmatch '^[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]$' -and $desiredName.Length -gt 1) {
+        throw (
+            "ComputerName enthält ungültige Zeichen oder endet mit einem Bindestrich: " +
+            "'$desiredName'. Erlaubt sind Buchstaben, Ziffern und Bindestriche."
+        )
+    }
+
+    if ($desiredName.Length -eq 1 -and $desiredName -notmatch '^[A-Za-z0-9]$') {
+        throw "ComputerName enthält ein ungültiges Zeichen: '$desiredName'."
+    }
+
+    if ($desiredName -match '^\d+$') {
+        throw "ComputerName darf nicht ausschließlich aus Ziffern bestehen: '$desiredName'."
+    }
+
+    $currentName = [System.Net.Dns]::GetHostName()
+
+    if ($currentName.Equals($desiredName, [System.StringComparison]::OrdinalIgnoreCase)) {
+        Write-Host "[SKIP] Computername bereits im Desired State: $currentName." `
+            -ForegroundColor Green
+        return $false
+    }
+
+    Rename-Computer `
+        -NewName $desiredName `
+        -Force `
+        -ErrorAction Stop
+
+    $message = (
+        "[OK] Computername von '{0}' auf '{1}' geändert. " +
+        "Die Änderung wird nach dem nächsten Neustart vollständig wirksam."
+    ) -f $currentName, $desiredName
+
+    Write-Host $message -ForegroundColor Green
+
+    return $true
+}
 function Set-WindowsPowerPreferences {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
         "PSAvoidUsingPositionalParameters",

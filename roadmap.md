@@ -554,6 +554,12 @@ Der NanaZip-Workflow ist absichtlich generisch aufgebaut und soll für weitere P
 - [x] Wallpaper Slideshow
 - [x] Windows Snap deaktivieren, da komorebi übernimmt
 - [x] geschützte Registry-Werte dürfen Bootstrap nicht abbrechen
+- [x] Computername deklarativ über `config/windows.psd1` verwalten
+- [x] Computername nur bei tatsächlichem Drift über `Rename-Computer` setzen
+- [x] nach einer Computerumbenennung keinen automatischen Neustart auslösen; Wirksamkeit nach bewusstem Benutzer-Neustart
+- [x] Computerumbenennung auf dem aktuellen System praktisch getestet und nach Neustart als Desired State erkannt
+- [x] wiederholter `just update-log` nach der Computerumbenennung ohne erneute Umbenennung erfolgreich
+- [x] finaler `just check` nach der Computername-Integration erfolgreich
 - [ ] Taskbar passend zum Zebar-Workflow automatisch ausblenden
 - [ ] Lock-Screen optisch angleichen
 - [ ] weitere Datenschutz-/Telemetry-Einstellungen nur gezielt ergänzen
@@ -1335,6 +1341,10 @@ https://github.com/catppuccin/vscode-icons
 - [x] OneCommander bei vollständig aktuellem Zustand geöffnet lassen
 - [x] OneCommander nur bei tatsächlichem Drift schließen und danach neu starten
 - [x] Verhalten auf dem aktuellen System praktisch getestet
+- [x] nach einer Windows-Computerumbenennung einen eindeutig vorhandenen maschinenspezifischen OneCommander-Block als sicheren Fallback verwenden
+- [x] OneCommander-internen Maschinenschlüssel bei diesem Fallback nicht automatisch umbenennen oder anderweitig manipulieren
+- [x] Fallback nach der Computerumbenennung praktisch getestet; OneCommander blieb bei aktuellem Desired State geöffnet
+- [x] wiederholter `just update-log` mit dem OneCommander-Fallback erfolgreich
 
 ### Akzeptanzkriterium für wiederholte Bootstrap-Läufe
 
