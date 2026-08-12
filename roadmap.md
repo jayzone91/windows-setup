@@ -133,7 +133,7 @@ Windows Desktop
 - [x] `just update-log` zeigt die vollständige Bootstrap-Ausgabe und ist der verbindliche Modus für funktionale Bootstrap-Tests
 - [x] `just update-performance` führt über `scripts/Measure-BootstrapPerformance.ps1` denselben parameterlosen/stillen Bootstrap aus und misst reproduzierbar die Laufzeit
 - [x] Performance-Tests werden ohne reguläre Bootstrap-Ausgabe durchgeführt; funktionale Tests verwenden `-Log`
-- [x] `just check` und Bootstrap verwenden denselben zentralen `Test-PowerShellCode`-Workflow; `just check` führt den vollständigen strikten Analyzer aus und aktualisiert danach den Git-basierten Codezustand, während der Bootstrap den Analyzer nur bei geändertem PowerShell-Code ausführt
+- [x] `just check` und Bootstrap verwenden denselben zentralen `Test-PowerShellCode`-Workflow; `just check` führt PSScriptAnalyzer für PowerShell und den Compilecheck für verwaltete C#-Dateien aus und aktualisiert danach den Git-basierten Source-Codezustand, während der Bootstrap den vollständigen Check nur bei geändertem Source-Code ausführt
 - [x] interaktive Bootstrap-Kommunikation wird zentral über `Write-WindowsSetupInteractive` und `Read-WindowsSetupPrompt` geführt, wenn sie unabhängig vom gewählten Ausgabemodus sichtbar bleiben muss
 - [x] interne PSScriptAnalyzer-Runtimefehler einzelner Dateien werden einmal in einem frischen `pwsh -NoProfile`-Prozess erneut geprüft
 - [x] `just desktop-restart` startet die Desktop-Umgebung kontrolliert neu
@@ -219,6 +219,14 @@ Begründung:
 - [x] `README.md`
 - [x] `roadmap.md`
 - [x] `PSScriptAnalyzerSettings.psd1`
+- [x] größere PowerShell-Bereiche fachlich in Unterordner mit lokalem `index.ps1` aufgeteilt; übergeordnete Loader importieren nur den jeweiligen Index
+- [x] keine manuell gepflegte Repository-Source-Datei überschreitet 500 Zeilen; generierte Build-Artefakte und externe/vendorisierte Inhalte sind von dieser Source-Regel ausgenommen
+- [x] `bootstrap.ps1` bleibt der zentrale Einstiegspunkt und lädt die gesplittete Bootstrap-Implementierung über `bootstrap/index.ps1`
+- [x] Paketkonfiguration unter `config/packages/` nach Paketgruppen aufgeteilt und zentral über `config/packages/index.ps1` geladen
+- [x] Windhawk-Konfiguration unter `config/windhawk/` pro Mod aufgeteilt und zentral über `config/windhawk/index.ps1` geladen
+- [x] Volume-OSD unter `modules/VolumeOsd/` modularisiert; nativer C#-Interop liegt separat in `modules/VolumeOsd/Interop.cs`
+- [x] verwaiste Funktionen und Dateien nach repositoryweiter Prüfung einschließlich `Justfile`, `scripts/` und indirekter Nutzung entfernt
+- [x] Refactor mit `just check` und vollständigen `just update-log`-Läufen praktisch bestätigt
 
 ## Erstinstallation
 
@@ -293,16 +301,27 @@ Praktisch bestätigter Stand nach der zweiten Desired-State-/Idempotenz-Runde:
 58,36 Sekunden
 ```
 
+Aktueller offener Performance-Befund nach dem großen Strukturrefactor:
+
+```text
+01:33.23
+93,24 Sekunden
+```
+
+Die `93,24 Sekunden` sind **keine neue akzeptierte Baseline**, sondern eine zu untersuchende Regression von `34,88 Sekunden` bzw. rund `59,8 %` gegenüber dem zuletzt bestätigten Stand von `58,36 Sekunden`.
+
+- [ ] Performance-Regression nach dem Strukturrefactor mit phasenweiser Messung lokalisieren und auf Basis realer Laufzeitdaten optimieren
+
 Damit wurde die gemessene Laufzeit gegenüber dem ursprünglichen Stand von 221,67 Sekunden um rund **73,7 %** reduziert. Gegenüber dem 70,73-Sekunden-Zwischenstand reduziert die zweite Runde die Laufzeit nochmals um rund **17,5 %**.
 
 Feste Architekturentscheidungen:
 
 - [x] teure Prüfungen und externe CLI-Schreiboperationen nur wiederholen, wenn Input oder Desired State dies erfordern
 - [x] lokaler Performance-/Initialisierungszustand darf unter `.generated/state/` liegen und wird nicht committed
-- [x] PowerShell-Codezustand basiert im Git-Repository auf HEAD plus tatsächlich geänderten/gestagten/untracked PowerShell-Dateien; saubere getrackte Dateien werden für den schnellen Preflight nicht vollständig neu gehasht
-- [x] unveränderter PowerShell-Code überspringt den vollständigen PSScriptAnalyzer-Lauf; geänderter Code muss weiterhin denselben strikten Check bestehen
+- [x] Source-Codezustand basiert im Git-Repository auf HEAD plus tatsächlich geänderten/gestagten/untracked PowerShell- und C#-Dateien; saubere getrackte Dateien werden für den schnellen Preflight nicht vollständig neu gehasht
+- [x] unveränderter Source-Code überspringt den vollständigen Qualitätscheck; geänderter PowerShell-Code muss weiterhin PSScriptAnalyzer bestehen und verwaltete C#-Dateien müssen den Compilecheck bestehen
 - [x] `just check` aktualisiert nach erfolgreichem vollständigem Analyzer-Lauf denselben Codezustand
-- [x] normale WinGet-Installationen und Updates werden pro Source gebündelt; verarbeitet werden ausschließlich in `config/packages.psd1` deklarierte Pakete
+- [x] normale WinGet-Installationen und Updates werden pro Source gebündelt; verarbeitet werden ausschließlich in `config/packages/` deklarierte Pakete
 - [x] `Update = $false` und versionsgepinnte Pakete werden nicht in den normalen Winget-Upgrade-Batch aufgenommen
 - [x] korrekte Hardlinks werden bei wiederholten Läufen nicht neu erzeugt
 - [x] Dev-Drive-Paketcache-Konfiguration wird nur bei geändertem Desired State erneut geschrieben
@@ -326,7 +345,8 @@ Zweite Performance-/Desired-State-Runde:
 - [x] Scheduled Tasks nur bei tatsächlichem Drift von Action, Trigger, Principal oder Settings neu registrieren
   - komorebi, Zebar und Volume OSD melden bei unverändertem Zustand `CURRENT`
   - Weekly Maintenance normalisiert Weekly-Trigger vor dem Vergleich auf lokale Wall-Clock-Zeit, damit UTC-/Offset-Darstellungen desselben Zeitpunkts keinen False Positive erzeugen
-  - Diagnosevergleich sowie vollständiger `just update-log` bestätigen `Windows Setup Weekly Maintenance` als `CURRENT`
+  - Benutzeridentitäten in Principal und Logon-Trigger werden für den Vergleich auf stabile SIDs normalisiert; nach einer Computerumbenennung wird ein gespeicherter alter `COMPUTER\Benutzer`-Wert für dasselbe lokale Konto über die lokale Benutzer-SID kanonisiert
+  - praktischer `just update-log` nach der Computerumbenennung bestätigt komorebi, Zebar, Volume OSD und Weekly Maintenance als `CURRENT` sowie den vollständigen Skip unnötiger Desktop-Neustarts
 - [x] Windows-Shell-/Theme-/Power-/Wallpaper-Konfiguration nur bei Drift schreiben; Debloat bleibt bewusst bei jedem Bootstrap aktiv
 - [x] Explorer-Neustart auf tatsächliche Shell-Änderungen begrenzen
   - der bisherige Restart diente der zuverlässigen Übernahme von Shell-/Taskleistenänderungen; bei unverändertem Shell-Desired-State bleibt Explorer nun geöffnet
@@ -349,7 +369,7 @@ Zweite Performance-/Desired-State-Runde:
 
 ## Gemeinsame Paketarchitektur
 
-`config/packages.psd1` bleibt die zentrale deklarative Paketliste. Paketgruppen sind weiterhin fachlich organisiert; die Eigenschaft `Source` entscheidet über den Installationsweg.
+`config/packages/` bleibt die zentrale deklarative Paketliste. Paketgruppen sind weiterhin fachlich organisiert; die Eigenschaft `Source` entscheidet über den Installationsweg.
 
 Unterstützte Quellen:
 
@@ -377,13 +397,13 @@ Für Scoop muss zusätzlich der gewünschte `Bucket` direkt am Paket angegeben w
 - [x] alte Scoop-App-Versionen per Cleanup entfernen
 - [x] Paketmanager-Cleanup auch bei Fehlern innerhalb der Paketphase über `finally` ausführen
 - [x] Winget-Cache nicht durch inoffizielles Löschen interner Verzeichnisse manipulieren
-- [x] Paketkonfiguration in `config/packages.psd1` mit Beispielen und unterstützten Quellen dokumentieren
+- [x] Paketkonfiguration in `config/packages/` mit Beispielen und unterstützten Quellen dokumentieren
 - [x] `just check` nach dem Paketmanager-Umbau ohne relevante Analyzer-Warnungen
 - [x] wiederholter `just update` mit Chocolatey/Scoop ohne erneute Installation der Paketmanager
 
 ## Generische Winget-Logik
 
-- [x] Paketgruppen über `config/packages.psd1`
+- [x] Paketgruppen über `config/packages/`
 - [x] Installation über `winget`
 - [x] Microsoft-Store-Quelle unterstützen
 - [x] installierte Pakete erkennen
@@ -480,7 +500,7 @@ Ziel:
 Umgesetzt:
 
 - [x] passende Winget-Paket-ID `M2Team.NanaZip` verifiziert
-- [x] NanaZip in `config/packages.psd1` aufgenommen
+- [x] NanaZip in `config/packages/` aufgenommen
 - [x] Installation im Bootstrap integriert
 - [x] Installation über `just update` auf dem aktuellen System getestet
 - [x] Update-/Wiederholungspfad über `just update` getestet
@@ -844,6 +864,9 @@ Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games 
 # 13. Phase 10 – PowerShell und Codequalität
 
 - [x] PowerShell 7
+- [x] verwaltete C#-Quelldateien als Teil desselben Source-Code-Qualitätsworkflows kompilieren; Compilerwarnungen gelten als Fehler
+- [x] Git-basierter Source-Code-Fingerprint berücksichtigt PowerShell- und C#-Dateien
+- [x] `just check` nach C#-Integration praktisch mit PSScriptAnalyzer und C#-Compilecheck bestätigt
 - [x] PowerShell-Module automatisiert installieren
 - [x] PSScriptAnalyzer
 - [x] BurntToast
@@ -1385,7 +1408,7 @@ Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwalte
   - Matter-Layout und -Geometrie bleiben unverändert; angepasst werden nur Farben
   - Catppuccin-Mocha-Flächen verwenden dezente `surface1`-/`surface2`-Töne statt Mauve als große Flächenfarbe
   - Mauve bleibt für kleine Highlights und Borders reserviert
-  - Konfiguration deklarativ in `config/windhawk.psd1` und reproduzierbar über den bestehenden Windhawk-CLI-Workflow
+  - Konfiguration deklarativ in `config/windhawk/` und reproduzierbar über den bestehenden Windhawk-CLI-Workflow
   - Installation, `just check`, `just update` und optische Sichtprüfung auf dem aktuellen System erfolgreich getestet
 - [x] alle drei optisch an Catppuccin Mocha anpassen
 - [x] bisherige Konfiguration reproduzierbar über Windhawk CLI
@@ -1409,8 +1432,8 @@ Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwalte
 ---
 ## Windhawk Desired State
 
-- [x] `config/windhawk.psd1` als deklarative Mod-Liste vorgesehen
-- [x] Mod-Installation und Aktivierung generisch über `modules/Windhawk.ps1`
+- [x] `config/windhawk/` als deklarative Mod-Liste vorgesehen
+- [x] Mod-Installation und Aktivierung generisch über `modules/Windhawk/`
 - [x] Windhawk-CLI-2.x-JSON-Envelope bei installierten Mods berücksichtigen
 - [x] generische Übersetzung verschachtelter Settings in Flat-Storage-Keys
 - [x] Windows 11 Taskbar Styler als erster deklarativer Mod
@@ -1478,8 +1501,8 @@ Brightness wird auf dem aktuellen System vorerst nicht als eigener OSD-Bereich u
 
 ## Produktive Architektur
 
-- [x] produktive Implementierung liegt unter `modules/VolumeOsd.ps1`
-- [x] `modules/VolumeOsd.ps1` wird über `modules/index.ps1` in die bestehende Modularchitektur geladen
+- [x] produktive Implementierung liegt unter `modules/VolumeOsd/`
+- [x] `modules/VolumeOsd/` wird über `modules/index.ps1` in die bestehende Modularchitektur geladen
 - [x] Modul definiert `Start-VolumeOsd` und startet beim normalen Dot-Sourcing nicht selbst
 - [x] Volume Up, Volume Down und Mute werden über einen Low-Level-Keyboard-Hook abgefangen
 - [x] auf dem aktuellen System auftretende injizierte Volume-Events werden ebenfalls verarbeitet
@@ -1515,7 +1538,7 @@ Brightness wird auf dem aktuellen System vorerst nicht als eigener OSD-Bereich u
 - [x] unsichtbarer Autostart über generierten `wscript.exe`-Launcher unter `.generated/volume-osd/`
 - [x] Launcher startet `pwsh` mit `-NoProfile -NonInteractive -STA -ExecutionPolicy Bypass`
 - [x] Startup-Fehler können unter `.generated/logs/volume-osd-startup.log` protokolliert werden
-- [x] Task lädt `modules/VolumeOsd.ps1` und ruft `Start-VolumeOsd` auf
+- [x] Task lädt `modules/VolumeOsd/index.ps1` und ruft `Start-VolumeOsd` auf
 - [x] Registrierung/Aktualisierung über den bestehenden Bootstrap
 - [x] Volume-OSD in `Stop-WindowsDesktopEnvironment` und `Start-WindowsDesktopEnvironment` einbezogen
 - [x] Desktop-Prozesserkennung berücksichtigt sowohl den direkten Modulpfad als auch den generierten Launcher-Pfad
@@ -1542,7 +1565,7 @@ Die Eingabe-Architektur wurde zunächst separat getestet: 61 von 61 beobachteten
 
 Die finale WPF-Pill wurde anschließend praktisch geprüft. Nach der Umstellung auf ein persistentes Fenster pro Eingabe-Burst werden schnelle Lautstärkeänderungen ohne störendes Flackern dargestellt.
 
-Nach der Migration in `modules/VolumeOsd.ps1` und der Scheduled-Task-/Bootstrap-Integration lief `just update` fehlerfrei durch und das produktive OSD lief anschließend korrekt.
+Nach der Migration in `modules/VolumeOsd/` mit zentralem `index.ps1` und ausgelagertem `Interop.cs` sowie der Scheduled-Task-/Bootstrap-Integration lief `just update` fehlerfrei durch und das produktive OSD lief anschließend korrekt.
 
 Beim ersten echten Logon-Test zeigte sich, dass der direkte dauerhafte `pwsh`-Taskstart ein sichtbares Terminalfenster hinterlassen konnte. Der Scheduled Task startet das OSD deshalb nun über einen generierten, unsichtbaren `wscript.exe`-Launcher. Die globale PowerShell Execution Policy bleibt unverändert.
 
@@ -1836,7 +1859,7 @@ Für GOG GALAXY wird bewusst ausschließlich eine generelle `Exe = GalaxyClient.
 
 Der Bootstrap erzwingt Launcher-Installationspfade nicht über undokumentierte interne Konfigurationsdateien. Stattdessen wird die bereits etablierte Strategie für einmalige Benutzerinteraktionen verwendet.
 
-- [x] relevante Gaming-Launcher dynamisch aus `config/packages.psd1` → `Gaming` ableiten
+- [x] relevante Gaming-Launcher dynamisch aus `config/packages/` → `Gaming` ableiten
 - [x] Launcher über `GameLibrary` deklarativ einem Eintrag aus `config/storage.psd1` → `GameLibraries` zuordnen
 - [x] interaktive Launcher-Initialisierung erst starten, nachdem Games Drive und sämtliche konfigurierten Game-Library-Verzeichnisse vorhanden und verifiziert sind
 - [x] nur tatsächlich installierte Gaming-Pakete initialisieren

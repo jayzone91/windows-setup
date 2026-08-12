@@ -12,11 +12,15 @@ Der Kern des Setups ist produktiv nutzbar und weitgehend reproduzierbar.
 
 Bereits umgesetzt sind unter anderem:
 
+- modulare Projektstruktur: größere PowerShell-Bereiche liegen in fachlichen Unterordnern mit lokalem `index.ps1`; manuell gepflegte Repository-Source-Dateien bleiben bei maximal 500 Zeilen
+- `bootstrap.ps1` bleibt der zentrale Einstiegspunkt und lädt die gesplittete Bootstrap-Implementierung über `bootstrap/index.ps1`
+- Paketdefinitionen sind unter `config/packages/` nach Gruppen aufgeteilt; Windhawk-Modkonfigurationen entsprechend unter `config/windhawk/`
+- PowerShell und verwaltete C#-Quelldateien werden gemeinsam über den zentralen Source-Code-Qualitätsworkflow geprüft
 - Paketinstallation und Updates über `winget`, Microsoft Store, Chocolatey und Scoop
 - Chocolatey und Scoop werden bei Bedarf automatisch installiert und bei jedem Bootstrap selbst aktualisiert
 - Scoop-Buckets werden aus den Paketdefinitionen abgeleitet; pro Scoop-Paket ist der gewünschte Bucket explizit definiert
 - Paketmanager-Cleanup für Chocolatey und Scoop bei jedem Bootstrap-Lauf
-- Winget prüft nur die in `config/packages.psd1` verwalteten Pakete und bündelt normale Installationen sowie Updates pro Source statt `winget upgrade --all` zu verwenden
+- Winget prüft nur die in `config/packages/` verwalteten Pakete und bündelt normale Installationen sowie Updates pro Source statt `winget upgrade --all` zu verwenden
 - eigene Home-Office-Paketgruppe mit Remote Desktop Manager und FileZilla
 - eigene Gaming-Paketgruppe mit Steam, Epic Games Launcher, GOG GALAXY, EA app, Battle.net und Ubisoft Connect
 - vorbereitete Game-Library-Verzeichnisse unter `G:\Games\`
@@ -51,15 +55,16 @@ Bereits umgesetzt sind unter anderem:
 - Microsoft Defender Dev Drive Performance Mode
 - automatische wöchentliche Wartung
 - Scheduled Tasks werden vor dem Registrieren gegen Action, Trigger, Principal und Settings verglichen und bei unverändertem Desired State nicht neu geschrieben
+- Benutzeridentitäten in Scheduled-Task-Principals und Logon-Triggern werden für den Vergleich auf stabile SIDs normalisiert; auch ein nach Computerumbenennung gespeicherter alter lokaler Kontoname erzeugt dadurch keinen künstlichen Drift
 - der Weekly-Maintenance-Task normalisiert die Trigger-Uhrzeit auf lokale Wall-Clock-Zeit, damit UTC-/Offset-Darstellungen keinen künstlichen Drift erzeugen
 - Desktop-Benachrichtigungen
-- fingerprint-gesteuerte PSScriptAnalyzer-Codeprüfung: der Bootstrap verwendet einen schnellen Git-basierten Codezustand und startet den vollständigen Analyzer nur bei geändertem PowerShell-Code
+- fingerprint-gesteuerte Source-Codeprüfung: der Bootstrap verwendet einen schnellen Git-basierten Codezustand und startet PSScriptAnalyzer sowie den C#-Compilecheck nur bei geändertem Source-Code
 - `just` als einheitliche Bedienoberfläche für manuelle Projektaktionen
 - `just update` für den vollständigen stillen Wartungs-/Setup-Lauf
 - `just update-warning` für ausschließlich Warnungen und Fehler
 - `just update-log` für vollständige Konsolenausgabe bei funktionalen Tests und Diagnose
 - `just update-performance` für einen reproduzierbaren stillen Lauf mit Laufzeitmessung
-- `just check` für einen bewusst vollständigen PSScriptAnalyzer-Lauf und die Aktualisierung des Codezustands
+- `just check` für den vollständigen PowerShell-/C#-Qualitätscheck und die Aktualisierung des Source-Codezustands
 - `just desktop-restart` für einen definierten Neustart von komorebi, whkd, masir, Zebar und Volume-OSD
 - `just ghub-backup` und `just ghub-restore` für bewusste G-HUB-Konfigurations-Snapshots
 - Bootstrap-Ausführung mit `ExecutionPolicy Bypass` ausschließlich auf Prozessebene
@@ -105,7 +110,7 @@ Bereits umgesetzt sind unter anderem:
 - eigenes Catppuccin-Mocha-Volume-OSD für Volume Up/Down und Mute/Unmute
 - vollständige Interception der Volume-Tasten verhindert das parallele native Windows-Volume-OSD
 - persistente Volume-Pill aktualisiert bei schnellen Eingaben nur ihren Zustand und flackert dadurch nicht durch wiederholtes Neu-Rendern
-- produktive Implementierung als `modules/VolumeOsd.ps1` mit Bootstrap-registriertem Scheduled Task `Windows Setup Volume OSD` und unsichtbarem `wscript.exe`-Launcher
+- produktive Implementierung unter `modules/VolumeOsd/`; der native Interop liegt separat in `modules/VolumeOsd/Interop.cs`, der Bootstrap registriert den Scheduled Task `Windows Setup Volume OSD` mit unsichtbarem `wscript.exe`-Launcher
 - Lock-Key-Anzeigen bleiben beim Windhawk-Mod `Lock Keys Notifier`; Brightness ist auf dem aktuellen externen Monitorpfad vorerst zurückgestellt
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 - Zen-Mod-Precheck: Browser-Neustart nur, wenn konfigurierte Mods tatsächlich fehlen
@@ -143,7 +148,7 @@ Das ist wichtig, weil das Repository mehrere PowerShell-Dateien unter `modules/`
 
 Nach der Erstinstallation steht `just` als einheitliche Bedienoberfläche für wiederkehrende Projektaktionen zur Verfügung.
 
-`just` wird über `config/packages.psd1` als **Base-Abhängigkeit** mit der Winget-ID `Casey.Just` installiert.
+`just` wird über `config/packages/` als **Base-Abhängigkeit** mit der Winget-ID `Casey.Just` installiert.
 
 Das `Justfile` enthält bewusst keine eigentliche Setup-Logik. Es ruft lediglich die bestehenden PowerShell-Einstiegspunkte auf.
 
@@ -167,7 +172,7 @@ Der vollständige Bootstrap:
 - prüft Rebootbedarf,
 - prüft Repository-Status und ungepushte Commits,
 - richtet bzw. aktualisiert Scheduled Tasks,
-- vergleicht vor der eigentlichen Setup-Logik den Git-basierten PowerShell-Codezustand und führt den strikten PSScriptAnalyzer-Preflight nur bei geändertem Code aus.
+- vergleicht vor der eigentlichen Setup-Logik den Git-basierten Source-Codezustand und führt PSScriptAnalyzer sowie den C#-Compilecheck nur bei geändertem Source-Code aus.
 
 ## Ausgabe- und Testmodi
 
@@ -489,7 +494,7 @@ Neben tatsächlich generierten Dateien enthält `.generated/state/` lokale Zusta
 
 # Paketverwaltung
 
-Die deklarative Paketliste liegt in `config/packages.psd1`. Paketgruppen bleiben nach ihrem fachlichen Zweck organisiert; `Source` bestimmt, welcher Paketmanager verwendet wird.
+Die deklarative Paketliste liegt in `config/packages/`. Paketgruppen bleiben nach ihrem fachlichen Zweck organisiert; `Source` bestimmt, welcher Paketmanager verwendet wird.
 
 Unterstützt werden:
 
@@ -545,7 +550,7 @@ Nicht benötigte PowerToys-Module werden deklarativ deaktiviert. Bei wiederholte
 
 Die Windows-Shell orientiert sich an den Abbreviations der Fish-Konfiguration der Linux-Workstation.
 
-Installiert und über `config/packages.psd1` verwaltet werden:
+Installiert und über `config/packages/` verwaltet werden:
 
 - Neovim Nightly über Scoop aus dem Bucket `versions`
 - ripgrep (`rg`)
@@ -806,7 +811,7 @@ Das Games-Laufwerk ist `G:`. Die Launcher-internen Library-/Default-Spielpfade w
 
 Die gewünschten Launcher-Pfade werden deklarativ über zwei vorhandene Konfigurationen verbunden:
 
-- `config/packages.psd1` enthält die Gaming-Pakete und ordnet jedem Launcher über `GameLibrary` einen Bibliotheksschlüssel zu.
+- `config/packages/` enthält die Gaming-Pakete und ordnet jedem Launcher über `GameLibrary` einen Bibliotheksschlüssel zu.
 - `config/storage.psd1` enthält unter `GameLibraries` die tatsächlichen Zielpfade wie `G:\Games\Steam`, `G:\Games\Epic` oder `G:\Games\GOG`.
 
 Nach der Paketinstallation und der Storage-Einrichtung prüft der Bootstrap zunächst, dass das Games-Laufwerk vorhanden ist, NTFS verwendet und **alle** konfigurierten Game-Library-Verzeichnisse existieren. Erst danach beginnt die interaktive Launcher-Initialisierung.
@@ -913,7 +918,7 @@ Windows Desktop
 Das eigene Volume-OSD übernimmt ausschließlich **Volume Up/Down und Mute/Unmute**. Die produktive Implementierung liegt unter:
 
 ```text
-modules/VolumeOsd.ps1
+modules/VolumeOsd/
 ```
 
 Die Volume-Hardwaretasten werden über einen Low-Level-Keyboard-Hook vollständig abgefangen. Das Modul setzt Lautstärke und Mute anschließend direkt über Windows Core Audio. Dadurch erscheint nicht zusätzlich das native Windows-Volume-OSD; die Lautstärkeänderung reagiert auf dem praktisch getesteten System ohne merkbare Verzögerung.
@@ -928,7 +933,7 @@ Der Bootstrap registriert den Scheduled Task:
 Windows Setup Volume OSD
 ```
 
-Der Task läuft im interaktiven Benutzerkontext, startet PowerShell mit `-STA`, lädt `modules/VolumeOsd.ps1` und ruft `Start-VolumeOsd` auf. Das OSD ist außerdem in den vorhandenen kontrollierten Desktop-Stop-/Start-Workflow integriert.
+Der Task läuft im interaktiven Benutzerkontext, startet PowerShell mit `-STA`, lädt `modules/VolumeOsd/` und ruft `Start-VolumeOsd` auf. Das OSD ist außerdem in den vorhandenen kontrollierten Desktop-Stop-/Start-Workflow integriert.
 
 Für den echten Windows-Logon verwendet der Scheduled Task einen vom Bootstrap generierten Launcher unter `.generated/volume-osd/`, der über `wscript.exe` unsichtbar gestartet wird. Der Launcher startet `pwsh` mit `-NoProfile -NonInteractive -STA -ExecutionPolicy Bypass`; die globale Execution Policy wird nicht verändert. Startup-Fehler können unter `.generated/logs/volume-osd-startup.log` protokolliert werden. Die Desktop-Prozesserkennung berücksichtigt sowohl den direkten Modulpfad als auch den generierten Launcher-Pfad.
 
@@ -1127,7 +1132,7 @@ Der native File Explorer Styler über Windhawk wird nicht mehr verfolgt; OneComm
 
 # Software und Paketverwaltung
 
-Software wird deklarativ über `config/packages.psd1` verwaltet.
+Software wird deklarativ über `config/packages/` verwaltet.
 
 Pakete können:
 
@@ -1315,7 +1320,7 @@ Folgende Entscheidungen sind bewusst getroffen und sollen nicht ohne technischen
 - Catppuccin Mocha als gemeinsame Designsprache
 - eigenes OSD ausschließlich für Volume/Mute; Lock Keys bleiben bei Windhawk und Media erhält kein eigenes OSD
 - Brightness-OSD nach erfolglosem WMI-/DDC-/VCP-Test vorerst zurückstellen und nur bei neuem praktisch funktionierendem Pfad wieder aufnehmen
-- produktives Volume-OSD als `modules/VolumeOsd.ps1` mit Bootstrap-registriertem Scheduled Task betreiben
+- produktives Volume-OSD als `modules/VolumeOsd/` mit Bootstrap-registriertem Scheduled Task betreiben
 - Funktionalität und Wartbarkeit vor rein optischem Styling
 
 ---
