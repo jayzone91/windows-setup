@@ -18,7 +18,6 @@
 
         "Microsoft.Copilot"
         "Microsoft.OutlookForWindows"
-        "Microsoft.YourPhone"
         "Microsoft.Todos"
         "Microsoft.PowerAutomateDesktop"
         "MicrosoftCorporationII.QuickAssist"

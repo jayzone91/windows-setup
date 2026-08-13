@@ -463,16 +463,7 @@ function Test-WindowsDesktopCoreEnvironmentRunning {
 }
 
 function Test-WindowsVolumeOsdRunning {
-    $processes = @(
-        Get-CimInstance `
-            -ClassName Win32_Process `
-            -Filter "Name = 'pwsh.exe'" `
-            -ErrorAction SilentlyContinue |
-        Where-Object {
-            $_.CommandLine -like "*modules\VolumeOsd\index.ps1*" -or
-            $_.CommandLine -like "*\.generated\volume-osd\Start-VolumeOsd.ps1*"
-        }
-    )
-
-    return $processes.Count -gt 0
+    return @(
+        Get-WindowsVolumeOsdProcesses
+    ).Count -gt 0
 }

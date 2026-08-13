@@ -1,3 +1,21 @@
+function Get-WindowsSetupPwshPath {
+    $processPath = [Environment]::ProcessPath
+
+    if (
+        [string]::IsNullOrWhiteSpace($processPath) -or
+        [IO.Path]::GetFileName($processPath) -ine "pwsh.exe" -or
+        -not (Test-Path -LiteralPath $processPath -PathType Leaf)
+    ) {
+        throw (
+            "Aktueller PowerShell-7-Host konnte nicht eindeutig aufgelöst " +
+            "werden. ProcessPath='{0}'." -f
+            $processPath
+        )
+    }
+
+    return $processPath
+}
+
 function Restart-WindowsVolumeOsd {
     $taskName = "Windows Setup Volume OSD"
 
@@ -15,20 +33,7 @@ function Restart-WindowsVolumeOsd {
         -TaskName $taskName `
         -ErrorAction SilentlyContinue
 
-    Get-CimInstance `
-        -ClassName Win32_Process `
-        -Filter "Name = 'pwsh.exe'" `
-        -ErrorAction SilentlyContinue |
-    Where-Object {
-        $_.CommandLine -like "*modules\VolumeOsd\index.ps1*" -or
-        $_.CommandLine -like "*\.generated\volume-osd\Start-VolumeOsd.ps1*"
-    } |
-    ForEach-Object {
-        Stop-Process `
-            -Id $_.ProcessId `
-            -Force `
-            -ErrorAction SilentlyContinue
-    }
+    Stop-WindowsVolumeOsdProcesses
 
     Start-ScheduledTask `
         -TaskName $taskName
@@ -44,7 +49,24 @@ function Restart-WindowsVolumeOsd {
         Start-Sleep -Milliseconds 250
     }
 
-    throw "Volume OSD wurde nach dem gezielten Neustart nicht rechtzeitig erkannt."
+    $taskInfo = Get-ScheduledTaskInfo `
+        -TaskName $taskName `
+        -ErrorAction SilentlyContinue
+
+    $resultText = if ($taskInfo) {
+        " LastTaskResult={0}." -f $taskInfo.LastTaskResult
+    }
+    else {
+        ""
+    }
+
+    $diagnostics = Get-WindowsVolumeOsdStartupDiagnostics
+
+    throw (
+        "Volume OSD wurde nach dem gezielten Neustart nicht rechtzeitig erkannt." +
+        $resultText +
+        $diagnostics
+    )
 }
 
 function Register-WindowsSetupScheduledTask {
@@ -60,18 +82,15 @@ function Register-WindowsSetupScheduledTask {
 
     $taskName = "Windows Setup Weekly Maintenance"
 
-    $pwsh = (
-        Get-Command `
-            -Name "pwsh" `
-            -ErrorAction Stop
-    ).Source
+    $pwsh = Get-WindowsSetupPwshPath
 
     $action = New-ScheduledTaskAction `
         -Execute $pwsh `
         -Argument (
             '-NoProfile -ExecutionPolicy Bypass -File "{0}"' -f
             $BootstrapPath
-        )
+        ) `
+        -WorkingDirectory (Split-Path -Parent $BootstrapPath)
 
     $trigger = New-ScheduledTaskTrigger `
         -Weekly `
@@ -106,20 +125,34 @@ function Register-KomorebiStartupTask {
 
     $taskName = "komorebi Desktop"
 
-    $pwsh = (
+    $komorebic = (
         Get-Command `
-            -Name "pwsh" `
+            -Name "komorebic" `
+            -CommandType Application `
             -ErrorAction Stop
     ).Source
 
+    $komorebiDirectory = Split-Path `
+        -Parent $komorebic
+
     $action = New-ScheduledTaskAction `
-        -Execute $pwsh `
-        -Argument (
-            '-NoProfile -WindowStyle Hidden ' +
-            '-Command "' +
-            'komorebic start --whkd --masir' +
-            '"'
-        )
+        -Execute $komorebic `
+        -Argument "start --whkd --masir" `
+        -WorkingDirectory $env:USERPROFILE
+
+    Write-Host (
+        "[FOUND] komorebic Autostart: {0}" -f
+        $komorebic
+    )
+
+    Write-Host (
+        "[INFO] komorebi Working Directory: {0}" -f
+        $env:USERPROFILE
+    )
+
+    if (-not (Test-Path -LiteralPath $komorebiDirectory -PathType Container)) {
+        throw "komorebi-Verzeichnis nicht gefunden: $komorebiDirectory"
+    }
 
     $trigger = New-ScheduledTaskTrigger `
         -AtLogOn `
@@ -155,11 +188,13 @@ function Register-ZebarStartupTask {
     $zebar = (
         Get-Command `
             -Name "zebar" `
+            -CommandType Application `
             -ErrorAction Stop
     ).Source
 
     $action = New-ScheduledTaskAction `
-        -Execute $zebar
+        -Execute $zebar `
+        -WorkingDirectory (Split-Path -Parent $zebar)
 
     $trigger = New-ScheduledTaskTrigger `
         -AtLogOn `
@@ -204,11 +239,7 @@ function Register-VolumeOsdStartupTask {
         throw "Volume-OSD-Skript nicht gefunden: $osdPath"
     }
 
-    $pwsh = (
-        Get-Command `
-            -Name "pwsh" `
-            -ErrorAction Stop
-    ).Source
+    $pwsh = Get-WindowsSetupPwshPath
 
     $wscript = Join-Path `
         $env:WINDIR `
@@ -248,6 +279,10 @@ function Register-VolumeOsdStartupTask {
         $logRoot `
         "volume-osd-startup.log"
 
+    $vbsLog = Join-Path `
+        $logRoot `
+        "volume-osd-vbs.log"
+
     $escapedOsdPath = $osdPath.Replace("'", "''")
     $escapedLogPath = $startupLog.Replace("'", "''")
 
@@ -255,15 +290,37 @@ function Register-VolumeOsdStartupTask {
 #Requires -Version 7.0
 `$ErrorActionPreference = "Stop"
 
+function Write-VolumeOsdStartupTrace {
+    param(
+        [Parameter(Mandatory)]
+        [string] `$Stage
+    )
+
+    `$timestamp = [DateTime]::Now.ToString("yyyy-MM-dd HH:mm:ss.fff")
+    `$line = "[{0}] PID={1} {2}`r`n" -f `$timestamp, `$PID, `$Stage
+
+    [System.IO.File]::AppendAllText(
+        '$escapedLogPath',
+        `$line
+    )
+}
+
 try {
+    Write-VolumeOsdStartupTrace -Stage "launcher-enter"
+    Set-Location -LiteralPath '$($RepositoryPath.Replace("'", "''"))'
+    Write-VolumeOsdStartupTrace -Stage "module-load-start"
     . '$escapedOsdPath'
+    Write-VolumeOsdStartupTrace -Stage "module-load-complete"
+    Write-VolumeOsdStartupTrace -Stage "start-volume-osd-enter"
     Start-VolumeOsd
+    Write-VolumeOsdStartupTrace -Stage "start-volume-osd-returned"
 }
 catch {
     `$timestamp = [DateTime]::Now.ToString("yyyy-MM-dd HH:mm:ss.fff")
     `$message = (
-        "[{0}] {1}`r`n{2}`r`n" -f
+        "[{0}] PID={1} exception: {2}`r`n{3}`r`n" -f
         `$timestamp,
+        `$PID,
         `$_.Exception.Message,
         `$_.ScriptStackTrace
     )
@@ -285,16 +342,39 @@ catch {
     )
 
     $escapedVbsCommand = $command.Replace('"', '""')
+    $escapedVbsLog = $vbsLog.Replace('"', '""')
 
     $launcherVbsContent = @"
 Option Explicit
-Dim shell
-Dim command
+Dim shell, command, fileSystem, logFile
+Dim exitCode, errorNumber, errorDescription
 
 Set shell = CreateObject("WScript.Shell")
+Set fileSystem = CreateObject("Scripting.FileSystemObject")
 command = "$escapedVbsCommand"
 
-WScript.Quit shell.Run(command, 0, True)
+Set logFile = fileSystem.OpenTextFile("$escapedVbsLog", 8, True)
+logFile.WriteLine Now & " vbs-enter command=" & command
+logFile.Close
+
+On Error Resume Next
+exitCode = shell.Run(command, 0, True)
+errorNumber = Err.Number
+errorDescription = Err.Description
+On Error GoTo 0
+
+Set logFile = fileSystem.OpenTextFile("$escapedVbsLog", 8, True)
+
+If errorNumber <> 0 Then
+    logFile.WriteLine Now & " shell-run-error number=" & _
+        CStr(errorNumber) & " description=" & errorDescription
+    logFile.Close
+    WScript.Quit 1
+End If
+
+logFile.WriteLine Now & " shell-run-exit-code=" & CStr(exitCode)
+logFile.Close
+WScript.Quit exitCode
 "@
 
     $launcherChanged = $false
@@ -317,12 +397,26 @@ WScript.Quit shell.Run(command, 0, True)
         $launcherChanged = $true
     }
 
+    foreach ($generatedLauncher in @($launcherPs1, $launcherVbs)) {
+        if (-not (Test-Path -LiteralPath $generatedLauncher -PathType Leaf)) {
+            throw "Generierter Volume-OSD-Launcher fehlt: $generatedLauncher"
+        }
+    }
+
+    if (
+        [IO.File]::ReadAllText($launcherPs1) -cne $launcherPs1Content -or
+        [IO.File]::ReadAllText($launcherVbs) -cne $launcherVbsContent
+    ) {
+        throw "Generierter Volume-OSD-Launcher entspricht nicht dem Desired State."
+    }
+
     $action = New-ScheduledTaskAction `
         -Execute $wscript `
         -Argument (
             '//B //NoLogo "{0}"' -f
             $launcherVbs
-        )
+        ) `
+        -WorkingDirectory $RepositoryPath
 
     $trigger = New-ScheduledTaskTrigger `
         -AtLogOn `

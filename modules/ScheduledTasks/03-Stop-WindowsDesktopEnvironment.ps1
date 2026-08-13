@@ -17,20 +17,7 @@ function Stop-WindowsDesktopEnvironment {
             -ErrorAction SilentlyContinue
     }
 
-    Get-CimInstance `
-        -ClassName Win32_Process `
-        -Filter "Name = 'pwsh.exe'" `
-        -ErrorAction SilentlyContinue |
-    Where-Object {
-        $_.CommandLine -like "*modules\VolumeOsd\index.ps1*" -or
-        $_.CommandLine -like "*\.generated\volume-osd\Start-VolumeOsd.ps1*"
-    } |
-    ForEach-Object {
-        Stop-Process `
-            -Id $_.ProcessId `
-            -Force `
-            -ErrorAction SilentlyContinue
-    }
+    Stop-WindowsVolumeOsdProcesses
 
     Write-Host "[OK] Volume OSD beendet." `
         -ForegroundColor Green
@@ -69,43 +56,161 @@ function Stop-WindowsDesktopEnvironment {
         -Name "komorebi" `
         -ErrorAction SilentlyContinue
 
+    $forceStopRequired = $false
+
     if ($komorebiProcess) {
         $komorebiStopOutput = @(
             & komorebic stop --whkd --masir 2>&1
         )
         $komorebiStopExitCode = $LASTEXITCODE
 
-        if ($komorebiStopExitCode -ne 0) {
-            throw (
-                "komorebi konnte nicht sauber beendet werden. " +
-                "Exit-Code: $komorebiStopExitCode. Ausgabe: " +
+        if ($komorebiStopExitCode -eq 0) {
+            try {
+                $komorebiProcess |
+                Wait-Process `
+                    -Timeout 10 `
+                    -ErrorAction Stop
+            }
+            catch {
+                Write-Warning (
+                    "komorebi reagierte auf den Stop-Befehl, wurde aber " +
+                    "nicht innerhalb von 10 Sekunden beendet. " +
+                    "Der Desktop-Stack wird als Recovery erzwungen beendet."
+                )
+
+                $forceStopRequired = $true
+            }
+        }
+        else {
+            Write-Warning (
+                "komorebic stop konnte den laufenden komorebi-Prozess " +
+                "nicht über IPC erreichen. Der Desktop-Stack wird als " +
+                "Recovery erzwungen beendet. Exit-Code: {0}. Ausgabe: {1}" -f
+                $komorebiStopExitCode,
                 ($komorebiStopOutput -join " | ")
             )
-        }
 
-        try {
-            $komorebiProcess |
-            Wait-Process `
-                -Timeout 10 `
-                -ErrorAction Stop
-        }
-        catch {
-            throw "komorebi wurde nicht innerhalb von 10 Sekunden beendet."
+            $forceStopRequired = $true
         }
     }
-    else {
+
+    if (
+        $forceStopRequired -or
+        -not $komorebiProcess
+    ) {
+        $desktopProcessesToStop = @(
+            Get-Process `
+                -Name "komorebi", "whkd", "masir" `
+                -ErrorAction SilentlyContinue
+        )
+
+        if ($desktopProcessesToStop.Count -gt 0) {
+            $stopErrors = @()
+
+            foreach ($process in $desktopProcessesToStop) {
+                try {
+                    Stop-Process `
+                        -Id $process.Id `
+                        -Force `
+                        -ErrorAction Stop
+                }
+                catch {
+                    $stopErrors += (
+                        "{0} (PID {1}): {2}" -f
+                        $process.ProcessName,
+                        $process.Id,
+                        $_.Exception.Message
+                    )
+                }
+            }
+
+            if ($stopErrors.Count -gt 0) {
+                throw (
+                    "Desktop-Stack konnte im Recovery-Pfad nicht beendet " +
+                    "werden. Stop-Fehler: " +
+                    ($stopErrors -join " | ")
+                )
+            }
+
+            foreach ($process in $desktopProcessesToStop) {
+                try {
+                    Wait-Process `
+                        -Id $process.Id `
+                        -Timeout 10 `
+                        -ErrorAction Stop
+                }
+                catch {
+                    if (
+                        Get-Process `
+                            -Id $process.Id `
+                            -ErrorAction SilentlyContinue
+                    ) {
+                        throw (
+                            "{0} (PID {1}) wurde nach Stop-Process -Force " +
+                            "nicht innerhalb von 10 Sekunden beendet." -f
+                            $process.ProcessName,
+                            $process.Id
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    $remainingDesktopProcesses = @(
         Get-Process `
-            -Name "whkd", "masir" `
-            -ErrorAction SilentlyContinue |
-        Stop-Process `
-            -Force `
+            -Name "komorebi", "whkd", "masir" `
             -ErrorAction SilentlyContinue
+    )
+
+    if ($remainingDesktopProcesses.Count -gt 0) {
+        $remainingDetails = (
+            $remainingDesktopProcesses |
+            ForEach-Object {
+                "{0} (PID {1})" -f $_.ProcessName, $_.Id
+            }
+        ) -join ", "
+
+        throw (
+            "Desktop-Stack konnte nicht vollständig beendet werden. " +
+            "Verbleibend: " +
+            $remainingDetails
+        )
     }
 
     Write-Host "[OK] komorebi, whkd und masir beendet." `
         -ForegroundColor Green
 }
 
+function Get-WindowsScheduledTaskFailureDetails {
+    param(
+        [Parameter(Mandatory)]
+        [string] $TaskName
+    )
+
+    $task = Get-ScheduledTask `
+        -TaskName $TaskName `
+        -ErrorAction SilentlyContinue
+
+    $taskInfo = Get-ScheduledTaskInfo `
+        -TaskName $TaskName `
+        -ErrorAction SilentlyContinue
+
+    $parts = @()
+
+    if ($task) {
+        $parts += "State=$($task.State)"
+    }
+
+    if ($taskInfo) {
+        $parts += "LastTaskResult=$($taskInfo.LastTaskResult)"
+        if ($taskInfo.LastRunTime -gt [DateTime]::MinValue) {
+            $parts += "LastRunTime=$($taskInfo.LastRunTime.ToString('o'))"
+        }
+    }
+
+    return ($parts -join ", ")
+}
 
 function Start-WindowsDesktopEnvironment {
     [CmdletBinding()]
@@ -161,10 +266,15 @@ function Start-WindowsDesktopEnvironment {
             $missingProcesses += "whkd"
         }
 
+        $details = Get-WindowsScheduledTaskFailureDetails `
+            -TaskName "komorebi Desktop"
+
         throw (
             "Desktop Environment wurde nicht innerhalb von 15 Sekunden " +
             "vollständig gestartet. Fehlend: " +
-            ($missingProcesses -join ", ")
+            ($missingProcesses -join ", ") +
+            ". Task-Diagnose: " +
+            $details
         )
     }
 
@@ -186,7 +296,10 @@ function Start-WindowsDesktopEnvironment {
     }
 
     if (-not $zebarReady) {
-        throw "Zebar wurde nach dem Start nicht rechtzeitig erkannt."
+        $details = Get-WindowsScheduledTaskFailureDetails `
+            -TaskName "Zebar Desktop"
+
+        throw "Zebar wurde nach dem Start nicht rechtzeitig erkannt. Task-Diagnose: $details"
     }
 
     Write-Host "[OK] Zebar läuft." `
@@ -198,18 +311,7 @@ function Start-WindowsDesktopEnvironment {
     $volumeOsdReady = $false
 
     for ($attempt = 0; $attempt -lt 20; $attempt++) {
-        $volumeOsdProcesses = @(
-            Get-CimInstance `
-                -ClassName Win32_Process `
-                -Filter "Name = 'pwsh.exe'" `
-                -ErrorAction SilentlyContinue |
-            Where-Object {
-                $_.CommandLine -like "*modules\VolumeOsd\index.ps1*" -or
-                $_.CommandLine -like "*\.generated\volume-osd\Start-VolumeOsd.ps1*"
-            }
-        )
-
-        if ($volumeOsdProcesses.Count -gt 0) {
+        if (Test-WindowsVolumeOsdRunning) {
             $volumeOsdReady = $true
             break
         }
@@ -218,16 +320,49 @@ function Start-WindowsDesktopEnvironment {
     }
 
     if (-not $volumeOsdReady) {
+        $details = Get-WindowsScheduledTaskFailureDetails `
+            -TaskName "Windows Setup Volume OSD"
+
+        $repositoryPath = Split-Path `
+            -Parent (
+                Split-Path `
+                    -Parent $PSScriptRoot
+            )
+
+        $startupLog = Join-Path `
+            $repositoryPath `
+            ".generated\logs\volume-osd-startup.log"
+
+        $logTail = if (Test-Path -LiteralPath $startupLog -PathType Leaf) {
+            $lines = @(
+                Get-Content `
+                    -LiteralPath $startupLog `
+                    -Tail 20 `
+                    -ErrorAction SilentlyContinue
+            )
+
+            if ($lines.Count -gt 0) {
+                " Startup-Log: " + ($lines -join " | ")
+            }
+            else {
+                " Startup-Log ist leer."
+            }
+        }
+        else {
+            " Startup-Log wurde nicht erzeugt."
+        }
+
         throw (
             "Volume OSD wurde nach dem Start " +
-            "nicht rechtzeitig erkannt."
+            "nicht rechtzeitig erkannt. Task-Diagnose: " +
+            $details +
+            $logTail
         )
     }
 
     Write-Host "[OK] Volume OSD läuft." `
         -ForegroundColor Green
 }
-
 
 function Restart-WindowsDesktopEnvironment {
     [CmdletBinding()]

@@ -1564,7 +1564,10 @@ Brightness wird auf dem aktuellen System vorerst nicht als eigener OSD-Bereich u
 - [x] PowerShell-Start mit `-STA`
 - [x] unsichtbarer Autostart über generierten `wscript.exe`-Launcher unter `.generated/volume-osd/`
 - [x] Launcher startet `pwsh` mit `-NoProfile -NonInteractive -STA -ExecutionPolicy Bypass`
+- [x] PowerShell-7-Host für Scheduled Tasks wird eindeutig aus dem aktuell laufenden `pwsh.exe`-Prozess aufgelöst; mehrere gleichnamige `pwsh`-Kandidaten dürfen nicht zu einem ungültigen Executable-Pfad zusammengeführt werden
+- [x] dieselbe eindeutige `pwsh.exe`-Auflösung wird für Volume-OSD und Weekly Maintenance verwendet
 - [x] Startup-Fehler können unter `.generated/logs/volume-osd-startup.log` protokolliert werden
+- [x] VBS-Launcher protokolliert Start sowie `Shell.Run`-Fehler/Exit-Code unter `.generated/logs/volume-osd-vbs.log`, damit Fehler zwischen Scheduled Task, `wscript.exe` und `pwsh.exe` eindeutig diagnostizierbar sind
 - [x] Task lädt `modules/VolumeOsd/index.ps1` und ruft `Start-VolumeOsd` auf
 - [x] Registrierung/Aktualisierung über den bestehenden Bootstrap
 - [x] Volume-OSD in `Stop-WindowsDesktopEnvironment` und `Start-WindowsDesktopEnvironment` einbezogen
@@ -1597,6 +1600,8 @@ Nach der Migration in `modules/VolumeOsd/` mit zentralem `index.ps1` und ausgela
 Beim ersten echten Logon-Test zeigte sich, dass der direkte dauerhafte `pwsh`-Taskstart ein sichtbares Terminalfenster hinterlassen konnte. Der Scheduled Task startet das OSD deshalb nun über einen generierten, unsichtbaren `wscript.exe`-Launcher. Die globale PowerShell Execution Policy bleibt unverändert.
 
 Der `AtLogOn`-Akzeptanztest wurde nach einem echten Windows-Neustart praktisch bestätigt: Das OSD startet automatisch ohne sichtbares Terminalfenster, das eigene Catppuccin-OSD erscheint und das native Windows-Volume-OSD bleibt unterdrückt.
+
+Nach einer späteren Autostart-Regression wurden Desktop-Lifecycle und OSD-Startpfad gezielt gehärtet. `komorebic stop` darf bei nicht erreichbarem IPC-Endpunkt in einen kontrollierten Recovery-Stop übergehen. Für das Volume-OSD wurde der vollständige Pfad Scheduled Task → `wscript.exe` → VBS → `pwsh.exe` diagnostizierbar gemacht. Ursache war eine mehrdeutige `pwsh`-Auflösung, die zwei vorhandene `pwsh.exe`-Kandidaten zu einem ungültigen Executable-Pfad zusammenführte. Scheduled Tasks verwenden deshalb nun eindeutig den aktuell laufenden PowerShell-7-Host. `just update-log`, komorebi-Tiling, whkd/Zebar und Volume Up/Down/Mute wurden nach dem Fix auf dem aktuellen System praktisch erfolgreich bestätigt.
 
 ## Akzeptanzkriterien
 

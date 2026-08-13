@@ -97,5 +97,12 @@
             Source = "winget"
             Update = $true
         }
+
+        @{
+            Name   = "Phone Link"
+            Id     = "9NMPJ99VJBWV"
+            Source = "msstore"
+            Update = $true
+        }
     )
 }

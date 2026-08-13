@@ -113,6 +113,9 @@ Bereits umgesetzt sind unter anderem:
 - vollständige Interception der Volume-Tasten verhindert das parallele native Windows-Volume-OSD
 - persistente Volume-Pill aktualisiert bei schnellen Eingaben nur ihren Zustand und flackert dadurch nicht durch wiederholtes Neu-Rendern
 - produktive Implementierung unter `modules/VolumeOsd/`; der native Interop liegt separat in `modules/VolumeOsd/Interop.cs`, der Bootstrap registriert den Scheduled Task `Windows Setup Volume OSD` mit unsichtbarem `wscript.exe`-Launcher
+- Scheduled Tasks für Volume-OSD und Weekly Maintenance verwenden einen eindeutig aufgelösten PowerShell-7-Host statt einer potenziell mehrdeutigen `pwsh`-Trefferliste
+- der Volume-OSD-Startpfad ist über PowerShell-Startup- und VBS-Launcher-Logs diagnostizierbar; Fehler zwischen Scheduled Task, `wscript.exe`, VBS und `pwsh.exe` lassen sich dadurch getrennt erkennen
+- der Desktop-Lifecycle behandelt einen laufenden, aber über `komorebic stop` nicht mehr erreichbaren komorebi-Prozess als Recovery-Fall und beendet den gekoppelten Stack kontrolliert
 - Lock-Key-Anzeigen bleiben beim Windhawk-Mod `Lock Keys Notifier`; Brightness ist auf dem aktuellen externen Monitorpfad vorerst zurückgestellt
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 - Zen-Mod-Precheck: Browser-Neustart nur, wenn konfigurierte Mods tatsächlich fehlen

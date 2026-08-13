@@ -1,5 +1,6 @@
 $parts = @(
     "01-ConvertTo-WindowsTaskUserIdentity.ps1"
+    "02-VolumeOsdProcess.ps1"
     "02-Restart-WindowsVolumeOsd.ps1"
     "03-Stop-WindowsDesktopEnvironment.ps1"
 )

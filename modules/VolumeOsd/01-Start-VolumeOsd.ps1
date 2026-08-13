@@ -322,15 +322,62 @@ function Start-VolumeOsd {
         "Local\WindowsSetupVolumeOsd",
         [ref] $mutexCreated
     )
-    if (-not $mutexCreated) {
-        $mutex.Dispose()
-        exit 0
+
+    $mutexOwned = $mutexCreated
+
+    if (-not $mutexOwned) {
+        try {
+            $mutexOwned = $mutex.WaitOne(0)
+        }
+        catch [System.Threading.AbandonedMutexException] {
+            # Der vorherige Besitzer wurde beendet, ohne den Mutex sauber
+            # freizugeben. WaitOne überträgt in diesem Fall trotzdem den Besitz.
+            $mutexOwned = $true
+        }
     }
+
+    if (-not $mutexOwned) {
+        $mutex.Dispose()
+        return
+    }
+
+    $repositoryPath = Split-Path `
+        -Parent $script:WindowsSetupSourceRoot_modules_VolumeOsd
+
+    $instanceStateDirectory = Join-Path `
+        $repositoryPath `
+        ".generated\state\volume-osd"
+
+    $instancePidPath = Join-Path `
+        $instanceStateDirectory `
+        "instance.pid"
+
     $audio = $null
     $step =
         [float] ($StepPercent / 100.0)
     $hideAt = [DateTime]::MaxValue
+
     try {
+        if (
+            -not (
+                Test-Path `
+                    -LiteralPath $instanceStateDirectory `
+                    -PathType Container
+            )
+        ) {
+            New-Item `
+                -ItemType Directory `
+                -Path $instanceStateDirectory `
+                -Force |
+            Out-Null
+        }
+
+        Set-Content `
+            -LiteralPath $instancePidPath `
+            -Value ([string] $PID) `
+            -Encoding utf8NoBOM `
+            -NoNewline
+
         $audio =
             [WindowsSetupVolumePill.AudioController]::new()
         [WindowsSetupVolumePill.VolumeKeyboardHook]::Install()
@@ -391,8 +438,30 @@ function Start-VolumeOsd {
         if ($window.IsVisible) {
             $window.Close()
         }
+        if (
+            $instancePidPath -and
+            (Test-Path -LiteralPath $instancePidPath -PathType Leaf)
+        ) {
+            $recordedPid = (
+                Get-Content `
+                    -LiteralPath $instancePidPath `
+                    -Raw `
+                    -ErrorAction SilentlyContinue
+            )
+
+            if (
+                -not [string]::IsNullOrWhiteSpace($recordedPid) -and
+                $recordedPid.Trim() -eq ([string] $PID)
+            ) {
+                Remove-Item `
+                    -LiteralPath $instancePidPath `
+                    -Force `
+                    -ErrorAction SilentlyContinue
+            }
+        }
+
         if ($mutex) {
-            if ($mutexCreated) {
+            if ($mutexOwned) {
                 $mutex.ReleaseMutex()
             }
             $mutex.Dispose()
