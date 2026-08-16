@@ -57,7 +57,7 @@ Tiling ist kein Hauptziel mehr. Bestehende Komponenten sind nicht verpflichtend;
 | Spotlight / Launcher        | Raycast + Everything                         |
 | Finder                      | OneCommander                                 |
 | Volume / Media OSD          | Seelen UI                                    |
-| Caps-/Lock-Key-Hinweise     | Windhawk Lock Keys Notifier                  |
+| Caps-/Lock-Key-Hinweise     | FluentFlyout                                  |
 | Liquid Glass                | Seelen UI + anwendungsspezifisches Styling   |
 | dotfiles                    | Repository + NTFS-Hardlinks/Junctions        |
 
@@ -85,9 +85,8 @@ Windows Desktop
 │   ├── Raycast
 │   └── Everything
 │
-├── Windows Shell Ergänzung
-│   └── Windhawk
-│       └── Lock Keys Notifier
+├── Lock-Key OSD
+│   └── FluentFlyout
 │
 └── Design
     └── macOS-26-/Liquid-Glass-orientiert
@@ -182,7 +181,7 @@ Begründung:
 - [x] globale Windows-Designsprache auf macOS 26 / Liquid Glass umgestellt
 - [x] Catppuccin Mocha ist **keine** globale Windows-Designvorgabe mehr
 - [x] Seelen UI ist die zentrale Basis für Top Bar, Dock und Volume-/Media-OSD
-- [x] Windhawk ist auf den Lock Keys Notifier begrenzt
+- [x] FluentFlyout ersetzt Windhawk vollständig für Lock-Key-Hinweise
 - [x] VS Code darf Catppuccin unabhängig vom Windows-Gesamtdesign weiterverwenden
 - [x] Terminal darf Catppuccin unabhängig vom Windows-Gesamtdesign weiterverwenden, solange der eingesetzte Terminal-Workflow dies sinnvoll macht
 - [x] keine künstliche universelle CSS-Datei für alle Programme
@@ -396,7 +395,10 @@ Für Scoop muss zusätzlich der gewünschte `Bucket` direkt am Paket angegeben w
 - [x] Paketgruppen über `config/packages/`
 - [x] Installation über `winget`
 - [x] Microsoft-Store-Quelle unterstützen
-- [x] installierte Pakete erkennen
+- [x] zusätzlich alle über die `msstore`-Source angebotenen App-Updates sourceweit per `winget upgrade --all --source msstore` installieren
+- [x] Microsoft-Store-Quelle vor dem sourceweiten Update-Lauf aktualisieren
+- [x] ExitCode für bereits aktuellen Store-Zustand störungsarm behandeln
+- [x] Microsoft-Store-Update-Lauf im vollständigen `just update-log` praktisch bestätigt- [x] installierte Pakete erkennen
 - [x] Updates durchführen
 - [x] normale Winget-/MS-Store-Pakete pro Source gesammelt aktualisieren statt einen Updateprozess pro Paket zu starten
 - [x] ausschließlich deklarierte Pakete aktualisieren; kein unkontrolliertes `winget upgrade --all`
@@ -1125,8 +1127,8 @@ Der alte Stack darf nicht erneut vorgeschlagen oder eingebaut werden, solange ke
 
 - [x] Seelen UI übernimmt Volume-/Media-OSD
 - [x] eigenes C#/PowerShell-Volume-OSD vollständig aus dem aktiven Stack und Repository entfernt
-- [x] Windhawk bleibt ausschließlich für Lock Keys Notifier zuständig
-- [ ] Lock Keys Notifier optisch an macOS 26 anpassen
+- [x] FluentFlyout übernimmt Caps Lock, Num Lock und Scroll Lock; Windhawk ist entfernt
+- [x] FluentFlyout LockWindow optisch an macOS 26 / Liquid Glass angepasst und praktisch bestätigt
 
 ## Noch offen
 
@@ -1270,35 +1272,36 @@ Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwalte
 
 ---
 
-# 22. Phase 19 – Windhawk
+# 22. Phase 19 – FluentFlyout / Lock Keys
 
-## Installationsstrategie
+## Architekturwechsel
 
-- [x] Windhawk-Automatisierung vorhanden
-- [x] bevorzugt stabile 2.x-Version
-- [x] solange keine stabile 2.x-Version existiert: aktuelle 2.x-Pre-Release verwenden
-- [x] GitHub-Releases automatisiert auswerten
-- [x] `windhawk_setup.exe`
-- [x] Windhawk CLI verwenden
-- [x] Mods per CLI installierbar
-- [x] Mod-Settings per CLI konfigurierbar
+- [x] Windhawk Lock Keys Notifier verworfen
+- [x] eigener Windhawk-Lock-Key-Mod verworfen und entfernt
+- [x] Windhawk vollständig aus dem produktiven Setup entfernt
+- [x] FluentFlyout als alleinige Lock-Key-OSD-Komponente gewählt
+- [x] eigener Fork `jayzone91/FluentFlyout`
+- [x] Caps Lock, Num Lock und Scroll Lock aktiviert; Insert bleibt außerhalb des gewünschten Scopes
+- [x] Bottom-Offset oberhalb des Seelen-Docks im Fork umgesetzt und praktisch bestätigt
+- [x] LockWindow auf `ACCENT_ENABLE_BLURBEHIND` mit dezentem `#0C000000`-Tint umgestellt
+- [x] Text und animierter Balken horizontal zentriert
+- [x] Statusbalken neutral statt Windows-Akzentfarbe
+- [x] native Fensterkontur/-rundung beibehalten; kein zusätzlicher XAML-Border
+- [x] Installation/Update aus dem neuesten Release des eigenen Forks automatisiert
+- [x] MSIX-Bundle und Zertifikat als Release-Assets erkannt
+- [x] vorhandene GitHub-Asset-Digests per SHA256 verifiziert
+- [x] Signaturzertifikat bei Bedarf nach `LocalMachine\TrustedPeople` importiert
+- [x] installierte AppX-Version gegen Release-Version geprüft
+- [x] Legacy-Windhawk-Installation beim Bootstrap entfernt
+- [x] `just check` und vollständiger `just update-log` nach der Migration erfolgreich
 
-## Produktive Zuständigkeit
+## Feste Entscheidung
 
-- [x] Windhawk Desired State auf `Lock Keys Notifier` reduziert
-- [x] Taskbar Styler entfernt
-- [x] Start Menu Styler entfernt
-- [x] Notification Center Styler entfernt
-- [x] Taskbar Auto-Hide Speed entfernt
-- [x] File Explorer Styler bleibt verworfen
-- [x] keine parallele Windhawk-Shell-Theming-Schicht neben Seelen UI
+FluentFlyout ist ausschließlich für Lock-Key-Hinweise zuständig. Andere FluentFlyout-Bereiche werden nicht als parallele OSD-/Shell-Schicht verwendet; Volume und Media bleiben bei Seelen UI.
 
-## Noch offen
+Windhawk ist für den aktuellen Desktop-Desired-State nicht mehr erforderlich und soll nicht erneut eingeführt werden, solange kein neuer konkreter technischer Bedarf entsteht.
 
-- [ ] Lock Keys Notifier optisch an macOS 26 angleichen
-- [ ] Lock-Key-Darstellung nach Windhawk-/Windows-Updates praktisch prüfen
 ---
-
 ## Windows-Shell-Personalisierung
 
 - [x] `config/windows.psd1` als deklarativen Desired State für verwaltete Taskleisten-/Start-Schalter angelegt
@@ -1364,7 +1367,7 @@ Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwalte
 - [x] eigenes PowerShell-/C#-OSD aus dem aktiven Stack entfernt
 - [x] Scheduled Task `Windows Setup Volume OSD` entfernt
 - [x] `modules/VolumeOsd/` nach erfolgreichem Seelen-Test vollständig entfernt
-- [x] Lock Keys bleiben beim Windhawk `Lock Keys Notifier`
+- [x] Lock Keys liegen bei FluentFlyout; Windhawk ist aus dem produktiven Setup entfernt
 - [x] kein paralleles zweites Volume-/Media-OSD beibehalten
 
 ## Feste Entscheidung
@@ -1746,7 +1749,7 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 
 - [ ] Seelen Top Bar macOS-26-näher gestalten
 - [ ] Seelen Dock macOS-26-näher gestalten
-- [ ] Lock Keys Notifier macOS-26-näher gestalten
+- [x] FluentFlyout LockWindow macOS-26-/Liquid-Glass-näher gestaltet
 - [ ] Windowsweite Icons auf konsistente macOS-nahe Designsprache umstellen
 - [ ] OneCommander stärker an Finder angleichen
 - [ ] Zen-Custom-CSS prüfen und unnötiges Catppuccin-Styling entfernen
@@ -1779,7 +1782,7 @@ Das README soll den **aktuellen produktiven Stand** erklären.
 - [x] G-HUB-Initialisierung/Backup/Restore dokumentiert
 - [x] Desktop-Neustart-Architektur dokumentiert
 - [x] Desktop-Zielbild
-- [ ] README auf Seelen UI + FancyZones statt komorebi/masir/Zebar aktualisieren
+- [x] README auf Seelen UI + FancyZones statt komorebi/masir/Zebar aktualisiert
 - [x] OneCommander
 - [x] NanaZip
 - [x] Raycast als primärer Launcher inklusive Desired-State-/Backup-/Restore-Workflow
@@ -1873,6 +1876,10 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
   - das Ergebnis war unvollständig bzw. nicht zuverlässig genug für einen wartbaren produktiven Desired State
   - die Styles wurden deshalb wieder entfernt
   - ein erneuter Versuch erfolgt nur bei einem neuen stabilen technischen Ansatz
+- [x] Windhawk als Lock-Key-OSD erneut einführen
+  - FluentFlyout liefert das gewünschte Verhalten stabiler und mit nativer Animation
+  - eigener FluentFlyout-Fork erlaubt den erforderlichen Bottom-Offset oberhalb des Seelen-Docks
+  - Windhawk und der eigene Windhawk-Mod wurden vollständig aus dem produktiven Setup entfernt
 
 ---
 
@@ -1898,8 +1905,8 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
 2. [x] komorebi / whkd / masir / Zebar / eigenes Volume-OSD aus dem produktiven Stack entfernen
 3. [x] Legacy-Desktop-Code nach erfolgreichem Test aus dem Repository entfernen
 4. [x] FancyZones aktivieren
-5. [x] Windhawk auf Lock Keys Notifier reduzieren
-6. [ ] Lock Keys Notifier an macOS 26 angleichen
+5. [x] FluentFlyout als Lock-Key-OSD integrieren und Windhawk vollständig entfernen
+6. [x] FluentFlyout LockWindow an macOS 26 / Liquid Glass angleichen
 7. [ ] Seelen Top Bar / Tray / Dock an macOS 26 angleichen
 8. [ ] systemweite macOS-nahe Icon-Strategie festlegen und reproduzierbar umsetzen
 9. [ ] OneCommander weiter Richtung Finder umbauen
@@ -2111,7 +2118,7 @@ Nach Abschluss der Roadmap soll ein frisch installiertes Windows 11 nach möglic
 - Seelen UI + PowerToys FancyZones
 - OneCommander mit Dev-File-Icons; weitere Gestaltung soll Finder-/macOS-orientiert erfolgen
 - Raycast + Everything als primärer Launcher-/Suchworkflow
-- Windhawk ausschließlich für den Lock Keys Notifier
+- FluentFlyout für Caps-/Num-/Scroll-Lock-Hinweise
 - Seelen UI für Volume-/Media-OSD; Brightness nur bei künftig praktisch funktionierendem Hardware-/Softwarepfad
 - NanaZip
 - generischer, interaktiver Standard-App-Initialisierungsworkflow für geschützte Windows-Dateizuordnungen

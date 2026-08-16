@@ -4,7 +4,7 @@ Automatisiertes, reproduzierbares und weitgehend idempotentes Setup für meine W
 
 Das Repository dient sowohl zur Einrichtung eines frisch installierten Windows-Systems als auch zur regelmäßigen Wartung eines bereits eingerichteten Rechners. Derselbe zentrale `bootstrap.ps1` wird für Neuinstallation, manuelle Setup-Durchläufe und automatische Wartung verwendet.
 
-Ein zweites wichtiges Ziel ist eine Windows-Desktop-Umgebung, die sich funktional und optisch an meiner Arch-/Hyprland-Workstation orientiert. Dafür werden komorebi, whkd, masir, Zebar und OneCommander kombiniert und mit Catppuccin Mocha gestaltet.
+Ein zweites wichtiges Ziel ist eine Windows-11-Desktop-Umgebung, die optisch so nah wie sinnvoll an macOS 26 / Liquid Glass kommt, ohne die Windows-Integrität zu beschädigen. Seelen UI übernimmt Top Bar, Dock und Volume-/Media-OSD, PowerToys FancyZones das optionale Window Management, FluentFlyout die Lock-Key-Hinweise und OneCommander den täglichen Dateimanager-Workflow.
 
 ## Aktueller Stand
 
@@ -14,13 +14,11 @@ Bereits umgesetzt sind unter anderem:
 
 - modulare Projektstruktur: größere PowerShell-Bereiche liegen in fachlichen Unterordnern mit lokalem `index.ps1`; manuell gepflegte Repository-Source-Dateien bleiben bei maximal 500 Zeilen
 - `bootstrap.ps1` bleibt der zentrale Einstiegspunkt und lädt die gesplittete Bootstrap-Implementierung über `bootstrap/index.ps1`
-- Paketdefinitionen sind unter `config/packages/` nach Gruppen aufgeteilt; Windhawk-Modkonfigurationen entsprechend unter `config/windhawk/`
 - PowerShell und verwaltete C#-Quelldateien werden gemeinsam über den zentralen Source-Code-Qualitätsworkflow geprüft
 - Paketinstallation und Updates über `winget`, Microsoft Store, Chocolatey und Scoop
 - Chocolatey und Scoop werden bei Bedarf automatisch installiert und bei jedem Bootstrap selbst aktualisiert
 - Scoop-Buckets werden aus den Paketdefinitionen abgeleitet; pro Scoop-Paket ist der gewünschte Bucket explizit definiert
 - Paketmanager-Cleanup für Chocolatey und Scoop bei jedem Bootstrap-Lauf
-- Winget prüft nur die in `config/packages/` verwalteten Pakete und bündelt normale Installationen sowie Updates pro Source statt `winget upgrade --all` zu verwenden
 - eigene Home-Office-Paketgruppe mit Remote Desktop Manager und FileZilla
 - eigene Gaming-Paketgruppe mit Steam, Epic Games Launcher, GOG GALAXY, EA app, Battle.net und Ubisoft Connect
 - vorbereitete Game-Library-Verzeichnisse unter `G:\Games\`
@@ -67,21 +65,13 @@ Bereits umgesetzt sind unter anderem:
 - `just update-log` für vollständige Konsolenausgabe bei funktionalen Tests und Diagnose
 - `just update-performance` für einen reproduzierbaren stillen Lauf mit Laufzeitmessung
 - `just check` für den vollständigen PowerShell-/C#-Qualitätscheck und die Aktualisierung des Source-Codezustands
-- `just desktop-restart` für einen definierten Neustart von komorebi, whkd, masir, Zebar und Volume-OSD
 - `just ghub-backup` und `just ghub-restore` für bewusste G-HUB-Konfigurations-Snapshots
 - Bootstrap-Ausführung mit `ExecutionPolicy Bypass` ausschließlich auf Prozessebene
 - interaktive Benutzerabfragen bleiben über zentrale Helper in allen Ausgabemodi sichtbar, auch im normalen stillen Bootstrap
-- komorebi + whkd als Tiling Window Manager
-- masir für Focus Follows Mouse
 - Raycast als primärer Launcher über `Win + Space`, inklusive Catppuccin-Mocha-Theme und reproduzierbarem Desired-State-/Backup-/Restore-Workflow
 - Everything als schneller Datei-/Ordnerindex für die Raycast-Extension
 - PowerToys Command Palette und PowerToys Run deaktiviert; PowerToys bleibt für weiterhin verwendete Module installiert
-- Zebar als eigene interaktive Desktop-Bar
-- Zebar führt `npm ci` nur bei Dependency-Drift aus und baut das TypeScript-Bundle nur bei geändertem Build-Input oder fehlenden Build-Artefakten neu
 - Dev-Drive-Paketcache-Konfiguration für npm/pnpm/Yarn sowie Bun-/Go-Umgebungswerte wird über lokalen State nur bei geändertem Desired State erneut geschrieben
-- Zebar-Akkuanzeige für die Logitech G502 X Plus über eine lokale PowerShell-Bridge zur G-HUB-WebSocket-API, inklusive Wireless-/USB-Erkennung, Lade-/Vollgeladen-Status und Catppuccin-Farbzuständen
-- komorebi/whkd/masir/Zebar werden als gekoppelter Desktop-Stack nur bei relevantem Konfigurations-, Task-, Build- oder Runtime-Drift neu gestartet; die definierte Startreihenfolge bleibt erhalten
-- Volume OSD wird bei eigenständigem Drift gezielt neu gestartet, ohne dafür unnötig den kompletten Desktop-Stack zu beenden
 - OneCommander als Explorer-Ersatz
 - OneCommander-Desired-State-Precheck: Neustart nur bei tatsächlichem Konfigurations-Drift
 - OneCommander verwendet nach einer Windows-Computerumbenennung einen eindeutig vorhandenen maschinenspezifischen Settings-Block als Fallback, ohne den anwendungseigenen Schlüssel umzuschreiben
@@ -99,24 +89,10 @@ Bereits umgesetzt sind unter anderem:
 - Symbolic Links werden nur als dokumentierter Kompatibilitäts-Fallback verwendet; VS Code und Windows Terminal `settings.json` nutzen diese praktisch bestätigte Ausnahme
 - Catppuccin Mocha als gemeinsame Designsprache
 - zentrale Catppuccin-Mocha-Palette unter `config/theme.psd1`
-- gemeinsame Desktop-Hauptfläche `Base #1e1e2e` für VS Code, Windows Terminal, Zebar und die Windhawk-Taskbar
-- Windows 11 Taskbar Styler über Windhawk mit RosePine als Basis und Catppuccin-Mocha-Farboverrides
-- kompakter Mauve-Punkt unter dem aktiven Taskbar-Fenster statt des RosePine-Aktivrahmens
-- Windows 11 Start Menu Styler über Windhawk mit RosePine als Layout-Basis und Catppuccin-Mocha-Farboverrides
-- Startmenü und Suchansicht mit `Base #1e1e2e`, dezentem `Surface1 #45475a`-Außenrahmen und Mauve-Fokusakzent
-- Windhawk-Mod-Settings werden gegen den tatsächlichen Runtime-Zustand verglichen; unveränderte Settings und Enable-Zustände werden nicht erneut geschrieben
 - Windows-Shell-, Theme-, Power- und Wallpaper-Einstellungen werden vor Schreiboperationen auf Drift geprüft; Debloat bleibt bewusst bei jedem Bootstrap aktiv
 - Windows Explorer wird nur noch bei tatsächlichem Shell-Drift neu gestartet
 - Chromium-/Zen-Browser-Policies werden nur bei tatsächlichem Drift neu geschrieben
 - Zig-`cc`-/`c++`-Scoop-Shims werden über Desired-State-/Shim-State geprüft und bei unverändertem Zustand nicht neu erzeugt
-- eigenes Catppuccin-Mocha-Volume-OSD für Volume Up/Down und Mute/Unmute
-- vollständige Interception der Volume-Tasten verhindert das parallele native Windows-Volume-OSD
-- persistente Volume-Pill aktualisiert bei schnellen Eingaben nur ihren Zustand und flackert dadurch nicht durch wiederholtes Neu-Rendern
-- produktive Implementierung unter `modules/VolumeOsd/`; der native Interop liegt separat in `modules/VolumeOsd/Interop.cs`, der Bootstrap registriert den Scheduled Task `Windows Setup Volume OSD` mit unsichtbarem `wscript.exe`-Launcher
-- Scheduled Tasks für Volume-OSD und Weekly Maintenance verwenden einen eindeutig aufgelösten PowerShell-7-Host statt einer potenziell mehrdeutigen `pwsh`-Trefferliste
-- der Volume-OSD-Startpfad ist über PowerShell-Startup- und VBS-Launcher-Logs diagnostizierbar; Fehler zwischen Scheduled Task, `wscript.exe`, VBS und `pwsh.exe` lassen sich dadurch getrennt erkennen
-- der Desktop-Lifecycle behandelt einen laufenden, aber über `komorebic stop` nicht mehr erreichbaren komorebi-Prozess als Recovery-Fall und beendet den gekoppelten Stack kontrolliert
-- Lock-Key-Anzeigen bleiben beim Windhawk-Mod `Lock Keys Notifier`; Brightness ist auf dem aktuellen externen Monitorpfad vorerst zurückgestellt
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 - Zen-Mod-Precheck: Browser-Neustart nur, wenn konfigurierte Mods tatsächlich fehlen
 
