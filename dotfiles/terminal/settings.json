@@ -74,6 +74,18 @@
                 "hidden": false,
                 "name": "Nushell",
                 "source": "nu"
+            },
+            {
+                "guid": "{bd6e85d9-1eb2-5fbc-9d49-b38b587fe3b4}",
+                "hidden": false,
+                "name": "Developer Command Prompt for VS 2022",
+                "source": "Windows.Terminal.VisualStudio"
+            },
+            {
+                "guid": "{bd403e0f-498c-5921-811a-6c87c13680c2}",
+                "hidden": false,
+                "name": "Developer PowerShell for VS 2022",
+                "source": "Windows.Terminal.VisualStudio"
             }
         ]
     },
