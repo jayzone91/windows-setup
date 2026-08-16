@@ -57,32 +57,9 @@
             Update = $true
         },
 
-        @{
-            Name   = "Komorebi"
-            Id     = "LGUG2Z.komorebi"
-            Source = "winget"
-            Update = $true
-        },
 
-        @{
-            Name   = "Zebar"
-            Id     = "glzr-io.zebar"
-            Source = "winget"
-        },
 
-        @{
-            Name   = "whkd"
-            Id     = "LGUG2Z.whkd"
-            Source = "winget"
-            Update = $true
-        }
 
-        @{
-            Name   = "Masir"
-            Id     = "LGUG2Z.masir"
-            Source = "winget"
-            Update = $true
-        }
 
         @{
             Name   = "OneCommander"

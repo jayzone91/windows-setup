@@ -22,7 +22,7 @@ update-performance:
 check:
     pwsh -NoProfile -ExecutionPolicy Bypass -Command ". ./modules/Helpers/index.ps1; . ./modules/PowerShell/index.ps1; Test-PowerShellCode -Path . -FailOnAnyIssue -UpdateFingerprint"
 
-# komorebi, whkd, masir und Zebar sauber neu starten
+# Seelen UI sauber neu starten
 desktop-restart:
     pwsh -NoProfile -ExecutionPolicy Bypass -Command ". ./modules/index.ps1; Restart-WindowsDesktopEnvironment"
 

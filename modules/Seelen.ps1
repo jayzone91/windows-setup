@@ -1,5 +1,6 @@
 function Set-SeelenConfiguration {
     [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [Parameter(Mandatory)]
         [string] $RepositoryPath
@@ -34,11 +35,25 @@ function Set-SeelenConfiguration {
         Out-Null
     }
 
-    Set-FileHardLink `
+    $changed = -not (
+        Test-FileHardLinkTarget `
+            -Path $destination `
+            -Target $source
+    )
+
+    $null = Set-FileHardLink `
         -Path $destination `
         -Target $source `
         -ReplaceExistingFile
 
-    Write-Host "[OK] Seelen settings.json verlinkt." `
-        -ForegroundColor Green
+    if ($changed) {
+        Write-Host "[OK] Seelen settings.json aktualisiert." `
+            -ForegroundColor Green
+    }
+    else {
+        Write-Host "[SKIP] Seelen settings.json bereits aktuell." `
+            -ForegroundColor Green
+    }
+
+    return $changed
 }

@@ -8,7 +8,7 @@
         CropAndLock            = $false
         CursorWrap             = $false
         EnvironmentVariables   = $false
-        FancyZones             = $false
+        FancyZones             = $true
         "File Locksmith"       = $true
         FindMyMouse            = $true
         GrabAndMove            = $false

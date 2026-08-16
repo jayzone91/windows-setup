@@ -193,24 +193,13 @@ Initialize-RaycastConfiguration `
     -Config $Raycast `
     -RepositoryPath $Root
 
-Set-SeelenConfiguration `
+$seelenConfigurationChanged = Set-SeelenConfiguration `
     -RepositoryPath $Root
+
+Remove-LegacyWindowsDesktopEnvironment
 
 $null = Set-WindhawkConfiguration `
     -Config $Windhawk
-
-$komorebiConfigurationChanged = Set-KomorebiConfiguration `
-    -RepositoryPath $Root
-
-$zebarConfigurationChanged = Set-ZebarConfiguration `
-    -RepositoryPath $Root
-
-$desktopStateFingerprint = Get-WindowsDesktopStateFingerprint `
-    -RepositoryPath $Root
-
-$desktopStateCurrent = Test-WindowsDesktopStateFingerprint `
-    -RepositoryPath $Root `
-    -Fingerprint $desktopStateFingerprint
 
 Set-OneCommanderConfiguration `
     -RepositoryPath $Root
@@ -351,44 +340,16 @@ Install-WindowsUpdates
 # ------------------------------------------------------------
 
 
-$komorebiTaskChanged = Register-KomorebiStartupTask
-$zebarTaskChanged = Register-ZebarStartupTask
-
-$volumeOsdTaskChanged = Register-VolumeOsdStartupTask `
-    -RepositoryPath $Root
-
-$desktopCoreRestartRequired = (
-    $komorebiConfigurationChanged -or
-    $zebarConfigurationChanged -or
-    -not $desktopStateCurrent -or
-    $komorebiTaskChanged -or
-    $zebarTaskChanged -or
-    -not (Test-WindowsDesktopCoreEnvironmentRunning)
-)
-
-if ($desktopCoreRestartRequired) {
+if (
+    $seelenConfigurationChanged -or
+    -not (Test-SeelenUiRunning)
+) {
     Restart-WindowsDesktopEnvironment
-
-    Save-WindowsDesktopStateFingerprint `
-        -RepositoryPath $Root `
-        -Fingerprint $desktopStateFingerprint
 }
 else {
     Write-Host ""
-    Write-Host (
-        "[SKIP] komorebi/whkd/masir/Zebar unverändert und aktiv. " +
-        "Desktop-Neustart entfällt."
-    ) -ForegroundColor Green
-
-    if (
-        $volumeOsdTaskChanged -or
-        -not (Test-WindowsVolumeOsdRunning)
-    ) {
-        Restart-WindowsVolumeOsd
-    }
-    else {
-        Write-Host "[SKIP] Volume OSD unverändert und aktiv."
-    }
+    Write-Host "[SKIP] Seelen UI bereits aktiv und aktuell." `
+        -ForegroundColor Green
 }
 
 $null = Register-WindowsSetupScheduledTask `

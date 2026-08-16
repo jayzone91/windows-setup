@@ -1,8 +1,7 @@
 $parts = @(
     "01-ConvertTo-WindowsTaskUserIdentity.ps1"
-    "02-VolumeOsdProcess.ps1"
-    "02-Restart-WindowsVolumeOsd.ps1"
-    "03-Stop-WindowsDesktopEnvironment.ps1"
+    "02-Register-WindowsSetupScheduledTask.ps1"
+    "03-SeelenDesktopEnvironment.ps1"
 )
 
 foreach ($part in $parts) {

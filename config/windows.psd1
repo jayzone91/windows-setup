@@ -2,7 +2,7 @@
     ComputerName = "Jay-PC"
 
     Taskbar      = @{
-        AutoHide = $true
+        AutoHide = $false
     }
 
     StartMenu    = @{

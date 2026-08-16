@@ -11,7 +11,6 @@ $modules = @(
     "Gaming.ps1"
     "Helpers\index.ps1"
     "HomeOffice.ps1"
-    "Komorebi.ps1"
     "Languages.ps1"
     "Logitech.ps1"
     "Notifications.ps1"
@@ -27,10 +26,8 @@ $modules = @(
     "Storage\index.ps1"
     "Terminal.ps1"
     "VSCode.ps1"
-    "VolumeOsd\index.ps1"
     "Windhawk\index.ps1"
     "WindowsUpdate.ps1"
-    "Zebar.ps1"
 )
 
 foreach ($module in $modules) {
