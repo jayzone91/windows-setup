@@ -15,39 +15,39 @@
                 pollElevated       = $true
 
                 layout         = "pill"
-                durationMs     = 1500
+                durationMs     = 1200
                 monitor        = "active"
                 positionAnchor = "bottom-center"
                 offsetX        = 0
-                offsetY        = 48
+                offsetY        = 96
 
                 fadeEnabled    = $true
-                fadeDurationMs = 150
+                fadeDurationMs = 180
 
                 soundMode = "none"
                 soundFile = ""
 
                 autoSize     = $true
-                width        = 124
-                height       = 38
+                width        = 128
+                height       = 42
                 padding      = 10
-                cornerRadius = 19
+                cornerRadius = 21
 
                 shadowEnabled = $true
                 shadowSize    = 18
-                shadowOpacity = 32
-                shadowOffsetY = 5
+                shadowOpacity = 28
+                shadowOffsetY = 6
                 shadowColor   = "#000000"
 
-                backgroundColor   = "#202024"
-                backgroundOpacity = 68
+                backgroundColor   = "#1C1C1E"
+                backgroundOpacity = 72
                 textColor         = "#F5F5F7"
 
-                borderColor     = "#8E8E93"
-                borderThickness = 1
+                borderColor     = ""
+                borderThickness = 0
 
                 fontFamily = "Segoe UI"
-                fontSize   = 14
+                fontSize   = 13
                 fontWeight = "semibold"
                 fontItalic = $false
 
