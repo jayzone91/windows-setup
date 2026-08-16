@@ -272,13 +272,15 @@ function Set-WindhawkModEnabledState {
     return $true
 }
 
-
 function Set-WindhawkConfiguration {
     [CmdletBinding()]
     [OutputType([bool])]
     param(
         [Parameter(Mandatory)]
-        [System.Collections.IDictionary] $Config
+        [System.Collections.IDictionary] $Config,
+
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
     )
 
     Write-Host ""
@@ -318,7 +320,23 @@ function Set-WindhawkConfiguration {
         } |
         Select-Object -First 1
 
-        if (-not $currentMod) {
+        if ($mod.SourceFile) {
+            $localChanged = Install-WindhawkLocalMod `
+                -ModId $mod.Id `
+                -SourceFile $mod.SourceFile `
+                -RepositoryPath $RepositoryPath `
+                -Replaces @($mod.Replaces)
+
+            if ($localChanged) {
+                $configurationChanged = $true
+            }
+
+            $currentMod = [pscustomobject]@{
+                id      = $mod.Id
+                enabled = $true
+            }
+        }
+        elseif (-not $currentMod) {
             Install-WindhawkMod -ModId $mod.Id
             $configurationChanged = $true
 

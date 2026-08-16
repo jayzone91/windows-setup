@@ -50,7 +50,6 @@
       "spaceBetweenItems": 8,
       "splitWindows": false,
       "temporalItemsVisibility": "All",
-      "visibleSeparators": true,
       "zoomSize": 70
     },
     "@seelen/window-manager": {
@@ -74,6 +73,7 @@
         "width": 800.0
       },
       "resizeDelta": 10.0,
+      "stackBarVisibility": "AsNeeded",
       "workspaceGap": 10,
       "workspaceMargin": {
         "bottom": 0,
@@ -84,7 +84,7 @@
       "workspacePadding": 10
     }
   },
-  "dateFormat": "ddd D MMM, hh:mm A",
+  "dateFormat": "ddd D MMM, HH:mm",
   "devTools": true,
   "drpc": false,
   "hardwareAcceleration": true,

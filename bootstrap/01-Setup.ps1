@@ -197,7 +197,8 @@ $seelenConfigurationChanged = Set-SeelenConfiguration `
     -RepositoryPath $Root
 
 $null = Set-WindhawkConfiguration `
-    -Config $Windhawk
+    -Config $Windhawk `
+    -RepositoryPath $Root
 
 Set-OneCommanderConfiguration `
     -RepositoryPath $Root
