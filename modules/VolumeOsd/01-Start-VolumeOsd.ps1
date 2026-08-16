@@ -50,18 +50,7 @@ function Start-VolumeOsd {
             )
         return $screen.WorkingArea
     }
-    $themePath = Join-Path `
-        $script:WindowsSetupSourceRoot_modules_VolumeOsd `
-        "..\config\theme.psd1"
-    $themePath =
-        [System.IO.Path]::GetFullPath(
-            $themePath
-        )
-    if (-not (Test-Path -LiteralPath $themePath -PathType Leaf)) {
-        throw "Theme-Konfiguration nicht gefunden: $themePath"
-    }
-    $theme = Import-PowerShellDataFile `
-        -Path $themePath
+
     $window = [System.Windows.Window]::new()
     $window.WindowStyle =
         [System.Windows.WindowStyle]::None
@@ -92,14 +81,14 @@ function Start-VolumeOsd {
         [System.Windows.Controls.Border]::new()
     $outer.Background =
         New-SolidBrush `
-            -Color $theme.Colors.Base
+            -Color "#202024"
     $outer.BorderBrush =
         New-SolidBrush `
-            -Color $theme.Colors.Mauve
+            -Color "#8E8E93"
     $outer.BorderThickness =
         [System.Windows.Thickness]::new(1)
     $outer.CornerRadius =
-        [System.Windows.CornerRadius]::new(6)
+        [System.Windows.CornerRadius]::new(18)
     $outer.Padding =
         [System.Windows.Thickness]::new(
             9,
@@ -109,7 +98,7 @@ function Start-VolumeOsd {
         )
     $outer.Height = 36
     $outer.Effect = $shadow
-    $outer.Opacity = 0.95
+    $outer.Opacity = 0.72
     $grid =
         [System.Windows.Controls.Grid]::new()
     $titleColumn =
@@ -132,7 +121,7 @@ function Start-VolumeOsd {
     $title.Text = "Volume"
     $title.Foreground =
         New-SolidBrush `
-            -Color $theme.Colors.Text
+            -Color "#F5F5F7"
     $title.FontFamily =
         [System.Windows.Media.FontFamily]::new(
             "Segoe UI"
@@ -150,7 +139,7 @@ function Start-VolumeOsd {
         [System.Windows.Controls.Border]::new()
     $valueBorder.Background =
         New-SolidBrush `
-            -Color $theme.Colors.Green
+            -Color "#30D158"
     $valueBorder.CornerRadius =
         [System.Windows.CornerRadius]::new(11)
     $valueBorder.Padding =
@@ -174,7 +163,7 @@ function Start-VolumeOsd {
     $value.Text = "20%"
     $value.Foreground =
         New-SolidBrush `
-            -Color $theme.Colors.Base
+            -Color "#FFFFFF"
     $value.FontFamily =
         [System.Windows.Media.FontFamily]::new(
             "Segoe UI"
@@ -244,13 +233,13 @@ function Start-VolumeOsd {
             $value.Text = "MUTE"
             $valueBorder.Background =
                 New-SolidBrush `
-                    -Color $theme.Colors.Red
+                    -Color "#FF453A"
         }
         else {
             $value.Text = "$Percent%"
             $valueBorder.Background =
                 New-SolidBrush `
-                    -Color $theme.Colors.Green
+                    -Color "#30D158"
         }
         if ($window.IsVisible) {
             # Falls genau während des Fade-outs ein neuer Lautstärke-Event kommt,

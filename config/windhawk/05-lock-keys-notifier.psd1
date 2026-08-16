@@ -1,6 +1,6 @@
 @{
     Mods = @(
-@{
+        @{
             Id      = "lock-keys-notifier"
             Name    = "Lock Keys Notifier"
             Enabled = $true
@@ -29,21 +29,21 @@
 
                 autoSize     = $true
                 width        = 124
-                height       = 36
-                padding      = 9
-                cornerRadius = 6
+                height       = 38
+                padding      = 10
+                cornerRadius = 19
 
                 shadowEnabled = $true
-                shadowSize    = 13
-                shadowOpacity = 40
-                shadowOffsetY = 4
+                shadowSize    = 18
+                shadowOpacity = 32
+                shadowOffsetY = 5
                 shadowColor   = "#000000"
 
-                backgroundColor   = "#1e1e2e"
-                backgroundOpacity = 95
-                textColor         = "#cdd6f4"
+                backgroundColor   = "#202024"
+                backgroundOpacity = 68
+                textColor         = "#F5F5F7"
 
-                borderColor     = "#cba6f7"
+                borderColor     = "#8E8E93"
                 borderThickness = 1
 
                 fontFamily = "Segoe UI"
@@ -53,10 +53,10 @@
 
                 showIcon = $false
 
-                capsAccentColor   = "#a6e3a1"
-                numAccentColor    = "#a6e3a1"
-                scrollAccentColor = "#a6e3a1"
-                insertAccentColor = "#a6e3a1"
+                capsAccentColor   = "#30D158"
+                numAccentColor    = "#30D158"
+                scrollAccentColor = "#30D158"
+                insertAccentColor = "#30D158"
 
                 insertDisplayMode = "onoff"
                 insertSingleLabel = "pressed"
