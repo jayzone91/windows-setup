@@ -192,6 +192,10 @@ Set-PowerToysConfiguration `
 Initialize-RaycastConfiguration `
     -Config $Raycast `
     -RepositoryPath $Root
+
+Set-SeelenConfiguration `
+    -RepositoryPath $Root
+
 $null = Set-WindhawkConfiguration `
     -Config $Windhawk
 

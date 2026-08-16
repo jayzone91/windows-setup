@@ -23,6 +23,7 @@ $modules = @(
     "PowerShell\index.ps1"
     "ScheduledTasks\index.ps1"
     "Security.ps1"
+    "Seelen.ps1"
     "Storage\index.ps1"
     "Terminal.ps1"
     "VSCode.ps1"
