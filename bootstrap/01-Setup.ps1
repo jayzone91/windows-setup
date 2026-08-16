@@ -196,8 +196,6 @@ Initialize-RaycastConfiguration `
 $seelenConfigurationChanged = Set-SeelenConfiguration `
     -RepositoryPath $Root
 
-Remove-LegacyWindowsDesktopEnvironment
-
 $null = Set-WindhawkConfiguration `
     -Config $Windhawk
 
