@@ -43,34 +43,37 @@ Für wiederkehrende manuelle Aktionen dient `just` als einheitliche Bedienoberfl
 
 # 2. Desktop-Zielbild
 
-Die Windows-Umgebung soll funktional und optisch möglichst nah an die vorhandene Arch-/Hyprland-Arbeitsumgebung herankommen, ohne Windows gegen seine Plattform zu verbiegen.
+Das neue Hauptziel ist eine Windows-11-Umgebung, die **optisch so nah wie sinnvoll an macOS 26 kommt, ohne die Integrität von Windows zu beschädigen**.
+
+Tiling ist kein Hauptziel mehr. Bestehende Komponenten sind nicht verpflichtend; sie dürfen ersetzt werden, wenn eine stabilere Lösung näher an macOS führt.
 
 ## Vergleich
 
-| Arch / Linux                     | Windows                               |
-| -------------------------------- | ------------------------------------- |
-| Hyprland                         | komorebi                              |
-| Waybar                           | Zebar                                 |
-| Focus follows mouse              | masir                                 |
-| Fuzzel / Launcher                | Raycast + Everything                  |
-| Dolphin                          | OneCommander                          |
-| SwayOSD                          | eigenes Volume-/Mute-OSD              |
-| Catppuccin Mocha                 | Catppuccin Mocha                      |
-| native Wayland-Tiling-Funktionen | komorebi + whkd                       |
-| dotfiles                         | Repository + NTFS-Hardlinks/Junctions |
+| macOS 26                     | Windows                                      |
+| ---------------------------- | -------------------------------------------- |
+| Menu Bar                     | Seelen UI Top Bar                            |
+| Dock                         | Seelen UI Dock                               |
+| Window Management           | PowerToys FancyZones                         |
+| Spotlight / Launcher        | Raycast + Everything                         |
+| Finder                      | OneCommander                                 |
+| Volume / Media OSD          | Seelen UI                                    |
+| Caps-/Lock-Key-Hinweise     | Windhawk Lock Keys Notifier                  |
+| Liquid Glass                | Seelen UI + anwendungsspezifisches Styling   |
+| dotfiles                    | Repository + NTFS-Hardlinks/Junctions        |
 
 ## Desktop-Architektur
 
 ```text
 Windows Desktop
 │
-├── Window Management
-│   ├── komorebi
-│   ├── whkd
-│   └── masir
+├── Desktop Shell
+│   └── Seelen UI
+│       ├── Top Bar
+│       ├── Dock
+│       └── Volume / Media OSD
 │
-├── Desktop Bar
-│   └── Zebar
+├── Window Management
+│   └── PowerToys FancyZones
 │
 ├── File Manager
 │   └── OneCommander
@@ -82,23 +85,15 @@ Windows Desktop
 │   ├── Raycast
 │   └── Everything
 │
-├── Windows Shell Styling
+├── Windows Shell Ergänzung
 │   └── Windhawk
-│       ├── Taskbar Styler
-│       ├── Start Menu Styler
-│       └── Notification Center Styler
+│       └── Lock Keys Notifier
 │
-├── OSD
-│   ├── eigenes Catppuccin-OSD
-│   │   └── Volume / Mute
-│   └── Windhawk Lock Keys Notifier
-│       ├── Caps Lock
-│       ├── Num Lock
-│       └── Scroll Lock
-│
-└── Theme
-    └── Catppuccin Mocha
+└── Design
+    └── macOS-26-/Liquid-Glass-orientiert
 ```
+
+VS Code und Terminal dürfen unabhängig vom Windows-Gesamtdesign Catppuccin verwenden, solange dies für den jeweiligen Entwicklungsworkflow sinnvoll bleibt. Bei einem Programmwechsel ist Catppuccin dort ebenfalls nicht verpflichtend.
 
 ---
 
@@ -182,23 +177,18 @@ Begründung:
 - [x] State-Marker dürfen einmalige oder bewusst interaktive Schritte bei späteren `just update`-Läufen überspringen
 - [x] State-Marker dürfen erst nach erfolgreich abgeschlossener Benutzerinteraktion erzeugt werden
 
-## Theme
+## Design
 
-- [x] Catppuccin Mocha ist die gemeinsame Designsprache
-- [x] Zebar zeigt den Akku der Logitech G502 X Plus über eine lokale PowerShell-Bridge zur G-HUB-WebSocket-API
-  - G HUB wird über `ws://127.0.0.1:9010` mit `Origin: file://` abgefragt; der direkte WebSocket-Zugriff aus dem Zebar-WebView wird nicht verwendet
-  - Zebar ruft die Bridge über den bereits etablierten `zebar.shellExec`-/PowerShell-Weg auf
-  - angezeigt werden Maus-Icon und Akkustand in Prozent; Wireless benötigt kein zusätzliches Statussymbol
-  - direkte USB-Verbindung wird zusätzlich mit einem USB-Symbol dargestellt
-  - beim Laden wird ein Catppuccin-Yellow-Blitz langsam von unten nach oben gefüllt
-  - bei vollständig geladenem Akku wird derselbe Blitz statisch in Catppuccin Green dargestellt
-  - der Prozentwert verwendet regulär Catppuccin Text, bei `<= 30 %` Catppuccin Peach und bei von G HUB gemeldetem `criticalLevel` Catppuccin Red
-  - fehlende bzw. nicht erreichbare G-HUB-/Mausdaten blenden das Widget aus, statt veraltete Werte anzuzeigen
-  - PowerShell-Bridge, Zebar-Build, Wireless-/USB-/Ladeanzeige und `just update` wurden auf dem aktuellen System praktisch getestet
-  - `just check` läuft nach der Umsetzung ohne neue relevante PSScriptAnalyzer-Probleme
-- [x] Keine künstliche universelle CSS-Datei für alle Programme
-- [x] Jedes Programm nutzt seine native bzw. stabilste Theme-Methode
-- [x] Funktionalität und Wartbarkeit haben Vorrang vor rein optischem Styling
+- [x] globale Windows-Designsprache auf macOS 26 / Liquid Glass umgestellt
+- [x] Catppuccin Mocha ist **keine** globale Windows-Designvorgabe mehr
+- [x] Seelen UI ist die zentrale Basis für Top Bar, Dock und Volume-/Media-OSD
+- [x] Windhawk ist auf den Lock Keys Notifier begrenzt
+- [x] VS Code darf Catppuccin unabhängig vom Windows-Gesamtdesign weiterverwenden
+- [x] Terminal darf Catppuccin unabhängig vom Windows-Gesamtdesign weiterverwenden, solange der eingesetzte Terminal-Workflow dies sinnvoll macht
+- [x] keine künstliche universelle CSS-Datei für alle Programme
+- [x] jedes Programm nutzt seine native bzw. stabilste Anpassungsmethode
+- [x] Funktionalität, Windows-Integrität und Wartbarkeit haben Vorrang vor rein optischem Styling
+- [x] ehemalige Zebar-spezifische G-HUB-Mausakku-Anzeige mit dem entfernten Zebar-Stack verworfen
 
 ---
 
@@ -224,7 +214,7 @@ Begründung:
 - [x] `bootstrap.ps1` bleibt der zentrale Einstiegspunkt und lädt die gesplittete Bootstrap-Implementierung über `bootstrap/index.ps1`
 - [x] Paketkonfiguration unter `config/packages/` nach Paketgruppen aufgeteilt und zentral über `config/packages/index.ps1` geladen
 - [x] Windhawk-Konfiguration unter `config/windhawk/` pro Mod aufgeteilt und zentral über `config/windhawk/index.ps1` geladen
-- [x] Volume-OSD unter `modules/VolumeOsd/` modularisiert; nativer C#-Interop liegt separat in `modules/VolumeOsd/Interop.cs`
+- [x] ehemaliges eigenes Volume-OSD nach erfolgreichem Wechsel auf Seelen vollständig entfernt
 - [x] verwaiste Funktionen und Dateien nach repositoryweiter Prüfung einschließlich `Justfile`, `scripts/` und indirekter Nutzung entfernt
 - [x] Refactor mit `just check` und vollständigen `just update-log`-Läufen praktisch bestätigt
 
@@ -572,7 +562,7 @@ Der NanaZip-Workflow ist absichtlich generisch aufgebaut und soll für weitere P
 - [x] Power-Einstellungen
 - [x] HDR
 - [x] Wallpaper Slideshow
-- [x] Windows Snap deaktivieren, da komorebi übernimmt
+- [x] Windows Snap deaktiviert; produktives optionales Window Management erfolgt über FancyZones
 - [x] geschützte Registry-Werte dürfen Bootstrap nicht abbrechen
 - [x] Computername deklarativ über `config/windows.psd1` verwalten
 - [x] Computername nur bei tatsächlichem Drift über `Rename-Computer` setzen
@@ -580,7 +570,7 @@ Der NanaZip-Workflow ist absichtlich generisch aufgebaut und soll für weitere P
 - [x] Computerumbenennung auf dem aktuellen System praktisch getestet und nach Neustart als Desired State erkannt
 - [x] wiederholter `just update-log` nach der Computerumbenennung ohne erneute Umbenennung erfolgreich
 - [x] finaler `just check` nach der Computername-Integration erfolgreich
-- [ ] Taskbar passend zum Zebar-Workflow automatisch ausblenden
+- [x] Windows-Taskbar-AutoHide für den Seelen-Workflow deaktiviert
 - [ ] Lock-Screen optisch angleichen
 - [ ] weitere Datenschutz-/Telemetry-Einstellungen nur gezielt ergänzen
 - [ ] keine aggressive pauschale Service-Deaktivierung
@@ -1096,205 +1086,77 @@ Grund:
 
 ---
 
-# 18. Phase 15 – komorebi / Tiling Window Management
+# 18. Phase 15 – Desktop Shell / Seelen UI
 
-## Grundfunktion
+## Architekturwechsel
 
-- [x] komorebi installieren
-- [x] whkd installieren
-- [x] fünf Workspaces
-- [x] Windows Snap deaktivieren
-- [x] Catppuccin-Integration
-- [x] bevorzugtes `UltrawideVerticalStack`
-- [x] Fokussteuerung
-- [x] Fenster verschieben
-- [x] Fenster resizen
-- [x] Stacks
-- [x] Workspace-Steuerung
-- [x] Layout-Wechsel
-- [x] Konfiguration im Repository
+- [x] komorebi als produktiven Window Manager abgelöst
+- [x] whkd aus dem produktiven Desktop-Stack entfernt
+- [x] masir aus dem produktiven Desktop-Stack entfernt
+- [x] Zebar als Desktop Bar abgelöst
+- [x] eigenes Volume-/Mute-OSD abgelöst
+- [x] Seelen UI als produktive Desktop-Shell integriert
+- [x] Seelen `settings.json` reproduzierbar aus dem Repository verwaltet
+- [x] Seelen Window Manager deaktiviert
+- [x] PowerToys FancyZones als leichtgewichtiges Window Management aktiviert
+- [x] Windows-Taskbar-AutoHide wieder deaktiviert; Shell-/Dock-Verhalten liegt bei Seelen
+- [x] Desktop-Restart auf Seelen UI umgestellt
+- [x] Legacy Scheduled Tasks entfernt
+- [x] toten komorebi-/whkd-/masir-/Zebar-/Volume-OSD-Code aus dem Repository entfernt
+- [x] `just check` nach dem Architekturwechsel erfolgreich
+- [x] vollständiger `just update-log` nach dem Architekturwechsel erfolgreich
+- [x] praktischer Desktop-Test mit Seelen UI erfolgreich
 
+## Feste Entscheidung
 
-## Animationen / Performance
+Der frühere komorebi-/whkd-/masir-/Zebar-Stack ist **verworfen**.
 
-- [x] komorebi-Movement-Animationen praktisch auf Ruckeln untersucht
-- [x] vorhandene 60-FPS-Konfiguration als nicht ausreichend flüssig bestätigt
-- [x] 240 FPS als Vergleich getestet; Ruckeln beim schnellen Fenster-Spawn und Neu-Tilen blieb bestehen
-- [x] Animationen vollständig deaktiviert
-- [x] nach komorebi-Neustart deutlich schnelleres und flüssigeres Tiling praktisch bestätigt
-- [x] produktiver Desired State verwendet keine Movement-Animationen
-## Rechte / erhöhte Anwendungen
+Gründe:
 
-- [x] komorebi über Scheduled Task mit erhöhten Rechten starten
-- [x] als Administrator gestartete Terminals/Fenster in Tiling aufnehmen
+- neues Hauptziel ist macOS-26-Nähe statt Hyprland-Nachbau
+- Tiling ist optional und kein Architekturzentrum mehr
+- Seelen liefert Top Bar, Dock und OSD aus einer zusammenhängenden Shell
+- FancyZones reicht für das gewünschte optionale Window Management
+- parallele Desktop-Shell-/Tiling-Komponenten führten mit Seelen zu sichtbarem Flackern und konkurrierendem Fensterverhalten
 
-## whkd App-Shortcuts
+Der alte Stack darf nicht erneut vorgeschlagen oder eingebaut werden, solange kein neuer konkreter technischer Grund vorliegt.
 
-- [x] Win + B startet Zen Browser
-- [x] Win + T startet Windows Terminal
-- [x] Win + Shift + T startet Windows Terminal über UAC erhöht
-- [x] alle drei App-Shortcuts auf dem aktuellen System praktisch testen
+## OSD
 
-## Anwendungsregeln / Floating-Verhalten
+- [x] Seelen UI übernimmt Volume-/Media-OSD
+- [x] eigenes C#/PowerShell-Volume-OSD vollständig aus dem aktiven Stack und Repository entfernt
+- [x] Windhawk bleibt ausschließlich für Lock Keys Notifier zuständig
+- [ ] Lock Keys Notifier optisch an macOS 26 anpassen
 
-### iCloud Passwords
+## Noch offen
 
-- [x] iCloud Passwords (`iCloudPasswords.exe`) grundsätzlich vom Tiling ausschließen
-- [x] Ignore-Regel reproduzierbar in `dotfiles/komorebi/applications.json` hinterlegen
-- [x] stabilen Match über `Exe = iCloudPasswords.exe` mit `matching_strategy = Equals` verwenden; lokalisierten Fenstertitel nicht als dauerhaften Identifier verwenden
-- [x] iCloud Passwords behält normales Windows-Fensterverhalten und bleibt frei beweglich/resizbar
-- [x] Bedienbarkeit der App nach dem Ausschluss praktisch bestätigt
-- [x] `just check` und `just update` mit der Regel erfolgreich ausgeführt
-
-- [ ] Microsoft Kurznotizen / Sticky Notes grundsätzlich vom Tiling ausschließen
-- [ ] für Kurznotizen normales Windows-Fensterverhalten verwenden
-- [ ] Regel reproduzierbar in der vorgesehenen komorebi-Anwendungskonfiguration hinterlegen
-- [ ] prüfen, dass mehrere Kurznotiz-Fenster nicht versehentlich getiled oder gestackt werden
-- [ ] Verhalten nach Neustart von komorebi erneut testen
-
-## Bootstrap / Desktop-Neustart
-
-- [x] fehlerhafte Zebar-Z-Order nach wiederholten Bootstrap-Läufen reproduziert
-- [x] entschieden, komorebi und Zebar am Ende des Bootstrap kontrolliert neu zu starten
-- [x] zentralen `Stop-WindowsDesktopEnvironment`-Workflow implementiert
-- [x] zentralen `Start-WindowsDesktopEnvironment`-Workflow implementiert
-- [x] zentralen `Restart-WindowsDesktopEnvironment`-Workflow implementiert
-- [x] Zebar zuerst beenden
-- [x] komorebi/whkd/masir anschließend kontrolliert beenden
-- [x] komorebi mit `--whkd --masir` starten
-- [x] auf komorebi/whkd warten
-- [x] Zebar erst danach starten
-- [x] zwei getrennte Scheduled Tasks beibehalten
-- [x] komorebi-Task erhöht ausführen
-- [x] Zebar-Task nicht erhöht ausführen
-- [x] Neustartlogik idempotent gestalten und doppelte Instanzen vermeiden
-- [x] `just desktop-restart` als manuellen Einstiegspunkt ergänzen
-- [x] Desktop-Neustart am Ende von `bootstrap.ps1` ausführen
-- [x] `just update` mit der neuen Reihenfolge erfolgreich getestet
-- [x] normale Fenster liegen nach dem Bootstrap nicht mehr über bzw. falsch relativ zur Zebar
-- [x] Fenster bleiben nach dem Bootstrap normal bedienbar
-
-### Akzeptanzkriterien für Desktop-Stabilität
-
-- Microsoft Kurznotizen werden nicht getiled.
-- Nach `just update` funktioniert die komorebi-/Zebar-Erkennung ohne manuelle Nacharbeit.
-- Normale Fenster landen nicht hinter Zebar.
-- Fenster lassen sich nach dem Bootstrap weiterhin normal verschieben und schließen.
-- Es laufen jeweils nur die erwarteten komorebi-/Zebar-Instanzen.
-
-## Dotfiles
-
-- [x] `komorebi.json` als Hardlink
-- [x] `komorebi.bar.json` als Hardlink
-- [x] `applications.json` als Hardlink
-- [x] `whkdrc` als Hardlink
-- [x] alte Symlinks migrieren
+- [ ] Seelen Top Bar möglichst nah an macOS 26 gestalten
+- [ ] Tray-Integration in die Top Bar prüfen/optimieren
+- [ ] Seelen Dock weiter an macOS 26 angleichen
+- [ ] Liquid-Glass-Design innerhalb der stabil unterstützten Seelen-Möglichkeiten ausbauen
+- [ ] Seelen DevTools für gezielte UI-Anpassungen untersuchen
+- [ ] Verhalten bei Fullscreen-/Borderless-Anwendungen praktisch prüfen
+- [ ] Multi-Monitor-Verhalten praktisch prüfen
 
 ---
 
-# 19. Phase 16 – masir / Focus Follows Mouse
+# 19. Phase 16 – ehemaliges masir / Focus Follows Mouse
 
-- [x] `LGUG2Z.masir`
-- [x] Installation per Winget
-- [x] automatische komorebi-Integration
-- [x] Focus folgt Maus-Hover
-- [x] kein Klick erforderlich
-- [x] masir zusammen mit komorebi/whkd starten
-- [x] Integration in Desktop Scheduled Task
-- [x] Start über `komorebic start --whkd --masir`
-- [x] Stop über `komorebic stop --whkd --masir`
-- [x] kontrollierter Desktop-Neustart praktisch getestet
+- [x] masir war implementiert und praktisch getestet
+- [x] masir im Zuge des Seelen-Architekturwechsels bewusst entfernt
+- [x] Focus-follows-mouse ist kein aktuelles Desktop-Ziel mehr
 
 ---
 
-# 20. Phase 17 – Zebar
+# 20. Phase 17 – ehemalige Zebar Desktop Bar
 
-## Grundarchitektur
-
-- [x] eigenes Widget
-- [x] TypeScript
-- [x] esbuild
-- [x] lokaler Build
-- [x] keine CDN-Abhängigkeiten
-- [x] `settings.json` als Hardlink
-- [x] `windows-setup-bar` als Junction
-- [x] Scheduled Task / reproduzierbarer Start
-- [x] separater nicht erhöhter Scheduled Task
-- [x] zentraler Desktop-Restart
-- [x] Start erst nach komorebi/whkd
-- [x] korrekte Z-Order nach `just update` praktisch getestet
-
-## Linke Seite
-
-- [x] fünf komorebi-Workspaces
-- [x] aktiven Workspace darstellen
-- [x] Workspace per Klick wechseln
-- [x] aktuelles Layout anzeigen
-- [x] komplette Layout-Pill klickbar
-- [x] separates Layout-Popup
-- [x] verfügbare Tiling-Layouts auswählen
-- [x] Auswahl sofort auf komorebi anwenden
-- [x] aktuelles Layout hervorheben
-- [x] Tooltip pro Layout
-- [x] Popup nach Auswahl schließen
-- [x] Popup bei Fokusverlust schließen
-- [x] Popup ohne Scrollbar-/Clipping-Probleme
-
-## Mitte
-
-- [x] fokussierten Fenstertitel anzeigen
-- [x] echtes Windows-Anwendungsicon
-- [x] Icon über EXE/PowerShell bestimmen
-- [x] PNG/Base64
-- [x] Cache
-- [x] Race-Condition-Schutz
-
-## Rechte Seite
-
-- [x] CPU
-- [x] RAM
-- [x] Storage
-- [x] aktive Netzwerk-Schnittstelle
-- [x] IPv4
-- [x] Download
-- [x] Upload
-- [x] Lautstärke
-- [x] Mute
-- [x] Klick für Mute
-- [x] Mausrad für Lautstärke
-- [x] Media Titel
-- [x] Artist
-- [x] Previous
-- [x] Play/Pause
-- [x] Next
-- [x] deutsches Datum
-- [x] 24-Stunden-Uhrzeit
-
-## Vollbild-Verhalten
-
-- [ ] Zebar darf nicht über echten Vollbild-Anwendungen liegen
-- [ ] YouTube-/Browser-Vollbild darf nicht von Zebar überlagert werden
-- [ ] Spiele und andere Fullscreen-Anwendungen dürfen nicht von Zebar überlagert werden
-- [ ] prüfen, ob echtes Fullscreen und Borderless Fullscreen unterschiedlich behandelt werden müssen
-- [ ] Zebar nach Verlassen des Vollbildmodus zuverlässig wieder anzeigen
-- [ ] normale maximierte Fenster dürfen Zebar nicht versehentlich ausblenden
-- [ ] kein sichtbares Flackern oder unnötiger Prozess-Neustart beim Wechsel in oder aus Vollbild
-- [ ] Lösung möglichst ohne anwendungsspezifische Sonderregeln umsetzen
-
-### Akzeptanzkriterien für Vollbild
-
-- Bei echtem Vollbild ist Zebar vollständig unsichtbar.
-- Nach Verlassen des Vollbildmodus erscheint Zebar automatisch wieder.
-- Normale maximierte Fenster blenden Zebar nicht aus.
-- Verhalten funktioniert mindestens mit Browser-/YouTube-Vollbild und einer typischen Fullscreen-Anwendung.
-
-## Bewusste Nicht-Ziele
-
-- [x] keine Batterieanzeige
-- [x] kein Systray in Zebar
+- [x] Zebar war vollständig implementiert und praktisch getestet
+- [x] Zebar im Zuge des Seelen-Architekturwechsels bewusst entfernt
+- [x] Top Bar, Dock und Desktop-OSD liegen jetzt bei Seelen UI
+- [x] G-HUB-Mausakku-Widget aus dem produktiven Desktop-Stack entfernt
+- [ ] nur bei echtem Bedarf prüfen, ob ein vergleichbares Mausakku-Widget stabil in Seelen integrierbar ist
 
 ---
-
 # 21. Phase 18 – OneCommander
 
 ## Entscheidung
@@ -1421,27 +1283,20 @@ Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwalte
 - [x] Mods per CLI installierbar
 - [x] Mod-Settings per CLI konfigurierbar
 
-## Verworfen
+## Produktive Zuständigkeit
 
-- [x] File Explorer Styler nicht weiter verfolgen
-- [x] Explorer-Theme stattdessen über OneCommander
+- [x] Windhawk Desired State auf `Lock Keys Notifier` reduziert
+- [x] Taskbar Styler entfernt
+- [x] Start Menu Styler entfernt
+- [x] Notification Center Styler entfernt
+- [x] Taskbar Auto-Hide Speed entfernt
+- [x] File Explorer Styler bleibt verworfen
+- [x] keine parallele Windhawk-Shell-Theming-Schicht neben Seelen UI
 
 ## Noch offen
 
-- [x] Taskbar Styler
-- [x] Start Menu Styler
-- [x] Notification Center Styler
-  - integriertes `Matter`-Theme als Basis
-  - Matter-Layout und -Geometrie bleiben unverändert; angepasst werden nur Farben
-  - Catppuccin-Mocha-Flächen verwenden dezente `surface1`-/`surface2`-Töne statt Mauve als große Flächenfarbe
-  - Mauve bleibt für kleine Highlights und Borders reserviert
-  - Konfiguration deklarativ in `config/windhawk/` und reproduzierbar über den bestehenden Windhawk-CLI-Workflow
-  - Installation, `just check`, `just update` und optische Sichtprüfung auf dem aktuellen System erfolgreich getestet
-- [x] alle drei optisch an Catppuccin Mocha anpassen
-- [x] bisherige Konfiguration reproduzierbar über Windhawk CLI
-- [x] keine manuelle Mod-Konfiguration, wenn CLI-Automatisierung möglich ist
-- [ ] Änderungen auf weiteren Windows-/Windhawk-Versionen testen
-
+- [ ] Lock Keys Notifier optisch an macOS 26 angleichen
+- [ ] Lock-Key-Darstellung nach Windhawk-/Windows-Updates praktisch prüfen
 ---
 
 ## Windows-Shell-Personalisierung
@@ -1459,7 +1314,7 @@ Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwalte
 ---
 ## Windhawk Desired State
 
-- [x] `config/windhawk/` als deklarative Mod-Liste vorgesehen
+- [x] `config/windhawk/` als deklarative Mod-Liste vorgesehen; produktiv bleibt nur der Lock Keys Notifier
 - [x] Mod-Installation und Aktivierung generisch über `modules/Windhawk/`
 - [x] Windhawk-CLI-2.x-JSON-Envelope bei installierten Mods berücksichtigen
 - [x] generische Übersetzung verschachtelter Settings in Flat-Storage-Keys
@@ -1495,129 +1350,30 @@ Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwalte
   - bleibt dauerhaft das zuständige Lock-Key-OSD; Caps Lock, Num Lock und Scroll Lock werden nicht zusätzlich im eigenen OSD implementiert
 - [ ] Settings-Drift vor dem Schreiben erkennen und unveränderte Mod-Settings unangetastet lassen
 
-### Zentrale Catppuccin-Palette
+### Ehemalige zentrale Catppuccin-Palette
 
-- [x] `config/theme.psd1` als zentrale Catppuccin-Mocha-Palette angelegt
-- [x] gemeinsame Desktop-Hauptfläche auf Catppuccin Base `#1e1e2e` festgelegt
-- [x] Windows Terminal auf Base `#1e1e2e` ohne Acrylic/Transparenz umgestellt
-- [x] Zebar-Hauptflächen auf Base `#1e1e2e` umgestellt
-- [x] Windhawk Taskbar-Styler-Hauptflächen auf Base `#1e1e2e` umgestellt
-- [x] Terminal, Zebar und Taskbar optisch gemeinsam geprüft
-- [ ] Zebar-Palette zukünftig aus `config/theme.psd1` generieren statt CSS-Farbwerte separat zu pflegen
-- [ ] Windhawk-Farbwerte zukünftig semantisch aus `config/theme.psd1` auflösen statt Hex-Werte in Mod-Settings zu duplizieren
-# 23. Phase 20 – Eigenes OSD
+- [x] `config/theme.psd1` bleibt für Anwendungen erhalten, die weiterhin Catppuccin verwenden
+- [x] die Palette ist keine globale Desktop-Designvorgabe mehr
+- [x] ehemalige Zebar-/Taskbar-Styler-Abhängigkeiten wurden mit dem Legacy-Desktop entfernt
+# 23. Phase 20 – ehemaliges eigenes Volume-OSD
 
-## Ziel
+## Architekturwechsel
 
-Windows verwendet für Lautstärke/Mute ein eigenes, optisch zu Catppuccin Mocha passendes OSD, funktional ähnlich zu SwayOSD unter Linux.
+- [x] eigenes Volume-/Mute-OSD war produktiv implementiert und praktisch getestet
+- [x] Seelen UI übernimmt nun Volume-/Media-OSD
+- [x] eigenes PowerShell-/C#-OSD aus dem aktiven Stack entfernt
+- [x] Scheduled Task `Windows Setup Volume OSD` entfernt
+- [x] `modules/VolumeOsd/` nach erfolgreichem Seelen-Test vollständig entfernt
+- [x] Lock Keys bleiben beim Windhawk `Lock Keys Notifier`
+- [x] kein paralleles zweites Volume-/Media-OSD beibehalten
 
-Das finale Design orientiert sich bewusst am bereits eingerichteten Windhawk `Lock Keys Notifier`: eine kompakte Pill mit Catppuccin-Flächen, dünner Mauve-Border und einem hervorgehobenen Statusfeld. Ein Fortschrittsbalken oder zusätzliches Audio-Icon ist für diesen finalen reduzierten Entwurf nicht vorgesehen.
+## Feste Entscheidung
 
-Lock-Key-Zustände bleiben bewusst beim praktisch getesteten Windhawk-Mod `Lock Keys Notifier`. Media-Steuerung benötigt kein zusätzliches eigenes OSD.
+Das eigene Volume-OSD ist **verworfen**, solange Seelen UI die benötigte OSD-Funktion stabil bereitstellt. Ein separater OSD-Prozess würde nur doppelte Zuständigkeit und zusätzliche Wartung erzeugen.
 
-Brightness wird auf dem aktuellen System vorerst nicht als eigener OSD-Bereich umgesetzt. Der Samsung G93SD meldet DDC/CI-Brightness zwar formal über High-Level-API und VCP `0x10`, die Werte ändern sich beim praktischen Helligkeitstest jedoch nicht. Die vorhandenen Helligkeitstasten öffnen lediglich das Windows-OSD und ändern die Displayhelligkeit nicht. Eine spätere Wiederaufnahme erfolgt nur bei einem neuen, praktisch funktionierenden Hardware-/Softwarepfad.
-
-## Feste Zuständigkeit
-
-- [x] Caps Lock, Num Lock und Scroll Lock bleiben beim Windhawk-Mod `Lock Keys Notifier`
-- [x] kein zweites Lock-Key-OSD im eigenen OSD implementieren
-- [x] Media nicht als eigenen OSD-Bereich implementieren
-- [x] Brightness auf dem aktuellen System nach erfolglosem WMI-/DDC-/VCP-Test vorerst zurückstellen
-- [x] eigenes OSD ausschließlich für Volume/Mute umsetzen
-- [x] finales Volume-OSD bewusst als reduzierte Pill ohne Fortschrittsbalken und zusätzliches Audio-Icon gestalten
-
-## Produktive Architektur
-
-- [x] produktive Implementierung liegt unter `modules/VolumeOsd/`
-- [x] `modules/VolumeOsd/` wird über `modules/index.ps1` in die bestehende Modularchitektur geladen
-- [x] Modul definiert `Start-VolumeOsd` und startet beim normalen Dot-Sourcing nicht selbst
-- [x] Volume Up, Volume Down und Mute werden über einen Low-Level-Keyboard-Hook abgefangen
-- [x] auf dem aktuellen System auftretende injizierte Volume-Events werden ebenfalls verarbeitet
-- [x] Lautstärke und Mute werden direkt über Windows Core Audio gesetzt
-- [x] abgefangene Volume-Tasten werden nicht an Windows weitergereicht
-- [x] das native Windows-Volume-OSD erscheint dadurch nicht parallel
-- [x] doppelte laufende OSD-Instanzen werden vermieden
-
-## Anzeige und Verhalten
-
-- [x] Volume Up
-- [x] Volume Down
-- [x] Mute
-- [x] Unmute
-- [x] aktuelle Lautstärke als Prozent
-- [x] Mute-Zustand als `MUTE`
-- [x] Catppuccin Mocha
-- [x] Pill-Geometrie passend zum Windhawk `Lock Keys Notifier`
-- [x] keine unnötigen Fensterrahmen
-- [x] keine Taskbar-Anzeige
-- [x] kein Fokusraub im finalen WPF-Pfad praktisch beanstandet
-- [x] automatisch nach kurzer Zeit ausblenden
-- [x] beim ersten Event eines Eingabe-Bursts das Fenster einmal einblenden
-- [x] weitere Events aktualisieren nur den Zustand und verlängern die Anzeigezeit
-- [x] kein erneutes Fade-in/Neu-Rendern bei jedem Tastendruck
-- [x] schnelles wiederholtes Drücken ohne störendes Flackern praktisch bestätigt
-
-## Integration
-
-- [x] Scheduled Task `Windows Setup Volume OSD`
-- [x] nicht erhöhter Start im interaktiven Benutzerkontext
-- [x] PowerShell-Start mit `-STA`
-- [x] unsichtbarer Autostart über generierten `wscript.exe`-Launcher unter `.generated/volume-osd/`
-- [x] Launcher startet `pwsh` mit `-NoProfile -NonInteractive -STA -ExecutionPolicy Bypass`
-- [x] PowerShell-7-Host für Scheduled Tasks wird eindeutig aus dem aktuell laufenden `pwsh.exe`-Prozess aufgelöst; mehrere gleichnamige `pwsh`-Kandidaten dürfen nicht zu einem ungültigen Executable-Pfad zusammengeführt werden
-- [x] dieselbe eindeutige `pwsh.exe`-Auflösung wird für Volume-OSD und Weekly Maintenance verwendet
-- [x] Startup-Fehler können unter `.generated/logs/volume-osd-startup.log` protokolliert werden
-- [x] VBS-Launcher protokolliert Start sowie `Shell.Run`-Fehler/Exit-Code unter `.generated/logs/volume-osd-vbs.log`, damit Fehler zwischen Scheduled Task, `wscript.exe` und `pwsh.exe` eindeutig diagnostizierbar sind
-- [x] Task lädt `modules/VolumeOsd/index.ps1` und ruft `Start-VolumeOsd` auf
-- [x] Registrierung/Aktualisierung über den bestehenden Bootstrap
-- [x] Volume-OSD in `Stop-WindowsDesktopEnvironment` und `Start-WindowsDesktopEnvironment` einbezogen
-- [x] Desktop-Prozesserkennung berücksichtigt sowohl den direkten Modulpfad als auch den generierten Launcher-Pfad
-- [x] produktiver `just update` nach der Integration fehlerfrei
-- [x] produktives Volume-OSD läuft nach dem Bootstrap und funktioniert praktisch
-- [x] natives Windows-Volume-OSD bleibt im produktiven Pfad aus
-- [x] Lautstärkeänderung ohne merkbare Verzögerung praktisch bestätigt
-- [x] `AtLogOn` nach echter Ab-/Anmeldung oder Windows-Neustart praktisch bestätigt
-
-## Verworfen / zurückgestellt
-
-- [x] separates Brightness-OSD auf dem aktuellen System zurückgestellt
-  - kein `WmiMonitorBrightness`-Provider
-  - DDC/CI/VCP `0x10` formal lesbar, aber keine Änderung beim Betätigen der vorhandenen Helligkeitstasten
-  - die Helligkeitstasten ändern am aktuellen Display tatsächlich keine Helligkeit
-- [x] gemeinsames eigenes Lock-Key-OSD verworfen; Windhawk `Lock Keys Notifier` bleibt zuständig
-- [x] eigenes Media-OSD nicht erforderlich
-- [x] früherer Fortschrittsbalken-/Icon-Plan zugunsten der praktisch gewünschten reduzierten Pill verworfen
-- [x] OSD-Testskripte nach erfolgreicher Produktivintegration entfernt
-
-## Praktisch bestätigter Stand
-
-Die Eingabe-Architektur wurde zunächst separat getestet: 61 von 61 beobachteten Volume-KeyDown-Events waren auf dem aktuellen System `Injected=True`; nach vollständiger Interception reagierte die Lautstärke ohne merkbare Verzögerung und das Windows-OSD erschien nicht mehr.
-
-Die finale WPF-Pill wurde anschließend praktisch geprüft. Nach der Umstellung auf ein persistentes Fenster pro Eingabe-Burst werden schnelle Lautstärkeänderungen ohne störendes Flackern dargestellt.
-
-Nach der Migration in `modules/VolumeOsd/` mit zentralem `index.ps1` und ausgelagertem `Interop.cs` sowie der Scheduled-Task-/Bootstrap-Integration lief `just update` fehlerfrei durch und das produktive OSD lief anschließend korrekt.
-
-Beim ersten echten Logon-Test zeigte sich, dass der direkte dauerhafte `pwsh`-Taskstart ein sichtbares Terminalfenster hinterlassen konnte. Der Scheduled Task startet das OSD deshalb nun über einen generierten, unsichtbaren `wscript.exe`-Launcher. Die globale PowerShell Execution Policy bleibt unverändert.
-
-Der `AtLogOn`-Akzeptanztest wurde nach einem echten Windows-Neustart praktisch bestätigt: Das OSD startet automatisch ohne sichtbares Terminalfenster, das eigene Catppuccin-OSD erscheint und das native Windows-Volume-OSD bleibt unterdrückt.
-
-Nach einer späteren Autostart-Regression wurden Desktop-Lifecycle und OSD-Startpfad gezielt gehärtet. `komorebic stop` darf bei nicht erreichbarem IPC-Endpunkt in einen kontrollierten Recovery-Stop übergehen. Für das Volume-OSD wurde der vollständige Pfad Scheduled Task → `wscript.exe` → VBS → `pwsh.exe` diagnostizierbar gemacht. Ursache war eine mehrdeutige `pwsh`-Auflösung, die zwei vorhandene `pwsh.exe`-Kandidaten zu einem ungültigen Executable-Pfad zusammenführte. Scheduled Tasks verwenden deshalb nun eindeutig den aktuell laufenden PowerShell-7-Host. `just update-log`, komorebi-Tiling, whkd/Zebar und Volume Up/Down/Mute wurden nach dem Fix auf dem aktuellen System praktisch erfolgreich bestätigt.
-
-## Akzeptanzkriterien
-
-- [x] Volume Up/Down und Mute/Unmute werden zuverlässig angezeigt
-- [x] aktuelle Lautstärke wird korrekt dargestellt
-- [x] keine merkbare Verzögerung
-- [x] kein natives Windows-Volume-OSD parallel sichtbar
-- [x] keine störende Taskbar-Anzeige
-- [x] Catppuccin-Design konsistent
-- [x] schnelle Eingaben flackern nicht
-- [x] Lock-Key-Anzeigen bleiben ausschließlich beim Windhawk `Lock Keys Notifier`
-- [x] produktiver Bootstrap-Lauf erfolgreich
-- [x] automatischer Start bei echtem neuen Windows-Logon praktisch bestätigt
+Brightness bleibt außerhalb dieses Projektschritts; der frühere Hardwaretest lieferte keinen zuverlässig steuerbaren Helligkeitspfad.
 
 ---
-
 # 24. Phase 21 – Launcher / Suche
 
 ## Entscheidung
@@ -1949,11 +1705,11 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [x] Konfiguration erneut anwenden
 - [x] bereits initialisierte Standard-App-Konfigurationen über `.generated/state/default-apps/` erkennen und überspringen
 - [x] Zen-Mods vor möglichem Browser-Neustart lokal prüfen
-- [x] Zebar Build
+- [x] Seelen-Konfiguration aus dem Repository anwenden
 - [x] OneCommander-Desired-State vor möglichem Neustart prüfen
 - [x] initialisiertes Raycast ohne erneuten Restore behandeln und aktuellen lokalen Export in den generischen Desired State sanitizen
-- [x] Desktop-Environment bei tatsächlichem Desktop-Drift definiert neu starten; unveränderter gekoppelter komorebi/whkd/masir/Zebar-Stack bleibt laufend
-- [x] Volume OSD bei eigenständigem Drift gezielt neu starten, ohne unnötig den restlichen Desktop-Stack zu beenden
+- [x] Seelen UI bei tatsächlichem Desktop-Drift definiert neu starten; unveränderte Seelen-Konfiguration bleibt laufend
+- [x] Volume-/Media-OSD an Seelen UI delegiert; kein eigener OSD-Prozess oder Scheduled Task mehr
 - [x] Scheduled Tasks vor dem Schreiben gegen ihren tatsächlichen Desired State vergleichen
 - [x] PSScriptAnalyzer nur bei geändertem PowerShell-Code über den gemeinsamen strikten Preflight ausführen
 - [x] parameterloser/stiller Bootstrap für die automatische Wartung; Konsolenausgabe wird für den Hintergrundtask nicht benötigt
@@ -1974,31 +1730,32 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 
 ---
 
-# 29. Phase 26 – Catppuccin Mocha Gesamtpolish
+# 29. Phase 26 – macOS 26 / Liquid Glass Gesamtpolish
 
-## Bereits umgesetzt
+## Architekturentscheidung
 
-- [x] komorebi
-- [x] Zebar
-- [x] Windows Terminal
-- [x] VS Code
-- [x] OneCommander Theme
-- [x] OneCommander Folder Icons
-- [x] OneCommander File Icons
-- [x] Zen Browser inklusive ausgewählter Website-Styles
+- [x] Catppuccin Mocha ist nicht mehr die globale Windows-Designvorgabe
+- [x] Windows-Gesamtdesign auf macOS-26-/Liquid-Glass-Nähe umgestellt
+- [x] Seelen UI als zentrale Shell-Basis gewählt
+- [x] VS Code darf Catppuccin weiterhin verwenden
+- [x] Terminal darf Catppuccin weiterhin verwenden, solange der eingesetzte Terminal-Workflow dies sinnvoll macht
+- [x] OneCommander wird künftig Finder-/macOS-orientiert statt als Catppuccin-Leitkomponente betrachtet
+- [x] Zen benötigt keinen globalen Catppuccin-Zwang; vorhandenes Styling darf zugunsten nativer macOS-Nähe reduziert werden
 
 ## Offen
 
-- [x] Raycast mit Catppuccin-Mocha-Theme
-- [x] Windhawk Taskbar
-- [x] Windhawk Start Menu
-- [x] Windhawk Notification Center
-- [x] eigenes OSD
-- [x] Browser-Feinschliff
-- [ ] weitere Anwendungen nur themen, wenn die Anpassung stabil und wartbar ist
+- [ ] Seelen Top Bar macOS-26-näher gestalten
+- [ ] Seelen Dock macOS-26-näher gestalten
+- [ ] Lock Keys Notifier macOS-26-näher gestalten
+- [ ] Windowsweite Icons auf konsistente macOS-nahe Designsprache umstellen
+- [ ] OneCommander stärker an Finder angleichen
+- [ ] Zen-Custom-CSS prüfen und unnötiges Catppuccin-Styling entfernen
+- [ ] VS-Code-Oberfläche auf macOS-/Glass-Design prüfen; Custom-CSS nur bei aktuell stabiler Unterstützung
+- [ ] Warp als Terminal-Frontend produktiv ausarbeiten
+- [ ] WSL-Workflow mit wählbarer Distribution und Nix-Paketmanagement entwerfen und testen
+- [ ] weitere Anwendungen nur anpassen, wenn die Methode stabil, reproduzierbar und Windows-kompatibel ist
 
 ---
-
 # 30. Phase 27 – Dokumentation
 
 ## README
@@ -2022,9 +1779,7 @@ Das README soll den **aktuellen produktiven Stand** erklären.
 - [x] G-HUB-Initialisierung/Backup/Restore dokumentiert
 - [x] Desktop-Neustart-Architektur dokumentiert
 - [x] Desktop-Zielbild
-- [x] komorebi
-- [x] masir
-- [x] Zebar
+- [ ] README auf Seelen UI + FancyZones statt komorebi/masir/Zebar aktualisieren
 - [x] OneCommander
 - [x] NanaZip
 - [x] Raycast als primärer Launcher inklusive Desired-State-/Backup-/Restore-Workflow
@@ -2121,7 +1876,37 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
 
 ---
 
+
+## Desktop-Architekturwechsel 2026-08-16
+
+- [x] komorebi / whkd / masir als produktiven Desktop-Stack verworfen
+- [x] Zebar als produktive Desktop Bar verworfen
+- [x] eigenes Volume-/Mute-OSD verworfen
+- [x] alte Windhawk Taskbar-/Start-/Notification-Styler verworfen
+- [x] Seelen UI als zentrale Desktop-Shell gewählt
+- [x] FancyZones als optionales Window Management gewählt
+- [x] Windhawk auf Lock Keys Notifier reduziert
+- [x] Legacy-Code nach erfolgreichem `just check` und `just update-log` entfernt
+- [x] neues Hauptziel: maximale macOS-26-Nähe ohne Beschädigung der Windows-Integrität
+---
+
 # 32. Prioritäten / empfohlene nächste Schritte
+
+## Aktuelle Hauptpriorität – macOS 26 / Seelen UI
+
+1. [x] Seelen UI als produktive Desktop-Shell integrieren und praktisch testen
+2. [x] komorebi / whkd / masir / Zebar / eigenes Volume-OSD aus dem produktiven Stack entfernen
+3. [x] Legacy-Desktop-Code nach erfolgreichem Test aus dem Repository entfernen
+4. [x] FancyZones aktivieren
+5. [x] Windhawk auf Lock Keys Notifier reduzieren
+6. [ ] Lock Keys Notifier an macOS 26 angleichen
+7. [ ] Seelen Top Bar / Tray / Dock an macOS 26 angleichen
+8. [ ] systemweite macOS-nahe Icon-Strategie festlegen und reproduzierbar umsetzen
+9. [ ] OneCommander weiter Richtung Finder umbauen
+10. [ ] Zen-Styling auf native/macOS-nahe Darstellung überprüfen
+11. [ ] Warp produktiv konfigurieren
+12. [ ] WSL + Nix Desired State implementieren
+13. [ ] VS Code auf macOS-/Liquid-Glass-Design prüfen
 
 Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende Reihenfolge verwenden, sofern der Benutzer nichts anderes vorgibt.
 
@@ -2137,8 +1922,8 @@ Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende
 - [x] Scoop als Paketbackend integriert
 - [x] Chocolatey- und Scoop-Self-Update integriert
 - [x] Paketmanager-Cleanup integriert
-- [x] FileZilla in komorebi ignoriert und RDM-Embedding getestet
-- [x] Sticky Notes waren bereits korrekt vom Tiling ausgeschlossen; Dokumentation nachgezogen
+- [x] RDM-/FileZilla-Embedding praktisch getestet; frühere komorebi-Sonderregel ist mit dem Legacy-Stack entfallen
+- [x] frühere Sticky-Notes-Tiling-Sonderregel ist mit dem komorebi-Stack entfallen
 
 Noch offen aus dem Paketmanager-Umbau:
 
@@ -2148,15 +1933,13 @@ Noch offen aus dem Paketmanager-Umbau:
 
 ## Desktop-Stabilität
 
-- [x] fehlerhafte komorebi-/Zebar-Z-Order nach `just update` analysiert
-- [x] kontrollierten Desktop-Neustart implementiert
-- [x] Startreihenfolge komorebi/whkd/masir → Zebar umgesetzt
-- [x] `just desktop-restart` ergänzt
-- [x] Sticky Notes vom Tiling ausgeschlossen
-- [x] FileZilla vom Tiling ausgeschlossen
-- [x] Zebar bei echten Vollbild-Anwendungen ausblenden
-- [x] Verhalten bei Browser-/YouTube-Vollbild und Fullscreen-Anwendungen testen
-
+- [x] Seelen UI als alleinige produktive Desktop-Shell etabliert
+- [x] konkurrierenden komorebi-/whkd-/masir-/Zebar-Stack entfernt
+- [x] `just desktop-restart` auf Seelen UI umgestellt
+- [x] vollständiger `just update-log` nach dem Wechsel erfolgreich
+- [x] Legacy-Code anschließend aus dem Repository entfernt
+- [ ] Fullscreen-/Borderless-Verhalten mit Seelen weiter praktisch prüfen
+- [ ] Multi-Monitor-Verhalten mit Seelen weiter praktisch prüfen
 ## Kürzlich abgeschlossen – CLI Tools / Shell UX
 
 - [x] `ripgrep` (`rg`) installiert
@@ -2325,12 +2108,11 @@ Nach Abschluss der Roadmap soll ein frisch installiertes Windows 11 nach möglic
 - `just ghub-backup` / `just ghub-restore` für bewusste G-HUB-Snapshots
 - Browser
 - iCloud / Apple Passwords Voraussetzungen
-- komorebi + whkd + masir
-- Zebar
-- OneCommander mit vollständigem Catppuccin-Theme und Dev-File-Icons
+- Seelen UI + PowerToys FancyZones
+- OneCommander mit Dev-File-Icons; weitere Gestaltung soll Finder-/macOS-orientiert erfolgen
 - Raycast + Everything als primärer Launcher-/Suchworkflow
-- Windhawk für verbleibende Shell-Bereiche
-- eigenes Catppuccin-OSD für Volume/Mute; Brightness nur bei künftig praktisch funktionierendem Hardware-/Softwarepfad
+- Windhawk ausschließlich für den Lock Keys Notifier
+- Seelen UI für Volume-/Media-OSD; Brightness nur bei künftig praktisch funktionierendem Hardware-/Softwarepfad
 - NanaZip
 - generischer, interaktiver Standard-App-Initialisierungsworkflow für geschützte Windows-Dateizuordnungen
 - lokale Initialisierungsmarker unter `.generated/state/`
