@@ -7,11 +7,13 @@ $modules = @(
     "Debloat.ps1"
     "Development\index.ps1"
     "FileAssociations.ps1"
+    "FluentFlyout.ps1"
     "Git.ps1"
     "Gaming.ps1"
     "Helpers\index.ps1"
     "HomeOffice.ps1"
     "Languages.ps1"
+    "LegacyCleanup.ps1"
     "Logitech.ps1"
     "Notifications.ps1"
     "Nushell.ps1"
@@ -26,7 +28,6 @@ $modules = @(
     "Storage\index.ps1"
     "Terminal.ps1"
     "VSCode.ps1"
-    "Windhawk\index.ps1"
     "WindowsUpdate.ps1"
 )
 
