@@ -175,6 +175,8 @@ try {
     Install-PackageGroup -Packages $Packages.Browser -GroupName "Browser"
 
     Invoke-WingetQueuedChanges
+
+    Update-MicrosoftStoreApps
 }
 finally {
     Clear-PackageManagerCaches
