@@ -14,14 +14,15 @@
         AppThemeInfoPaneBackgroundColor        = "#00000001"
 
         DefaultLayoutMode                      = 3
+        ColumnsViewSize                        = 1
         SyncFolderPreferencesAcrossDirectories = $true
 
-        ShowToolbar                            = $true
+        ShowToolbar                            = $false
         ShowStatusBar                          = $false
         ShowTabActions                         = $false
 
         IsSidebarOpen                          = $true
-        SidebarWidth                           = 240
+        SidebarWidth                           = 220
         ShowPinnedSection                      = $true
         ShowDrivesSection                      = $true
         ShowCloudDrivesSection                 = $true
