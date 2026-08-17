@@ -184,7 +184,7 @@ finally {
 Install-PcVisitSupporterModule
 
 Install-FluentFlyout -Config $FluentFlyout
-Remove-LegacyWindhawk
+
 
 # Pfade neu einlesen
 Update-SessionPath

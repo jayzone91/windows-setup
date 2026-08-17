@@ -1,0 +1,76 @@
+.taskbar[data-has-margin="true"],
+.taskbar[data-size="min-content"] {
+  border-radius: 18px;
+
+  > .weg-items-container {
+    border-radius: 18px;
+  }
+}
+
+.taskbar {
+  background-color: oklch(from var(--slu-std-bg-color) l c h / 0.58);
+  border: 1px solid rgb(255 255 255 / 0.18);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.1),
+    0 14px 40px rgb(0 0 0 / 0.26);
+  backdrop-filter: blur(28px) saturate(180%);
+}
+
+.weg-item {
+  background-color: transparent;
+  box-shadow: none;
+  border-radius: 10px;
+  transition:
+    background-color 120ms ease,
+    transform 120ms ease;
+
+  &:hover {
+    background-color: rgb(255 255 255 / 0.11);
+  }
+
+  &:active {
+    transform: translateY(1px) scale(0.94);
+  }
+
+  .weg-item-icon {
+    filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.2));
+  }
+}
+
+.weg-item-overlay {
+  .weg-item-open-sign {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: rgb(255 255 255 / 0.62);
+
+    &.weg-item-open-sign-focused {
+      width: 4px;
+      height: 4px;
+      background-color: rgb(255 255 255 / 0.92);
+    }
+  }
+
+  .weg-item-notification-badge,
+  .weg-item-custom-badge {
+    background-color: #ff453a;
+    color: white;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.3);
+  }
+
+  .weg-item-instance-counter-badge {
+    background-color: rgb(60 60 67 / 0.9);
+    color: white;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+  }
+}
+
+.weg-separator {
+  .horizontal & {
+    border-left-color: rgb(255 255 255 / 0.18);
+  }
+
+  .vertical & {
+    border-top-color: rgb(255 255 255 / 0.18);
+  }
+}

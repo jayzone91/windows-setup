@@ -13,7 +13,6 @@ $modules = @(
     "Helpers\index.ps1"
     "HomeOffice.ps1"
     "Languages.ps1"
-    "LegacyCleanup.ps1"
     "Logitech.ps1"
     "Notifications.ps1"
     "Nushell.ps1"

@@ -19,6 +19,14 @@ function Set-SeelenConfiguration {
         throw "Seelen-Konfiguration nicht gefunden: $source"
     }
 
+    $themeSource = Join-Path `
+        $RepositoryPath `
+        "dotfiles\seelen\themes\macos26-liquid-glass"
+
+    if (-not (Test-Path -LiteralPath $themeSource -PathType Container)) {
+        throw "Seelen-Theme nicht gefunden: $themeSource"
+    }
+
     $destinationDirectory = Join-Path `
         $env:APPDATA `
         "com.seelen.seelen-ui"
@@ -35,18 +43,41 @@ function Set-SeelenConfiguration {
         Out-Null
     }
 
-    $changed = -not (
-        Test-FileHardLinkTarget `
+    $themeDestination = Join-Path `
+        $destinationDirectory `
+        "themes\macos26-liquid-glass"
+
+    $themeChanged = -not (
+        Test-DirectoryJunctionTarget `
+            -Path $themeDestination `
+            -Target $themeSource
+    )
+
+    $null = Set-DirectoryJunction `
+        -Path $themeDestination `
+        -Target $themeSource
+
+    if ($themeChanged) {
+        Write-Host "[OK] Seelen macOS-26-Theme aktualisiert." `
+            -ForegroundColor Green
+    }
+    else {
+        Write-Host "[SKIP] Seelen macOS-26-Theme bereits aktuell." `
+            -ForegroundColor Green
+    }
+
+    $settingsChanged = -not (
+        Test-FileSymbolicLinkTarget `
             -Path $destination `
             -Target $source
     )
 
-    $null = Set-FileHardLink `
+    $null = Set-FileSymbolicLink `
         -Path $destination `
         -Target $source `
         -ReplaceExistingFile
 
-    if ($changed) {
+    if ($settingsChanged) {
         Write-Host "[OK] Seelen settings.json aktualisiert." `
             -ForegroundColor Green
     }
@@ -55,5 +86,5 @@ function Set-SeelenConfiguration {
             -ForegroundColor Green
     }
 
-    return $changed
+    return ($themeChanged -or $settingsChanged)
 }

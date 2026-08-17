@@ -3,7 +3,8 @@
     "@system/icon-pack"
   ],
   "activeThemes": [
-    "@default/theme"
+    "@default/theme",
+    "@jayzone91/macos26-liquid-glass"
   ],
   "backupSyncEnabled": true,
   "byTheme": {},

@@ -40,6 +40,48 @@ function Test-DirectoryJunctionTarget {
         return $false
     }
 }
+function Test-FileSymbolicLinkTarget {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path,
+
+        [Parameter(Mandatory)]
+        [string] $Target
+    )
+
+    $item = Get-Item `
+        -LiteralPath $Path `
+        -Force `
+        -ErrorAction SilentlyContinue
+
+    if (
+        -not $item -or
+        $item.PSIsContainer -or
+        $item.LinkType -ne "SymbolicLink"
+    ) {
+        return $false
+    }
+
+    try {
+        $currentTarget = [IO.Path]::GetFullPath(
+            [string] $item.Target
+        )
+
+        $desiredTarget = [IO.Path]::GetFullPath(
+            $Target
+        )
+
+        return $currentTarget.Equals(
+            $desiredTarget,
+            [StringComparison]::OrdinalIgnoreCase
+        )
+    }
+    catch {
+        return $false
+    }
+}
 
 function Set-WindowsSetupGeneratedTextFile {
     [CmdletBinding()]

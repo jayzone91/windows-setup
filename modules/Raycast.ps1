@@ -6,28 +6,34 @@ function Get-RaycastApplicationPackage {
     Select-Object -First 1
 }
 
-function Get-RaycastNodeExecutable {
-    param(
-        [Parameter(Mandatory)]
-        [object]$Package
-    )
-
-    $node = Get-Command node.exe -ErrorAction SilentlyContinue |
+function Get-RaycastJavaScriptRuntime {
+    $node = Get-Command `
+        -Name "node.exe" `
+        -All `
+        -ErrorAction SilentlyContinue |
+    Where-Object {
+        $_.Source -and
+        $_.Source -notmatch '\\WindowsApps\\'
+    } |
     Select-Object -First 1
 
     if ($node) {
         return $node.Source
     }
 
-    $bundledNode = Join-Path `
-        $Package.InstallLocation `
-        'Raycast\backend\node.exe'
+    $bun = Get-Command `
+        -Name "bun.exe" `
+        -ErrorAction SilentlyContinue |
+    Select-Object -First 1
 
-    if (Test-Path -LiteralPath $bundledNode -PathType Leaf) {
-        return $bundledNode
+    if ($bun) {
+        return $bun.Source
     }
 
-    throw 'Node.js wurde weder im PATH noch im Raycast-Paket gefunden.'
+    throw (
+        "Kein ausführbarer JavaScript-Runtime gefunden. " +
+        "Erwartet wird Node.js außerhalb von WindowsApps oder Bun."
+    )
 }
 
 function Get-RaycastBackupPath {
@@ -94,7 +100,7 @@ function Invoke-RaycastConfigTool {
         throw "Raycast-Generator fehlt: $toolPath"
     }
 
-    $node = Get-RaycastNodeExecutable -Package $Package
+    $runtime = Get-RaycastJavaScriptRuntime
 
     $previousPassword = $env:RAYCAST_EXPORT_PASSWORD
     $previousInput = $env:RAYCAST_INPUT_PATH
@@ -107,9 +113,45 @@ function Invoke-RaycastConfigTool {
         $env:RAYCAST_OUTPUT_PATH = $OutputPath
         $env:RAYCAST_APP_VERSION = [string]$Package.Version
 
-        & $node $toolPath $Action
+        $processInfo = [Diagnostics.ProcessStartInfo]::new()
+        $processInfo.FileName = $runtime
+        $processInfo.UseShellExecute = $false
+        $processInfo.CreateNoWindow = $true
+        $processInfo.RedirectStandardOutput = $true
+        $processInfo.RedirectStandardError = $true
+        $processInfo.ArgumentList.Add($toolPath)
+        $processInfo.ArgumentList.Add($Action)
 
-        if ($LASTEXITCODE -ne 0) {
+        $process = [Diagnostics.Process]::new()
+        $process.StartInfo = $processInfo
+
+        try {
+            if (-not $process.Start()) {
+                throw "Raycast-Konfigurationswerkzeug konnte nicht gestartet werden."
+            }
+
+            $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+            $stderrTask = $process.StandardError.ReadToEndAsync()
+
+            $process.WaitForExit()
+
+            $stdout = $stdoutTask.GetAwaiter().GetResult()
+            $stderr = $stderrTask.GetAwaiter().GetResult()
+            $toolExitCode = $process.ExitCode
+
+            if (-not [string]::IsNullOrWhiteSpace($stdout)) {
+                Write-Host $stdout.TrimEnd()
+            }
+
+            if (-not [string]::IsNullOrWhiteSpace($stderr)) {
+                Write-Host $stderr.TrimEnd()
+            }
+        }
+        finally {
+            $process.Dispose()
+        }
+
+        if ($toolExitCode -ne 0) {
             throw "Raycast-Konfigurationswerkzeug ist fehlgeschlagen: $Action"
         }
     }

@@ -112,6 +112,8 @@ VS Code und Terminal dürfen unabhängig vom Windows-Gesamtdesign Catppuccin ver
 - [x] Kein automatischer Windows-Neustart
 - [x] Bootstrap wird aus `init.ps1` in einem eigenen PowerShell-Prozess gestartet
 - [x] Bootstrap-Prozesse verwenden `ExecutionPolicy Bypass` ausschließlich auf Prozessebene
+- [x] Bootstrap fordert bei nicht erhöhtem manuellen Start selbstständig per UAC Administratorrechte an
+- [x] Self-Elevation aus einem normalen Warp-/PowerShell-Kontext praktisch mit `just update-log` bestätigt
 - [x] Globale Benutzer-/System-Execution-Policy wird nicht verändert
 - [x] Execution-Policy-Fix auf dem aktuellen Windows-System erfolgreich getestet
 - [x] laufende Anwendungen werden bei wiederholten Läufen nur geschlossen, wenn eine tatsächliche Änderung dies erfordert
@@ -148,6 +150,7 @@ Projektweite Regel:
 - [x] Symbolic Links sind ausschließlich als expliziter Kompatibilitäts-Fallback erlaubt, wenn eine Anwendung Hardlinks technisch nicht zuverlässig unterstützt
 - [x] VS Code `settings.json` verwendet einen Symbolic Link, da VS Code beim Speichern die Datei ersetzt und dadurch einen NTFS-Hardlink auftrennt
 - [x] Windows Terminal `settings.json` verwendet ebenfalls den Symbolic-Link-Kompatibilitätsfallback; ein Hardlink wurde beim Speichern über die Settings-GUI praktisch als ungeeignet bestätigt
+- [x] Seelen `settings.json` verwendet ebenfalls den Symbolic-Link-Kompatibilitätsfallback; GUI-Änderungen trennten den bisherigen Hardlink und der Symlink wurde praktisch mit direkter Repository-Synchronisierung bestätigt
 - [x] `Set-FileHardLink` zentral als Standard-Helper
 - [x] korrekte NTFS-Hardlinks vor Änderungen auf ihr tatsächliches Ziel prüfen und bei unverändertem Desired State nicht löschen oder neu erzeugen
 - [x] `Set-FileSymbolicLink` zentral als Kompatibilitäts-Helper
@@ -163,6 +166,7 @@ Begründung:
 - Symbolic Links werden nur verwendet, wenn das Verhalten einer Anwendung praktisch als inkompatibel mit Hardlinks bestätigt wurde.
 - VS Code ersetzt `settings.json` beim Speichern und trennt dadurch einen Hardlink auf; ein Symbolic Link bleibt dagegen erhalten und Änderungen landen direkt in der Repository-Datei.
 - Windows Terminal trennt einen Hardlink beim Speichern über die Settings-GUI ebenfalls auf. Mit dem Symbolic Link landen GUI-Änderungen direkt in `dotfiles/terminal/settings.json`; ein vollständiger Neustart von Windows Terminal ist erforderlich, damit geänderte Einstellungen zuverlässig neu eingelesen werden.
+- Seelen ersetzt bzw. trennt `settings.json` bei Änderungen über die GUI ebenfalls so, dass der Hardlink nicht zuverlässig erhalten bleibt. Deshalb verwendet Seelen denselben expliziten Symbolic-Link-Kompatibilitätsfallback; GUI-Änderungen landen damit direkt in `dotfiles/seelen/settings.json`.
 
 ## Generierte Inhalte und lokaler Zustand
 
@@ -253,7 +257,8 @@ Begründung:
 - [x] funktionale Bootstrap-Tests verwenden `-Log`
 - [x] Performance-Tests verwenden den stillen `just update-performance`-Pfad
 - [ ] zentrale persistente Logging-Strategie für komplette Bootstrap-Läufe
-- [ ] Warnungen und Fehler mit Timestamp in Log-Dateien speichern
+- [x] fatalen Bootstrap-Fehler strukturiert mit Timestamp unter `.generated/logs/bootstrap-last-error.log` speichern; Fehlerpfad praktisch zur Diagnose des Raycast-Problems bestätigt
+- [ ] Warnungen und Fehler vollständig mit Timestamp in Log-Dateien speichern
 - [ ] automatische Log-Retention bzw. Bereinigung, damit Logs nicht unbegrenzt wachsen
 - [ ] Log-Dateien mit Datum/Uhrzeit und Ergebnisstatus
 - [ ] optionaler `-Verbose`-Modus für detailliertere Diagnose
@@ -1099,6 +1104,7 @@ Grund:
 - [x] eigenes Volume-/Mute-OSD abgelöst
 - [x] Seelen UI als produktive Desktop-Shell integriert
 - [x] Seelen `settings.json` reproduzierbar aus dem Repository verwaltet
+- [x] Seelen `settings.json` wegen praktisch bestätigter Hardlink-Inkompatibilität per Symbolic Link an das Repository gebunden; GUI-Änderungen erscheinen direkt im Repository
 - [x] Seelen Window Manager deaktiviert
 - [x] PowerToys FancyZones als leichtgewichtiges Window Management aktiviert
 - [x] Windows-Taskbar-AutoHide wieder deaktiviert; Shell-/Dock-Verhalten liegt bei Seelen
@@ -1132,8 +1138,9 @@ Der alte Stack darf nicht erneut vorgeschlagen oder eingebaut werden, solange ke
 
 ## Noch offen
 
-- [ ] Seelen Top Bar möglichst nah an macOS 26 gestalten
+- [ ] Seelen Top Bar möglichst nah an macOS 26 gestalten; aktueller Theme-Stand ist praktisch noch zu transparent
 - [ ] Tray-Integration in die Top Bar prüfen/optimieren
+- [ ] Seelen-Flyouts aus dem Default-Styling herauslösen und an macOS 26 / Liquid Glass angleichen
 - [ ] Seelen Dock weiter an macOS 26 angleichen
 - [ ] Liquid-Glass-Design innerhalb der stabil unterstützten Seelen-Möglichkeiten ausbauen
 - [ ] Seelen DevTools für gezielte UI-Anpassungen untersuchen

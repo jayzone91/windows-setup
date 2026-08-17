@@ -37,9 +37,11 @@ function Set-FileSymbolicLink {
         }
 
         if ($existingItem.LinkType -eq "SymbolicLink") {
-            $currentTarget = [string] $existingItem.Target
-
-            if ($currentTarget -eq $Target) {
+            if (
+                Test-FileSymbolicLinkTarget `
+                    -Path $Path `
+                    -Target $Target
+            ) {
                 Write-Host "[OK] Symlink bereits korrekt: $Path"
                 return
             }

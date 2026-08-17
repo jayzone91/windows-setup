@@ -1,0 +1,15 @@
+id: "@jayzone91/macos26-liquid-glass"
+
+metadata:
+  displayName: macOS 26 Liquid Glass
+  description: macOS-26-orientiertes Liquid-Glass-Styling für Seelen UI.
+  tags:
+    - macos
+    - liquid-glass
+    - toolbar
+    - dock
+
+styles:
+  "@seelen/fancy-toolbar": !include styles/fancy-toolbar.scss
+  "@seelen/weg": !include styles/weg.scss
+  "@seelen/system-tray": !include styles/system-tray.scss
