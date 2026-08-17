@@ -7,6 +7,7 @@ $modules = @(
     "Debloat.ps1"
     "Development\index.ps1"
     "FileAssociations.ps1"
+    "Files\index.ps1"
     "FluentFlyout.ps1"
     "Git.ps1"
     "Gaming.ps1"

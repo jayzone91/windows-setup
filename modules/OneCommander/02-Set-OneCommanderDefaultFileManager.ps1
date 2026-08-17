@@ -208,11 +208,11 @@ function Install-OneCommanderTheme {
 
     $source = Join-Path `
         $RepositoryPath `
-        "dotfiles\onecommander\Themes\CatppuccinMocha"
+        "dotfiles\onecommander\Themes\MacOS26"
 
     $destination = Join-Path `
         $env:LOCALAPPDATA `
-        "OneCommander\Themes\CatppuccinMocha"
+        "OneCommander\Themes\MacOS26"
 
     Set-DirectoryJunction `
         -Path $destination `

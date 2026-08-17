@@ -35,6 +35,69 @@ function Test-OneCommanderRegistryValue {
 }
 
 
+function Get-OneCommanderThemeFingerprint {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
+    )
+
+    $themePath = Join-Path `
+        $RepositoryPath `
+        "dotfiles\onecommander\Themes\MacOS26\MacOS26.xaml"
+
+    if (-not (Test-Path -LiteralPath $themePath -PathType Leaf)) {
+        throw "OneCommander MacOS26 Theme fehlt: $themePath"
+    }
+
+    return (
+        Get-FileHash `
+            -LiteralPath $themePath `
+            -Algorithm SHA256
+    ).Hash
+}
+
+
+function Get-OneCommanderThemeStatePath {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
+    )
+
+    return Join-Path `
+        $RepositoryPath `
+        ".generated\state\onecommander\theme.sha256"
+}
+
+
+function Set-OneCommanderThemeState {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string] $RepositoryPath
+    )
+
+    $statePath = Get-OneCommanderThemeStatePath `
+        -RepositoryPath $RepositoryPath
+
+    $stateDirectory = Split-Path -Parent $statePath
+
+    New-Item `
+        -ItemType Directory `
+        -Path $stateDirectory `
+        -Force |
+    Out-Null
+
+    Get-OneCommanderThemeFingerprint `
+        -RepositoryPath $RepositoryPath |
+    Set-Content `
+        -LiteralPath $statePath `
+        -Encoding UTF8
+}
+
 function Test-OneCommanderConfigurationCurrent {
     [CmdletBinding()]
     [OutputType([bool])]
@@ -64,10 +127,13 @@ function Test-OneCommanderConfigurationCurrent {
             HotkeySwitchesToWindow   = "True"
             OpenFilesThroughExplorer = "False"
             OpenRecycleBinInExplorer = "False"
-            ThemeName                = "CatppuccinMocha"
+            ThemeName                = "MacOS26"
             UseSystemTheme           = "False"
             UseSystemAccentColor     = "False"
-            AccentColor              = "#FFCBA6F7"
+            AccentColor              = "#FF0A84FF"
+
+            UseAcrylic = "True"
+            UseAcrylicMenu = "True"
             MainFolderIcon           = "CatppuccinMocha"
             FolderIconsTheme         = "CatppuccinMocha"
             FileIconsTheme           = "CatppuccinMocha"
@@ -97,11 +163,11 @@ function Test-OneCommanderConfigurationCurrent {
 
         $themeSource = Join-Path `
             $RepositoryPath `
-            "dotfiles\onecommander\Themes\CatppuccinMocha"
+            "dotfiles\onecommander\Themes\MacOS26"
 
         $themeDestination = Join-Path `
             $env:LOCALAPPDATA `
-            "OneCommander\Themes\CatppuccinMocha"
+            "OneCommander\Themes\MacOS26"
 
         if (
             -not (
@@ -113,7 +179,27 @@ function Test-OneCommanderConfigurationCurrent {
             return $false
         }
 
-        $iconsRoot = Join-Path `
+
+        $themeStatePath = Get-OneCommanderThemeStatePath `
+            -RepositoryPath $RepositoryPath
+
+        if (-not (Test-Path -LiteralPath $themeStatePath -PathType Leaf)) {
+            return $false
+        }
+
+        $storedThemeFingerprint = (
+            Get-Content `
+                -LiteralPath $themeStatePath `
+                -Raw
+        ).Trim()
+
+        $currentThemeFingerprint = Get-OneCommanderThemeFingerprint `
+            -RepositoryPath $RepositoryPath
+
+        if ($storedThemeFingerprint -ne $currentThemeFingerprint) {
+            return $false
+        }
+$iconsRoot = Join-Path `
             $RepositoryPath `
             "dotfiles\onecommander\Icons"
 
@@ -359,6 +445,10 @@ function Set-OneCommanderConfiguration {
             -RepositoryPath $RepositoryPath
 
         Set-OneCommanderDefaultFileManager
+
+
+
+        Set-OneCommanderThemeState -RepositoryPath $RepositoryPath
     }
     finally {
         if ($wasRunning) {
@@ -367,4 +457,3 @@ function Set-OneCommanderConfiguration {
         }
     }
 }
-

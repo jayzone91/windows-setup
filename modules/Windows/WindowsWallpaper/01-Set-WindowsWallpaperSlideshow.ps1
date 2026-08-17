@@ -273,75 +273,111 @@ function Set-WindowsWallpaperSlideshow {
         throw "Git wurde nicht gefunden."
     }
     $repositoryChanged = $false
-    if (Test-Path -LiteralPath (Join-Path $RepositoryPath ".git") -PathType Container) {
-        $fetchOutput = @(
-            & $git.Source -C $RepositoryPath fetch --quiet 2>&1
-        )
-        if ($LASTEXITCODE -ne 0) {
-            throw (
-                "Wallpaper-Repository konnte nicht abgefragt werden: {0}" -f
-                ($fetchOutput -join " ")
+
+    if (
+        Test-Path `
+            -LiteralPath (Join-Path $RepositoryPath ".git") `
+            -PathType Container
+    ) {
+        $fetchResult = Invoke-WallpaperGitRetry `
+            -GitPath $git.Source `
+            -Arguments @(
+                "-C",
+                $RepositoryPath,
+                "fetch",
+                "--quiet"
             )
-        }
-        $localHead = (
-            @(
-                & $git.Source -C $RepositoryPath rev-parse HEAD 2>$null
-            ) -join "`n"
-        ).Trim()
-        $upstream = (
-            @(
-                & $git.Source `
-                    -C $RepositoryPath `
-                    rev-parse `
-                    --abbrev-ref `
-                    --symbolic-full-name `
-                    '@{u}' `
-                    2>$null
-            ) -join "`n"
-        ).Trim()
-        if (
-            $LASTEXITCODE -ne 0 -or
-            [string]::IsNullOrWhiteSpace($upstream)
-        ) {
-            throw (
-                "Wallpaper-Repository besitzt keinen auswertbaren Upstream-Branch."
+
+        if (-not $fetchResult.Success) {
+            Write-Warning (
+                "Wallpaper-Repository konnte nach mehreren Versuchen " +
+                "nicht abgefragt werden. Verwende den vorhandenen lokalen Stand. " +
+                "Git: {0}" -f
+                ($fetchResult.Output -join " ")
             )
-        }
-        $remoteHead = (
-            @(
-                & $git.Source -C $RepositoryPath rev-parse $upstream 2>$null
-            ) -join "`n"
-        ).Trim()
-        if ($LASTEXITCODE -ne 0 -or -not $remoteHead) {
-            throw "Wallpaper-Upstream-Commit konnte nicht ermittelt werden."
-        }
-        if ($localHead -ne $remoteHead) {
-            & $git.Source `
-                -C $RepositoryPath `
-                merge-base `
-                --is-ancestor `
-                $localHead `
-                $remoteHead
-            if ($LASTEXITCODE -ne 0) {
-                throw (
-                    "Wallpaper-Repository kann nicht per Fast-Forward " +
-                    "aktualisiert werden."
-                )
-            }
-            Write-Host "[UPDATE] Wallpaper-Repository"
-            & $git.Source `
-                -C $RepositoryPath `
-                pull `
-                --ff-only `
-                --quiet
-            if ($LASTEXITCODE -ne 0) {
-                throw "Wallpaper-Repository konnte nicht aktualisiert werden."
-            }
-            $repositoryChanged = $true
         }
         else {
-            Write-Host "[CURRENT] Wallpaper-Repository ist bereits aktuell." `
-                -ForegroundColor Green
+            $localHead = (
+                @(
+                    & $git.Source -C $RepositoryPath rev-parse HEAD 2>$null
+                ) -join "`n"
+            ).Trim()
+
+            $upstream = (
+                @(
+                    & $git.Source `
+                        -C $RepositoryPath `
+                        rev-parse `
+                        --abbrev-ref `
+                        --symbolic-full-name `
+                        '@{u}' `
+                        2>$null
+                ) -join "`n"
+            ).Trim()
+
+            if (
+                $LASTEXITCODE -ne 0 -or
+                [string]::IsNullOrWhiteSpace($upstream)
+            ) {
+                throw (
+                    "Wallpaper-Repository besitzt keinen auswertbaren Upstream-Branch."
+                )
+            }
+
+            $remoteHead = (
+                @(
+                    & $git.Source -C $RepositoryPath rev-parse $upstream 2>$null
+                ) -join "`n"
+            ).Trim()
+
+            if ($LASTEXITCODE -ne 0 -or -not $remoteHead) {
+                throw "Wallpaper-Upstream-Commit konnte nicht ermittelt werden."
+            }
+
+            if ($localHead -ne $remoteHead) {
+                & $git.Source `
+                    -C $RepositoryPath `
+                    merge-base `
+                    --is-ancestor `
+                    $localHead `
+                    $remoteHead
+
+                if ($LASTEXITCODE -ne 0) {
+                    throw (
+                        "Wallpaper-Repository kann nicht per Fast-Forward " +
+                        "aktualisiert werden."
+                    )
+                }
+
+                Write-Host "[UPDATE] Wallpaper-Repository"
+
+                $pullResult = Invoke-WallpaperGitRetry `
+                    -GitPath $git.Source `
+                    -Arguments @(
+                        "-C",
+                        $RepositoryPath,
+                        "pull",
+                        "--ff-only",
+                        "--quiet"
+                    )
+
+                if ($pullResult.Success) {
+                    $repositoryChanged = $true
+                }
+                else {
+                    Write-Warning (
+                        "Wallpaper-Repository konnte nach mehreren Versuchen " +
+                        "nicht aktualisiert werden. Verwende den vorhandenen " +
+                        "lokalen Stand. Git: {0}" -f
+                        ($pullResult.Output -join " ")
+                    )
+                }
+            }
+            else {
+                Write-Host (
+                    "[CURRENT] Wallpaper-Repository ist bereits aktuell."
+                ) -ForegroundColor Green
+            }
         }
     }
     elseif (Test-Path -LiteralPath $RepositoryPath) {
@@ -352,16 +388,32 @@ function Set-WindowsWallpaperSlideshow {
     }
     else {
         Write-Host "[CLONE] Wallpaper-Repository"
-        & $git.Source clone `
-            --depth 1 `
-            --quiet `
-            $RepositoryUrl `
-            $RepositoryPath
-        if ($LASTEXITCODE -ne 0) {
-            throw "Wallpaper-Repository konnte nicht geklont werden."
+
+        $cloneResult = Invoke-WallpaperGitRetry `
+            -GitPath $git.Source `
+            -Arguments @(
+                "clone",
+                "--depth",
+                "1",
+                "--quiet",
+                $RepositoryUrl,
+                $RepositoryPath
+            )
+
+        if (-not $cloneResult.Success) {
+            Write-Warning (
+                "Wallpaper-Repository konnte nach mehreren Versuchen " +
+                "nicht geklont werden. Wallpaper-Konfiguration wird für " +
+                "diesen Bootstrap-Lauf übersprungen. Git: {0}" -f
+                ($cloneResult.Output -join " ")
+            )
+
+            return
         }
+
         $repositoryChanged = $true
     }
+
     $wallpaperPath = Join-Path `
         $RepositoryPath `
         $WallpaperSubfolder

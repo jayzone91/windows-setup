@@ -55,7 +55,7 @@ Tiling ist kein Hauptziel mehr. Bestehende Komponenten sind nicht verpflichtend;
 | Dock                         | Seelen UI Dock                               |
 | Window Management           | PowerToys FancyZones                         |
 | Spotlight / Launcher        | Raycast + Everything                         |
-| Finder                      | OneCommander                                 |
+| Finder                      | Files                                        |
 | Volume / Media OSD          | Seelen UI                                    |
 | Caps-/Lock-Key-Hinweise     | FluentFlyout                                  |
 | Liquid Glass                | Seelen UI + anwendungsspezifisches Styling   |
@@ -76,7 +76,7 @@ Windows Desktop
 │   └── PowerToys FancyZones
 │
 ├── File Manager
-│   └── OneCommander
+│   └── Files
 │
 ├── Archive Manager
 │   └── NanaZip
@@ -1185,9 +1185,43 @@ Der alte Stack darf nicht erneut vorgeschlagen oder eingebaut werden, solange ke
 - [ ] nur bei echtem Bedarf prüfen, ob ein vergleichbares Mausakku-Widget stabil in Seelen integrierbar ist
 
 ---
-# 21. Phase 18 – OneCommander
+# 21. Phase 18 – Files / ehemaliges OneCommander
 
-## Entscheidung
+## Aktuelle Entscheidung: Files
+
+OneCommander wird als produktiver Explorer-Ersatz verworfen. Die vorhandene Implementierung bleibt vorerst als historische, funktionierende Rückfallbasis im Repository, bis die Files-Integration vollständig praktisch bestätigt und anschließend gezielt bereinigt wurde.
+
+Gründe:
+
+- das OneCommander-XAML-Theming reicht für das gewünschte macOS-26-/Liquid-Glass-Zielbild nicht weit genug
+- Files bietet Acrylic nativ und einen Finder-näheren Columns-View
+- Files 4.2.7 wurde über den offiziellen stabilen AppInstaller praktisch installiert
+- `AppThemeBackdropMaterial = 3` wurde praktisch als Acrylic bestätigt
+- `DefaultLayoutMode = 3` wurde praktisch als Columns bestätigt
+- `Win + E` wurde über die native Files-Default-File-Manager-Funktion praktisch bestätigt
+- Seelen zeigt Files im Dock mit korrektem App-Icon
+- Files wird derzeit weder von der Seelen-Suche noch von Raycast zuverlässig indexiert; dies ist akzeptiert, da `Win + E` der primäre Startweg ist
+- künstliche `explorer.exe`-/Startmenü-Shortcut-Workarounds für die Launcher-Suche sind verworfen
+
+## Files Installation / Desired State
+
+- [x] offiziellen stabilen AppInstaller `https://cdn.files.community/files/stable/Files.Package.appinstaller` praktisch bestätigt
+- [x] Installation muss über Windows PowerShell 5.1 erfolgen; PowerShell 7 ist für `Add-AppxPackage -AppInstallerFile` laut Files-Dokumentation nicht geeignet
+- [x] Files 4.2.7 praktisch installiert
+- [x] Acrylic praktisch bestätigt: `AppThemeBackdropMaterial = 3`
+- [x] Columns praktisch bestätigt: `DefaultLayoutMode = 3`
+- [x] transparenter Haupt-Hintergrund praktisch bestätigt: `AppThemeBackgroundColor = #00000000`
+- [x] `Win + E` praktisch über Files aktiviert
+- [x] Registry-Zustand für `Folder\shell\open\command` und `Folder\shell\explore\command` auf `Files.App.Launcher.exe` praktisch bestätigt
+- [ ] Files über den offiziellen AppInstaller reproduzierbar im Bootstrap installieren
+- [ ] Files-Settings nur bei tatsächlichem Drift ändern
+- [ ] laufendes Files nur bei tatsächlichem Settings-Drift schließen und bei zuvor laufender App wieder starten
+- [ ] `Win + E`-Integration im Bootstrap erkennen; vorerst nicht mit unvollständig reverse-engineerten Registry-Sonderlösungen überschreiben
+- [ ] vollständigen `just update-log` mit Files-Integration praktisch bestätigen
+- [ ] wiederholten `just update-log` ohne unnötigen Files-Neustart praktisch bestätigen
+- [ ] nach erfolgreicher Files-Abnahme OneCommander-Paket, aktiven Bootstrap-Aufruf, Module und nicht mehr benötigte Dotfiles/Generatoren gezielt entfernen
+
+## Verworfener Vorgänger: OneCommander
 
 Der native Windows Explorer wird **nicht weiter über Windhawk File Explorer Styler thematisiert**.
 
@@ -1800,6 +1834,15 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [x] ungepushte Commits
 - [x] kein automatischer Reboot
 
+## Robustheit externer Content-Repositories
+
+- [ ] externe, nichtkritische Content-Repositories wie das Wallpaper-Repository dürfen den gesamten Bootstrap bei temporären Netzwerk-/GitHub-Fehlern nicht abbrechen
+  - Git-Netzwerkoperationen mit begrenzter Retry-Logik und Backoff ausführen
+  - bei vorhandenem gültigem lokalen Wallpaper-Repository nach fehlgeschlagenen Retries den lokalen Stand weiterverwenden
+  - wenn bei einer Neuinstallation noch kein lokaler Wallpaper-Stand existiert und Clone nach Retries fehlschlägt, Wallpaper-Schritt mit Warnung überspringen statt den Bootstrap abzubrechen
+  - strukturelle lokale Fehler wie ungültiges Repository, fehlender Wallpaper-Unterordner oder fehlende Bilddateien bleiben echte Fehler
+  - Verhalten mit simuliertem Fetch-/Clone-Ausfall praktisch testen, bevor der Punkt als `[x]` markiert wird
+
 ## Benachrichtigungen
 
 - [x] BurntToast
@@ -1848,7 +1891,13 @@ Die folgenden Anwendungen dürfen nach dem Seelen-Polish nicht vergessen werden.
    - passende App-Icons nicht nur in OneCommander, sondern soweit technisch stabil auch in Seelen Dock und weiteren verwaltbaren Shell-/Launcher-Flächen einsetzen
    - Zuordnung installierter Software zu macOSicons reproduzierbar und manifestbasiert verwalten
    - keine undokumentierten oder fragilen Windows-Systemressourcen pauschal ersetzen
-5. [ ] VS-Code-Oberfläche auf macOS-/Glass-Design prüfen; Custom-CSS nur bei aktuell stabiler Unterstützung
+5. [ ] macOS-26-nahes Cursor-Theme systemweit als Ersatz für die Windows-Standardcursor evaluieren und reproduzierbar im Bootstrap verwalten
+   - vollständige Cursor-Rollen einschließlich Normal, Link, Text, Busy, Resize und Precision Select abdecken
+   - Quelle und Lizenz vor Übernahme prüfen
+   - keine manuelle Einmalinstallation als endgültigen Desired State verwenden
+   - Windows-Registry-/Cursor-Schema nur über dokumentierte bzw. stabile Windows-Mechanismen setzen
+   - Rückfall auf einen vollständigen funktionsfähigen Windows-Cursor-Satz muss jederzeit möglich bleiben
+6. [ ] VS-Code-Oberfläche auf macOS-/Glass-Design prüfen; Custom-CSS nur bei aktuell stabiler Unterstützung
 
 Zusätzlich offen:
 

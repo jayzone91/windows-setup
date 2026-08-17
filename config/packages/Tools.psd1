@@ -57,17 +57,6 @@
             Update = $true
         },
 
-
-
-
-
-        @{
-            Name   = "OneCommander"
-            Id     = "MilosParipovic.OneCommander"
-            Source = "winget"
-            Update = $true
-        }
-
         @{
             Name   = "NanaZip"
             Id     = "M2Team.NanaZip"

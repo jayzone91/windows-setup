@@ -1,4 +1,5 @@
 $parts = @(
+    "00-Invoke-WallpaperGitRetry.ps1"
     "01-Set-WindowsWallpaperSlideshow.ps1"
 )
 

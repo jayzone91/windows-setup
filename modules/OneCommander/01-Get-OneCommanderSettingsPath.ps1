@@ -200,13 +200,18 @@ function Set-OneCommanderSettings {
     $roamingSettings.OpenRecycleBinInExplorer = "False"
 
     #
-    # Catppuccin Mocha Theme
+    # macOS 26 Theme
     #
-    $roamingSettings.ThemeName = "CatppuccinMocha"
+    $roamingSettings.ThemeName = "MacOS26"
     $roamingSettings.UseSystemTheme = "False"
     $roamingSettings.UseSystemAccentColor = "False"
-    $roamingSettings.AccentColor = "#FFCBA6F7"
+    $roamingSettings.AccentColor = "#FF0A84FF"
 
+
+    $roamingSettings.UseAcrylic = "True"
+
+
+    $roamingSettings.UseAcrylicMenu = "True"
     #
     # Folder Icons
     #

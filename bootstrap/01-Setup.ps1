@@ -135,6 +135,7 @@ $PowerShell = Import-PowerShellDataFile "$Root\config\powershell.psd1"
 $PowerToys = Import-PowerShellDataFile "$Root\config\powertoys.psd1"
 $Raycast = Import-PowerShellDataFile "$Root\config\raycast.psd1"
 $FluentFlyout = Import-PowerShellDataFile "$Root\config\fluentflyout.psd1"
+$Files = Import-PowerShellDataFile "$Root\config\files.psd1"
 $Theme = Import-PowerShellDataFile "$Root\config\theme.psd1"
 $Terminal = Import-PowerShellDataFile "$Root\config\terminal.psd1"
 $Windows = Import-PowerShellDataFile "$Root\config\windows.psd1"
@@ -177,6 +178,7 @@ try {
     Invoke-WingetQueuedChanges
 
     Update-MicrosoftStoreApps
+    Install-Files -Config $Files
 }
 finally {
     Clear-PackageManagerCaches
@@ -200,8 +202,7 @@ $seelenConfigurationChanged = Set-SeelenConfiguration `
     -RepositoryPath $Root
 
 
-Set-OneCommanderConfiguration `
-    -RepositoryPath $Root
+Set-FilesConfiguration -Config $Files
 
 Initialize-NanaZipFileAssociations `
     -RepositoryPath $Root
