@@ -17,7 +17,6 @@ $modules = @(
     "Logitech.ps1"
     "Notifications.ps1"
     "Nushell.ps1"
-    "OneCommander\index.ps1"
     "Packages\index.ps1"
     "PowerToys\index.ps1"
     "Raycast.ps1"
