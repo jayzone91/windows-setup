@@ -143,6 +143,8 @@ $Windows = Import-PowerShellDataFile "$Root\config\windows.psd1"
 $Debloat = Import-PowerShellDataFile "$Root\config\debloat.psd1"
 $Storage = Import-PowerShellDataFile `
     "$Root\config\storage.psd1"
+$Outlook = Import-PowerShellDataFile `
+    "$Root\config\outlook.psd1"
 
 
 # ------------------------------------------------------------
@@ -186,7 +188,14 @@ finally {
 }
 Install-PcVisitSupporterModule
 
-Initialize-ThunderbirdSignatureDirectory `
+Install-OutlookClassic `
+    -Config $Outlook `
+    -RepositoryPath $Root
+
+Initialize-OutlookClassicFirstRun `
+    -RepositoryPath $Root
+
+Initialize-OutlookSignatureDirectory `
     -RepositoryPath $Root
 
 Install-FluentFlyout -Config $FluentFlyout
@@ -200,9 +209,6 @@ Initialize-Windhawk `
 Update-SessionPath
 
 Initialize-WindowsSetupAgeIdentity `
-    -RepositoryPath $Root
-
-Initialize-ThunderbirdMailAccounts `
     -RepositoryPath $Root
 
 Set-PowerToysConfiguration `

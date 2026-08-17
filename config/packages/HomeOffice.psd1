@@ -15,8 +15,8 @@
         },
 
         @{
-            Name   = "Thunderbird ESR"
-            Id     = "Mozilla.Thunderbird.ESR"
+            Name   = "Office Deployment Tool"
+            Id     = "Microsoft.OfficeDeploymentTool"
             Source = "winget"
             Update = $true
         }
