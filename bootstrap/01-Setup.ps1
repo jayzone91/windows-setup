@@ -186,6 +186,9 @@ finally {
 }
 Install-PcVisitSupporterModule
 
+Initialize-ThunderbirdSignatureDirectory `
+    -RepositoryPath $Root
+
 Install-FluentFlyout -Config $FluentFlyout
 
 Initialize-Windhawk `

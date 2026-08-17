@@ -12,6 +12,13 @@
             Id     = "filezilla"
             Source = "chocolatey"
             Update = $true
+        },
+
+        @{
+            Name   = "Thunderbird ESR"
+            Id     = "Mozilla.Thunderbird.ESR"
+            Source = "winget"
+            Update = $true
         }
     )
 }

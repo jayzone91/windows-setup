@@ -15,6 +15,7 @@ $modules = @(
     "HomeOffice.ps1"
     "Languages.ps1"
     "Logitech.ps1"
+    "Mail\index.ps1"
     "Notifications.ps1"
     "Nushell.ps1"
     "Packages\index.ps1"
