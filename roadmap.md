@@ -1708,18 +1708,54 @@ Ziel ist eine reproduzierbare Mail-Einrichtung, ohne Klartext-Zugangsdaten im Re
 
 ### Mail-Client
 
-Der Client wird erst nach aktueller technischer Prüfung festgelegt.
+Nach erneuter technischer Prüfung am 2026-08-17 wird Thunderbird 153 ESR "Meadow" als bevorzugter Mail-Client weiterverfolgt. Die frühere Entscheidung, Thunderbird ausdrücklich auszuschließen, ist damit bewusst aufgehoben.
+
+Technisch verifizierter Upstream-Stand:
+
+- Thunderbird 153 ESR unterstützt Microsoft-Exchange-Mail nativ über Exchange Web Services (EWS); Kalender- und Adressbuchintegration sind für den aktuellen Projekt-Scope zweitrangig.
+- klassisches IMAP + SMTP wird nativ unterstützt.
+- Gmail-OAuth wird nativ unterstützt; die OAuth-Anmeldung erfolgt über den Standardbrowser.
+- Thunderbird Mission Control Desktop / AutoConfig kann Account- und Servereinstellungen reproduzierbar über zentrale Preferences bereitstellen.
+- Thunderbird 153 übernimmt die Betriebssystem-Akzentfarbe und passt damit grundsätzlich zum vorhandenen Windows-Design-Desired-State.
+- Thunderbird kann HTML-Signaturen aus lokalen Dateien verwenden.
+- Microsoft Outlook bleibt nur Rückfalloption, falls Thunderbird die praktischen Akzeptanztests dieses Setups nicht erfüllt.
 
 Pflichtkriterien:
 
-- [ ] modernes, zum macOS-26-/Liquid-Glass-Ziel passendes Erscheinungsbild
-- [ ] Gmail mit OAuth
-- [ ] klassisches IMAP + SMTP für übrige Konten
-- [ ] aktuelles Exchange für Work-Mail
-- [ ] Exchange Online für die zukünftige Firmenumstellung
-- [ ] automatisierbare Installation und soweit stabil möglich automatisierbare Kontoeinrichtung
-- [x] Thunderbird ist ausdrücklich keine Option
-- [ ] falls kein anderer Client alle Pflichtkriterien zuverlässig erfüllt, Microsoft Outlook verwenden; Microsoft-365-Abonnement ist vorhanden
+- [ ] Thunderbird reproduzierbar installieren und aktualisieren
+- [ ] modernes Erscheinungsbild mit dem macOS-26-/Liquid-Glass-Ziel praktisch prüfen; zunächst native Thunderbird-153-Darstellung und Windows-Akzentfarbe verwenden
+- [ ] Gmail mit OAuth praktisch einrichten
+- [ ] klassische IMAP-/SMTP-Konten automatisiert konfigurieren
+- [ ] Exchange 2016 für Mail nativ über EWS automatisiert konfigurieren und praktisch testen
+- [ ] zukünftigen Exchange-Online-Pfad nach der Firmenumstellung erneut gegen den dann aktuellen Thunderbird-Stand prüfen
+- [ ] Account- und Serverkonfiguration soweit stabil möglich über Thunderbird AutoConfig reproduzierbar verwalten
+- [ ] keine OAuth-Tokens selbst versionieren oder außerhalb der offiziell unterstützten Client-/Provider-Mechanismen verwalten
+
+### Thunderbird Signaturen
+
+Die vorhandene Firmen-Signatur liegt im Outlook-Format als HTML-Datei plus zugehörigem Ressourcenordner auf einem nur intern erreichbaren Firmenshare. Der Bootstrap soll die Signatur nicht aus diesem Share beziehen und die Firmensignatur nicht im Repository versionieren.
+
+Vorgesehener Initialisierungsworkflow:
+
+- [ ] lokalen Signaturordner unter `%APPDATA%\Thunderbird\Signatures\` anlegen
+- [ ] beim ersten Bootstrap nach Thunderbird-Einrichtung genau diesen Ordner im Explorer öffnen
+- [ ] Benutzer auffordern, die vorhandene Outlook-`*.htm` sowie den zugehörigen Ressourcenordner vollständig hineinzukopieren
+- [ ] Bootstrap bis zur ausdrücklichen Benutzerbestätigung warten lassen
+- [ ] Initialisierungsmarker erst nach Benutzerbestätigung unter `.generated/state/thunderbird/signatures.initialized` erzeugen
+- [ ] bei vorhandenem Marker den Signaturordner in späteren `just update`-Läufen nicht erneut öffnen
+- [ ] erneute manuelle Initialisierung durch Löschen des Markers ermöglichen
+- [ ] Thunderbird-Identität auf die lokale HTML-Signaturdatei konfigurieren
+- [ ] Signatur mit lokal referenzierten Bildern praktisch beim Verfassen und beim Empfang einer Testmail prüfen
+- [ ] Signaturdateien und Ressourcenordner niemals ins Repository übernehmen
+
+### Thunderbird Akzeptanzkriterien
+
+- [ ] mindestens die vorgesehenen ca. zehn IMAP-/SMTP-Konten parallel praktisch betreiben
+- [ ] Gmail-Konto mit OAuth praktisch senden und empfangen
+- [ ] Exchange-2016-Konto über natives EWS praktisch senden und empfangen
+- [ ] HTML-Firmensignatur inklusive Ressourcen korrekt verwenden
+- [ ] wiederholter `just update-log` ohne erneute Account-/Signatur-Initialisierung oder unnötigen Thunderbird-Neustart
+- [ ] keine Klartext-Credentials, OAuth-Tokens oder Firmensignatur-Artefakte im Repository, in `.generated/` oder Logs
 
 # 26. Phase 23 – Gaming
 
