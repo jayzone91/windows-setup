@@ -29,6 +29,8 @@ Bereits umgesetzt sind unter anderem:
 - PCVisit Supporter Modul mit Installation-bei-Bedarf und PCVisit-eigenem Auto-Update
 - Versions-Pinning einzelner Pakete
 - Windows-Debloat und Grundkonfiguration
+- Windows `sudo` im Inline-Modus (`normal`) als deklarativer Desired State
+- Windows-Entwicklermodus und lange Win32-Pfade deklarativ aktiviert
 - systemweite Windows-Akzentfarbe `#0A84FF` als deklarativer Desired State; Seelen übernimmt diese Akzentfarbe direkt aus Windows
 - Computername als deklarativer Desired State in `config/windows.psd1`; Umbenennung nur bei Drift und ohne automatischen Neustart
 - Windows- und Microsoft-Updates
@@ -99,7 +101,7 @@ Bereits umgesetzt sind unter anderem:
 
 Die Desktop-Architektur ist auf Seelen UI + PowerToys FancyZones + Raycast + OneCommander umgestellt. Top Bar und Volume-/Media-Flyouts verwenden das macOS-26-/Liquid-Glass-orientierte Seelen-Theme; die systemweite Akzentfarbe ist `#0A84FF`.
 
-Als nächste Priorität werden Warp als Windows-Standardterminal soweit offiziell unterstützt, Windows `sudo`, Entwicklermodus und lange Pfade in den Bootstrap aufgenommen. Nach bestätigtem `sudo`-Workflow soll die aktuelle Bootstrap-Self-Elevation entfallen. Beim anschließenden Desktop-Polish bleiben OneCommander, Zen und Warp ausdrücklich offene Pflichtpunkte. Danach folgen Mail-Secrets und die Auswahl eines modernen Gmail-/IMAP-/Exchange-/Exchange-Online-fähigen Mail-Clients.
+Windows `sudo`, Entwicklermodus und lange Win32-Pfade sind deklarativ im Bootstrap integriert und praktisch bestätigt. Manuelle Bootstrap-Läufe werden über `sudo just ...` erhöht; die frühere Bootstrap-Self-Elevation wurde entfernt. Warp kann über keinen offiziell unterstützten Windows-Pfad als systemweite Standard-Terminalanwendung registriert werden und wird deshalb nicht als solcher Desired State verwaltet. Als nächste Priorität folgt der Desktop-Polish mit dem Seelen Dock, danach OneCommander, Zen und Warp als Terminal-Frontend. Anschließend folgen Mail-Secrets und die Auswahl eines modernen Gmail-/IMAP-/Exchange-/Exchange-Online-fähigen Mail-Clients.
 
 Siehe auch [`roadmap.md`](roadmap.md).
 
@@ -140,10 +142,10 @@ Das `Justfile` enthält bewusst keine eigentliche Setup-Logik. Es ruft lediglich
 
 ```powershell
 cd ~/windows-setup
-just update
+sudo just update
 ```
 
-`just update` startet den vollständigen Bootstrap bewusst **ohne normale Konsolenausgabe**. Derselbe parameterlose Bootstrap-Aufruf wird auch für die wöchentliche Scheduled-Task-Wartung verwendet.
+`sudo just update` startet den vollständigen Bootstrap mit Administratorrechten bewusst **ohne normale Konsolenausgabe**. Der Bootstrap führt keine eigene UAC-Self-Elevation mehr durch und bricht bei einem direkten nicht erhöhten Start verständlich ab. Der wöchentliche Scheduled Task läuft weiterhin bereits im erhöhten Benutzerkontext und startet den parameterlosen Bootstrap direkt.
 
 Der vollständige Bootstrap:
 
@@ -163,17 +165,17 @@ Der vollständige Bootstrap:
 Für manuelle Diagnose stehen drei zusätzliche Recipes zur Verfügung:
 
 ```powershell
-just update-warning
-just update-log
-just update-performance
+sudo just update-warning
+sudo just update-log
+sudo just update-performance
 ```
 
 Dabei gilt projektweit:
 
-- `just update` ist der normale stille Setup-/Wartungslauf.
-- `just update-warning` zeigt ausschließlich Warnungen und Fehler.
-- `just update-log` zeigt die vollständige Ausgabe einschließlich `OK`, `SKIP`, Paketstatus und Diagnoseinformationen. **Funktionale Bootstrap-Tests werden mit diesem Modus durchgeführt.**
-- `just update-performance` startet denselben stillen Bootstrap über `scripts/Measure-BootstrapPerformance.ps1` und gibt anschließend nur Laufzeit und `TotalSeconds` aus. **Performance-Tests werden ausschließlich mit diesem Modus durchgeführt.**
+- `sudo just update` ist der normale stille Setup-/Wartungslauf.
+- `sudo just update-warning` zeigt ausschließlich Warnungen und Fehler.
+- `sudo just update-log` zeigt die vollständige Ausgabe einschließlich `OK`, `SKIP`, Paketstatus und Diagnoseinformationen. **Funktionale Bootstrap-Tests werden mit diesem Modus durchgeführt.**
+- `sudo just update-performance` startet denselben stillen Bootstrap über `scripts/Measure-BootstrapPerformance.ps1` und gibt anschließend nur Laufzeit und `TotalSeconds` aus. **Performance-Tests werden ausschließlich mit diesem Modus durchgeführt.**
 - Der Scheduled Task startet `bootstrap.ps1` ohne Ausgabeparameter und bleibt damit im Hintergrund still.
 - Interaktive Benutzerkommunikation ist davon ausgenommen: erforderliche Hinweise und Eingabeaufforderungen werden über `Write-WindowsSetupInteractive` / `Read-WindowsSetupPrompt` unabhängig vom Ausgabemodus sichtbar ausgegeben, damit ein Erstlauf im stillen Modus nicht unsichtbar auf Eingaben wartet.
 
@@ -239,10 +241,10 @@ Danach bleibt G HUB bei normalen `just update`-Läufen unangetastet. Ein Backup 
 Falls `just` nicht verfügbar ist, kann der Bootstrap weiterhin direkt gestartet werden:
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\bootstrap.ps1
+sudo pwsh -NoProfile -ExecutionPolicy Bypass -File .\bootstrap.ps1
 ```
 
-Der direkte PowerShell-Aufruf bleibt der technische Fallback. Ohne Parameter ist auch dieser Aufruf still; `-Warning` zeigt nur Warnungen/Fehler und `-Log` die vollständige Ausgabe. Für normale manuelle Nutzung bleiben die `just`-Recipes der bevorzugte Einstiegspunkt.
+Der direkte PowerShell-Aufruf bleibt der technische Fallback und muss ebenfalls erhöht gestartet werden. Ohne Parameter ist auch dieser Aufruf still; `-Warning` zeigt nur Warnungen/Fehler und `-Log` die vollständige Ausgabe. Für normale manuelle Nutzung bleiben die `sudo just ...`-Aufrufe der bevorzugte Einstiegspunkt.
 
 ---
 

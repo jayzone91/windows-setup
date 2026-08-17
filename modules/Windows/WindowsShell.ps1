@@ -336,10 +336,20 @@ function Set-RegistryDword {
         Out-Null
     }
 
-    $currentValue = Get-ItemPropertyValue `
+    $property = Get-ItemProperty `
         -Path $Path `
         -Name $Name `
         -ErrorAction SilentlyContinue
+
+    $currentValue = if (
+        $null -ne $property -and
+        $property.PSObject.Properties.Name -contains $Name
+    ) {
+        $property.$Name
+    }
+    else {
+        $null
+    }
 
     $desiredDword = [uint64] (
         ([int64] $Value) -band [int64] 4294967295

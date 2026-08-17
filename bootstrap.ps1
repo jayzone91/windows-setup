@@ -55,54 +55,12 @@ $pwsh = (
 $Root = $PSScriptRoot
 
 if (-not (Test-WindowsSetupAdministrator)) {
-    $elevationArguments = @(
-        "-NoProfile"
-        "-ExecutionPolicy"
-        "Bypass"
-        "-File"
-        ('"{0}"' -f $PSCommandPath)
+    throw (
+        "Der Bootstrap benötigt Administratorrechte. " +
+        "Manuelle Projektläufe mit 'sudo just update', " +
+        "'sudo just update-warning', 'sudo just update-log' oder " +
+        "'sudo just update-performance' starten."
     )
-
-    if ($Warning) {
-        $elevationArguments += "-Warning"
-    }
-
-    if ($Log) {
-        $elevationArguments += "-Log"
-    }
-
-    if ($InternalRun) {
-        $elevationArguments += "-InternalRun"
-    }
-
-    try {
-        $elevatedProcess = Start-Process `
-            -FilePath $pwsh `
-            -ArgumentList ($elevationArguments -join " ") `
-            -WorkingDirectory $PSScriptRoot `
-            -Verb RunAs `
-            -Wait `
-            -PassThru
-    }
-    catch {
-        throw (
-            "Administratorrechte konnten nicht angefordert werden: {0}" -f
-            $_.Exception.Message
-        )
-    }
-
-    if ($elevatedProcess.ExitCode -ne 0) {
-        $lastErrorPath = Join-Path `
-            $Root `
-            ".generated\logs\bootstrap-last-error.log"
-
-        Write-Error (
-            "Bootstrap fehlgeschlagen. Fehlerlog: {0}" -f
-            $lastErrorPath
-        )
-    }
-
-    exit $elevatedProcess.ExitCode
 }
 
 if (-not $InternalRun) {

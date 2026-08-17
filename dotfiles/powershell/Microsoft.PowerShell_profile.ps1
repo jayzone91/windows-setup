@@ -256,7 +256,7 @@ function Update-ProjectCommands {
                 .SYNOPSIS
                 Führt den vollständigen windows-setup-Bootstrap aus.
                 #>
-            just update
+            sudo just update
         }
 
         function Test-WindowsSetup {

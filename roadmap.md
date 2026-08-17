@@ -112,8 +112,8 @@ VS Code und Terminal dürfen unabhängig vom Windows-Gesamtdesign Catppuccin ver
 - [x] Kein automatischer Windows-Neustart
 - [x] Bootstrap wird aus `init.ps1` in einem eigenen PowerShell-Prozess gestartet
 - [x] Bootstrap-Prozesse verwenden `ExecutionPolicy Bypass` ausschließlich auf Prozessebene
-- [x] Bootstrap fordert bei nicht erhöhtem manuellen Start selbstständig per UAC Administratorrechte an
-- [x] Self-Elevation aus einem normalen Warp-/PowerShell-Kontext praktisch mit `just update-log` bestätigt
+- [x] frühere Bootstrap-Self-Elevation nach praktisch bestätigtem Windows-`sudo`-Workflow entfernt
+- [x] nicht erhöhte direkte Bootstrap-Aufrufe brechen verständlich ab statt selbstständig UAC anzufordern
 - [x] Globale Benutzer-/System-Execution-Policy wird nicht verändert
 - [x] Execution-Policy-Fix auf dem aktuellen Windows-System erfolgreich getestet
 - [x] laufende Anwendungen werden bei wiederholten Läufen nur geschlossen, wenn eine tatsächliche Änderung dies erfordert
@@ -122,8 +122,8 @@ VS Code und Terminal dürfen unabhängig vom Windows-Gesamtdesign Catppuccin ver
 
 - [x] `Justfile` als einheitliche Bedienoberfläche
 - [x] `just` als Base-Abhängigkeit über `Casey.Just`
-- [x] `just update` startet den vollständigen Bootstrap
-- [x] `just update` verwendet `-NoProfile -ExecutionPolicy Bypass`
+- [x] manuelle Bootstrap-Läufe werden über `sudo just update`, `sudo just update-warning`, `sudo just update-log` und `sudo just update-performance` erhöht gestartet
+- [x] die Recipes selbst verwenden weiterhin `-NoProfile -ExecutionPolicy Bypass`; `sudo` liefert ausschließlich den erhöhten Prozesskontext
 - [x] `just update` ist der normale stille Lauf ohne reguläre Konsolenausgabe
 - [x] `just update-warning` zeigt ausschließlich Warnungen und Fehler; fehlerfreier Lauf auf dem aktuellen System praktisch ohne Ausgabe bestätigt
 - [x] `just update-log` zeigt die vollständige Bootstrap-Ausgabe und ist der verbindliche Modus für funktionale Bootstrap-Tests
@@ -588,13 +588,15 @@ Der NanaZip-Workflow ist absichtlich generisch aufgebaut und soll für weitere P
 
 Diese Punkte werden vor weiterem größeren Komfort-/Mail-Ausbau umgesetzt:
 
-- [ ] prüfen, ob Warp über einen stabilen und offiziell unterstützten Windows-Pfad als Standard-Terminalanwendung gesetzt werden kann; nur dann deklarativ im Bootstrap verwalten
-- [ ] Windows `sudo` aktivieren und den gewünschten Modus deklarativ/idempotent setzen
-- [ ] nach praktisch bestätigtem Windows-`sudo`: manuelle Projektläufe auf `sudo just update`, `sudo just update-warning`, `sudo just update-log` und `sudo just update-performance` umstellen
-- [ ] erst nach praktisch bestätigtem `sudo`-Workflow die aktuelle Bootstrap-Self-Elevation entfernen; bis dahin bleibt Self-Elevation unverändert aktiv
-- [ ] Windows-Entwicklermodus deklarativ/idempotent aktivieren
-- [ ] lange Win32-Pfade (`LongPathsEnabled`) deklarativ/idempotent aktivieren
-- [ ] alle vier Einstellungen mit erstem `just update-log`, praktischem Funktionstest, zweitem Drift-freien Lauf und `just check` bestätigen
+- [x] Warp als Windows-Standardterminal geprüft: kein offiziell unterstützter Registrierungspfad für Warp vorhanden; deshalb bewusst nicht als systemweite Standard-Terminalanwendung verwalten
+- [x] Windows `sudo` deklarativ/idempotent über die offizielle Policy `HKLM\SOFTWARE\Policies\Microsoft\Windows\Sudo\EnableSudo = 3` im Inline-Modus (`normal`) aktivieren
+- [x] Windows-`sudo` praktisch mit erhöhtem PowerShell-Prozess bestätigt
+- [x] manuelle Projektläufe auf `sudo just update`, `sudo just update-warning`, `sudo just update-log` und `sudo just update-performance` umgestellt
+- [x] Bootstrap-Self-Elevation nach bestätigtem `sudo`-Workflow entfernt
+- [x] Negativtest eines nicht erhöhten `just update-log` bestätigt den definierten Abbruch
+- [x] Windows-Entwicklermodus deklarativ/idempotent aktiviert
+- [x] lange Win32-Pfade (`LongPathsEnabled`) deklarativ/idempotent aktiviert
+- [x] erster erhöhter `sudo just update-log`, praktischer Sudo-Test, wiederholter Drift-freier Lauf und `just check` erfolgreich
 - [ ] Lock-Screen optisch angleichen
 - [ ] weitere Datenschutz-/Telemetry-Einstellungen nur gezielt ergänzen
 - [ ] keine aggressive pauschale Service-Deaktivierung
@@ -1823,11 +1825,9 @@ Zusätzlich offen:
 ---
 ## Nächste technische Prioritäten
 
-1. **Priorität 1:** Warp als Windows-Standardterminal prüfen/setzen, Windows `sudo`, Entwicklermodus und lange Pfade in den deklarativen Bootstrap aufnehmen.
-2. **Priorität 1 danach:** Windows-`sudo` praktisch bestätigen und erst anschließend den manuellen Just-Workflow auf `sudo just ...` umstellen sowie die Bootstrap-Self-Elevation entfernen.
-3. **Desktop-Polish:** Seelen Dock abschließen, danach verbindlich OneCommander, Zen und Warp bearbeiten.
-4. **Mail:** Secrets-Architektur und geeigneten Mail-Client anhand der festgelegten Gmail-/IMAP-/Exchange-/Exchange-Online-Kriterien auswählen und anschließend automatisieren.
-5. **Danach:** WSL/Nix und übrige offene Qualitäts-/Testpunkte.
+1. **Desktop-Polish:** Seelen Dock abschließen, danach verbindlich OneCommander, Zen und Warp als Terminal-Frontend bearbeiten.
+2. **Mail:** Secrets-Architektur und geeigneten Mail-Client anhand der festgelegten Gmail-/IMAP-/Exchange-/Exchange-Online-Kriterien auswählen und anschließend automatisieren.
+3. **Danach:** WSL/Nix und übrige offene Qualitäts-/Testpunkte.
 
 # 30. Phase 27 – Dokumentation
 

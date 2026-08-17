@@ -60,6 +60,115 @@ function Set-WindowsComputerName {
 
     return $true
 }
+function Set-WindowsDeveloperPreferences {
+    param(
+        [Parameter(Mandatory)]
+        [hashtable] $Config
+    )
+
+    Write-Host ""
+    Write-Host "========================================"
+    Write-Host " Windows Entwickler-Grundzustand"
+    Write-Host "========================================"
+
+    if (-not $Config.ContainsKey("System")) {
+        throw "System fehlt in config/windows.psd1."
+    }
+
+    $changed = $false
+    $systemConfig = $Config.System
+
+    if (
+        -not $systemConfig.ContainsKey("Sudo") -or
+        -not $systemConfig.Sudo.ContainsKey("Enabled") -or
+        -not $systemConfig.Sudo.ContainsKey("Mode")
+    ) {
+        throw "System.Sudo.Enabled oder System.Sudo.Mode fehlt in config/windows.psd1."
+    }
+
+    $sudoModeValues = @{
+        forceNewWindow = 1
+        disableInput   = 2
+        normal         = 3
+    }
+
+    $sudoEnabled = [bool] $systemConfig.Sudo.Enabled
+    $sudoMode = [string] $systemConfig.Sudo.Mode
+
+    if ($sudoEnabled -and -not $sudoModeValues.ContainsKey($sudoMode)) {
+        throw "Ungültiger Windows-Sudo-Modus: '$sudoMode'."
+    }
+
+    $windowsBuild = [Environment]::OSVersion.Version.Build
+
+    if ($sudoEnabled -and $windowsBuild -lt 26100) {
+        Write-Warning (
+            "Windows Sudo benötigt Windows 11 24H2 / Build 26100 oder neuer. " +
+            "Aktueller Build: $windowsBuild."
+        )
+    }
+    else {
+        $sudoPolicyPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Sudo"
+        $sudoPolicyValue = if ($sudoEnabled) {
+            [int] $sudoModeValues[$sudoMode]
+        }
+        else {
+            0
+        }
+
+        if (
+            Set-RegistryDword `
+                -Path $sudoPolicyPath `
+                -Name "EnableSudo" `
+                -Value $sudoPolicyValue
+        ) {
+            $changed = $true
+            Write-Host "[CONFIG] Windows Sudo: Enabled=$sudoEnabled, Mode=$sudoMode."
+        }
+    }
+
+    if (-not $systemConfig.ContainsKey("DeveloperMode")) {
+        throw "System.DeveloperMode fehlt in config/windows.psd1."
+    }
+
+    $developerModeValue = if ([bool] $systemConfig.DeveloperMode) { 1 } else { 0 }
+
+    if (
+        Set-RegistryDword `
+            -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" `
+            -Name "AllowDevelopmentWithoutDevLicense" `
+            -Value $developerModeValue
+    ) {
+        $changed = $true
+        Write-Host "[CONFIG] Windows Entwicklermodus: $([bool] $systemConfig.DeveloperMode)."
+    }
+
+    if (-not $systemConfig.ContainsKey("LongPaths")) {
+        throw "System.LongPaths fehlt in config/windows.psd1."
+    }
+
+    $longPathsValue = if ([bool] $systemConfig.LongPaths) { 1 } else { 0 }
+
+    if (
+        Set-RegistryDword `
+            -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
+            -Name "LongPathsEnabled" `
+            -Value $longPathsValue
+    ) {
+        $changed = $true
+        Write-Host "[CONFIG] Lange Win32-Pfade: $([bool] $systemConfig.LongPaths)."
+    }
+
+    if ($changed) {
+        Write-Host "[OK] Windows Entwickler-Grundzustand aktualisiert." -ForegroundColor Green
+    }
+    else {
+        Write-Host "[SKIP] Windows Entwickler-Grundzustand bereits aktuell." -ForegroundColor Green
+    }
+
+    return $changed
+}
+
 function Set-WindowsPowerPreferences {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
         "PSAvoidUsingPositionalParameters",

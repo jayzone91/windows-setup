@@ -5,6 +5,15 @@
         AccentColor = "#0A84FF"
     }
 
+    System       = @{
+        Sudo          = @{
+            Enabled = $true
+            Mode    = "normal"
+        }
+        DeveloperMode = $true
+        LongPaths     = $true
+    }
+
     Taskbar      = @{
         AutoHide = $false
     }

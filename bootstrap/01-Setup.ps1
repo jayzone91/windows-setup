@@ -244,6 +244,8 @@ $startMenuChanged = Set-StartMenuPreferences `
 $windowsSnapChanged = Disable-WindowsSnap
 $windowsThemeChanged = Set-WindowsTheme `
     -Config $Windows
+$null = Set-WindowsDeveloperPreferences `
+    -Config $Windows
 $null = Set-WindowsPowerPreferences
 
 Set-WindowsHDR
