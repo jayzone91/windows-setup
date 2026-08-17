@@ -102,12 +102,35 @@ Bereits umgesetzt sind unter anderem:
 
 Die Desktop-Architektur ist auf Seelen UI + PowerToys FancyZones + Raycast + Files + Windhawk Resource Redirect umgestellt. Top Bar und Volume-/Media-Flyouts verwenden das macOS-26-/Liquid-Glass-orientierte Seelen-Theme; die systemweite Akzentfarbe ist `#0A84FF`.
 
-Windows `sudo`, Entwicklermodus und lange Win32-Pfade sind deklarativ im Bootstrap integriert und praktisch bestätigt. Manuelle Bootstrap-Läufe werden über `sudo just ...` erhöht; die frühere Bootstrap-Self-Elevation wurde entfernt. Warp kann über keinen offiziell unterstützten Windows-Pfad als systemweite Standard-Terminalanwendung registriert werden und wird deshalb nicht als solcher Desired State verwaltet. Der Dateimanager- und Systemicon-Polish ist mit Files sowie Windhawk Resource Redirect umgesetzt. Als nächste Desktop-Prioritäten folgen Zen und Warp als Terminal-Frontend. Anschließend folgen Mail-Secrets und die Auswahl eines modernen Gmail-/IMAP-/Exchange-/Exchange-Online-fähigen Mail-Clients.
+Windows `sudo`, Entwicklermodus und lange Win32-Pfade sind deklarativ im Bootstrap integriert und praktisch bestätigt. Manuelle Bootstrap-Läufe werden über `sudo just ...` erhöht; die frühere Bootstrap-Self-Elevation wurde entfernt. Warp kann über keinen offiziell unterstützten Windows-Pfad als systemweite Standard-Terminalanwendung registriert werden und wird deshalb nicht als solcher Desired State verwaltet. Der Dateimanager- und Systemicon-Polish ist mit Files sowie Windhawk Resource Redirect umgesetzt. Als nächste Desktop-Prioritäten folgen Zen und Warp als Terminal-Frontend. Die Mail-Client-Auswahl ist abgeschlossen: eM Client ist der produktive Client für Exchange/EWS sowie IMAP/SMTP; seine vollständige Account-Konfiguration wird als SOPS-verschlüsselter eM-Client-Export reproduzierbar gesichert und wiederhergestellt.
 
 Siehe auch [`roadmap.md`](roadmap.md).
 
 ---
 
+# eM Client / Mail-Wiederherstellung
+
+eM Client ist der produktive Mail-Client dieses Setups. Die Installation erfolgt über Winget mit `eMClient.eMClient`. Exchange/EWS sowie klassische IMAP-/SMTP-Konten wurden praktisch getestet.
+
+Die vollständige eM-Client-Konfiguration wird nicht aus den einzelnen Account-Secrets neu erzeugt. Stattdessen wird ein von eM Client erzeugter, passwortgeschützter Settings-Export inklusive gespeicherter Account-Credentials als Restore-Artefakt verwendet. Das Restore-Artefakt selbst wird zusätzlich vollständig mit SOPS verschlüsselt und unter `secrets\emclient-settings.sops.xml` versioniert. Das Export-/Import-Passwort liegt ausschließlich verschlüsselt unter `emclient.import_password` in `secrets\mail.sops.json`.
+
+## Manuelles Backup aktualisieren
+
+Nach Änderungen an Accounts oder relevanten eM-Client-Einstellungen wird in eM Client ein neuer Settings-Export inklusive Account-Passwörtern erstellt. Der Export muss mit dem in SOPS hinterlegten Import-Passwort geschützt und anschließend exakt hier gespeichert werden:
+
+`%USERPROFILE%\windows-setup\.generated\emclient\settings.xml`
+
+Erwarteter Dateiname: **`settings.xml`**
+
+`.generated\` ist absichtlich nicht versioniert. Beim nächsten Bootstrap erkennt `Protect-EMClientSettings` die neue Klartextdatei automatisch, verschlüsselt sie zuerst in eine temporäre SOPS-Datei und ersetzt `secrets\emclient-settings.sops.xml` nur nach erfolgreicher Verschlüsselung. Erst danach wird `.generated\emclient\settings.xml` gelöscht. Bei einem SOPS-Fehler bleibt sowohl das bisherige verschlüsselte Backup als auch der neue Klartext-Export erhalten.
+
+## Wiederherstellung
+
+`Restore-EMClientSettings` entschlüsselt `secrets\emclient-settings.sops.xml` ausschließlich temporär nach `%TEMP%\emclient-settings.xml`. Das Import-Passwort wird aus SOPS gelesen und nur in die Windows-Zwischenablage geschrieben; es wird nicht im Terminal oder Bootstrap-Log ausgegeben. eM Client wird mit dem Settings-Import gestartet. Das Passwort wird einmal per `Strg+V` in den eM-Client-Dialog eingefügt. Nach der Bestätigung im Bootstrap wird die Zwischenablage geleert, die Passwortvariable verworfen und die temporäre Klartext-XML entfernt.
+
+Ein SHA-256-State unter `.generated\state\emclient\settings.sha256` verhindert einen erneuten Import derselben verschlüsselten Konfiguration bei späteren Bootstrap-Läufen. Ein neuer verschlüsselter Export erzeugt einen neuen Hash und wird deshalb beim nächsten Lauf erneut importiert.
+
+---
 # Installation
 
 Eine **PowerShell als Administrator** öffnen und ausführen:

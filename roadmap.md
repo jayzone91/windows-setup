@@ -1706,57 +1706,94 @@ Ziel ist eine reproduzierbare Mail-Einrichtung, ohne Klartext-Zugangsdaten im Re
 - [ ] OAuth-Tokens und anwendungsspezifische Tokens nur über offiziell unterstützte Client-/Provider-Mechanismen verwalten
 - [ ] Secrets-Architektur vor Implementierung anhand aktueller Windows-/Client-Schnittstellen verifizieren
 
-### Mail-Client
+### Mail-Client: eM Client
 
-Nach erneuter technischer Prüfung am 2026-08-17 wird Thunderbird 153 ESR "Meadow" als bevorzugter Mail-Client weiterverfolgt. Die frühere Entscheidung, Thunderbird ausdrücklich auszuschließen, ist damit bewusst aufgehoben.
+Die Mail-Client-Auswahl wurde am 2026-08-18 nach praktischen Tests mit Thunderbird, Outlook Classic, Canary Mail und eM Client abgeschlossen. **eM Client ist der produktive Mail-Client.**
 
-Technisch verifizierter Upstream-Stand:
+#### Verbindliche Entscheidung
 
-- Thunderbird 153 ESR unterstützt Microsoft-Exchange-Mail nativ über Exchange Web Services (EWS); Kalender- und Adressbuchintegration sind für den aktuellen Projekt-Scope zweitrangig.
-- klassisches IMAP + SMTP wird nativ unterstützt.
-- Gmail-OAuth wird nativ unterstützt; die OAuth-Anmeldung erfolgt über den Standardbrowser.
-- Thunderbird Mission Control Desktop / AutoConfig kann Account- und Servereinstellungen reproduzierbar über zentrale Preferences bereitstellen.
-- Thunderbird 153 übernimmt die Betriebssystem-Akzentfarbe und passt damit grundsätzlich zum vorhandenen Windows-Design-Desired-State.
-- Thunderbird kann HTML-Signaturen aus lokalen Dateien verwenden.
-- Microsoft Outlook bleibt nur Rückfalloption, falls Thunderbird die praktischen Akzeptanztests dieses Setups nicht erfüllt.
+- [x] eM Client über Winget-Paket `eMClient.eMClient` installieren und aktualisieren
+- [x] Exchange/EWS mit dem vorhandenen On-Premises-Exchange praktisch erfolgreich getestet
+- [x] klassische IMAP-/SMTP-Konten praktisch erfolgreich getestet
+- [x] vollständige Account-/Client-Konfiguration über den offiziellen eM-Client-Settings-Export sichern
+- [x] Account-Passwörter werden ausschließlich über den von eM Client selbst erzeugten verschlüsselten Export wiederhergestellt; keine eigene Credential-Erzeugung und kein Reverse Engineering interner eM-Client-Datenbanken oder Assemblies
+- [x] vollständigen Settings-Export zusätzlich mit SOPS verschlüsseln und als `secrets/emclient-settings.sops.xml` versionieren
+- [x] Export-/Import-Passwort verschlüsselt unter `emclient.import_password` in `secrets/mail.sops.json` verwalten
+- [x] Import derselben Konfiguration über SHA-256-State unter `.generated/state/emclient/settings.sha256` idempotent überspringen
+- [x] kompletter Bootstrap mit eM-Client-Backup-/Restore-Integration auf dem aktuellen System fehlerfrei getestet
 
-Pflichtkriterien:
+#### Manueller Backup-Workflow
 
-- [ ] Thunderbird reproduzierbar installieren und aktualisieren
-- [ ] modernes Erscheinungsbild mit dem macOS-26-/Liquid-Glass-Ziel praktisch prüfen; zunächst native Thunderbird-153-Darstellung und Windows-Akzentfarbe verwenden
-- [ ] Gmail mit OAuth praktisch einrichten
-- [ ] klassische IMAP-/SMTP-Konten automatisiert konfigurieren
-- [ ] Exchange 2016 für Mail nativ über EWS automatisiert konfigurieren und praktisch testen
-- [ ] zukünftigen Exchange-Online-Pfad nach der Firmenumstellung erneut gegen den dann aktuellen Thunderbird-Stand prüfen
-- [ ] Account- und Serverkonfiguration soweit stabil möglich über Thunderbird AutoConfig reproduzierbar verwalten
-- [ ] keine OAuth-Tokens selbst versionieren oder außerhalb der offiziell unterstützten Client-/Provider-Mechanismen verwalten
+Für Änderungen an Accounts oder relevanten eM-Client-Einstellungen existiert bewusst ein manueller Snapshot-Einstieg, während Verschlüsselung und Versionierung wieder automatisiert erfolgen:
 
-### Thunderbird Signaturen
+1. In eM Client einen vollständigen Settings-Export inklusive gespeicherter Account-Passwörter erstellen.
+2. Den Export mit dem definierten eM-Client-Exportpasswort schützen.
+3. Die Datei exakt als `%USERPROFILE%\windows-setup\.generated\emclient\settings.xml` speichern.
+4. Beim nächsten Bootstrap erkennt `Protect-EMClientSettings` diese Datei automatisch.
+5. SOPS verschlüsselt zuerst in eine temporäre Zieldatei.
+6. Nur nach erfolgreicher Verschlüsselung wird `secrets\emclient-settings.sops.xml` atomar ersetzt.
+7. Erst danach wird die Klartextdatei unter `.generated\emclient\settings.xml` gelöscht.
+8. Schlägt SOPS fehl, bleiben sowohl das bisherige verschlüsselte Backup als auch der neue Klartext-Export erhalten.
 
-Die vorhandene Firmen-Signatur liegt im Outlook-Format als HTML-Datei plus zugehörigem Ressourcenordner auf einem nur intern erreichbaren Firmenshare. Der Bootstrap soll die Signatur nicht aus diesem Share beziehen und die Firmensignatur nicht im Repository versionieren.
+Damit ist `.generated\emclient\settings.xml` ausschließlich ein lokaler Übergabepunkt für einen bewusst erzeugten neuen Snapshot und niemals ein versioniertes Secret-Artefakt.
 
-Vorgesehener Initialisierungsworkflow:
+#### Restore-Workflow
 
-- [ ] lokalen Signaturordner unter `%APPDATA%\Thunderbird\Signatures\` anlegen
-- [ ] beim ersten Bootstrap nach Thunderbird-Einrichtung genau diesen Ordner im Explorer öffnen
-- [ ] Benutzer auffordern, die vorhandene Outlook-`*.htm` sowie den zugehörigen Ressourcenordner vollständig hineinzukopieren
-- [ ] Bootstrap bis zur ausdrücklichen Benutzerbestätigung warten lassen
-- [ ] Initialisierungsmarker erst nach Benutzerbestätigung unter `.generated/state/thunderbird/signatures.initialized` erzeugen
-- [ ] bei vorhandenem Marker den Signaturordner in späteren `just update`-Läufen nicht erneut öffnen
-- [ ] erneute manuelle Initialisierung durch Löschen des Markers ermöglichen
-- [ ] Thunderbird-Identität auf die lokale HTML-Signaturdatei konfigurieren
-- [ ] Signatur mit lokal referenzierten Bildern praktisch beim Verfassen und beim Empfang einer Testmail prüfen
-- [ ] Signaturdateien und Ressourcenordner niemals ins Repository übernehmen
+- [x] `Restore-EMClientSettings` entschlüsselt den SOPS-Export ausschließlich temporär nach `%TEMP%\emclient-settings.xml`
+- [x] das Import-Passwort wird aus SOPS gelesen, aber nicht auf stdout/stderr geschrieben
+- [x] das Passwort wird ausschließlich temporär in die Windows-Zwischenablage gelegt
+- [x] der eM-Client-Settings-Import wird automatisch gestartet
+- [x] Benutzer fügt das Passwort einmal per `Strg+V` in den eM-Client-Passwortdialog ein
+- [x] nach Benutzerbestätigung wird die Zwischenablage geleert
+- [x] Passwortvariablen werden verworfen und die temporäre Klartext-XML wird gelöscht
+- [x] Restore mit zwei entfernten und anschließend vollständig wiederhergestellten Accounts praktisch bestätigt; beide Accounts funktionierten danach ohne erneute Account-Passworteingabe
 
-### Thunderbird Akzeptanzkriterien
+#### Dokumentierte verworfene Ansätze
 
-- [ ] mindestens die vorgesehenen ca. zehn IMAP-/SMTP-Konten parallel praktisch betreiben
-- [ ] Gmail-Konto mit OAuth praktisch senden und empfangen
-- [ ] Exchange-2016-Konto über natives EWS praktisch senden und empfangen
-- [ ] HTML-Firmensignatur inklusive Ressourcen korrekt verwenden
-- [ ] wiederholter `just update-log` ohne erneute Account-/Signatur-Initialisierung oder unnötigen Thunderbird-Neustart
-- [ ] keine Klartext-Credentials, OAuth-Tokens oder Firmensignatur-Artefakte im Repository, in `.generated/` oder Logs
+**Thunderbird 153 ESR**
 
+- Ein umfangreicher Provisionierungsprototyp für IMAP, Gmail OAuth und Exchange/EWS wurde umgesetzt und getestet.
+- Die dafür entstandene Marionette-/Account-Provisionierungslogik war deutlich komplexer als der gewünschte stabile Restore-Workflow.
+- Thunderbird ist deshalb nicht mehr Bestandteil des Zielbilds; `Thunderbird.ps1`, `Provisioning.ps1` und `Provisioning.State.ps1` werden vollständig entfernt.
+
+**Outlook Classic**
+
+- Outlook Classic wurde über das Office Deployment Tool gezielt als einzig benötigte Microsoft-365-Anwendung installiert.
+- Die automatisierte Account-Provisionierung über Outlooks interne `IOlkAccountManager`-/COM-Schnittstellen und den klassischen Account-Wizard wurde praktisch untersucht.
+- Die relevanten APIs erwiesen sich für den gewünschten stabilen, wartbaren Setup-Pfad als ungeeignet bzw. undokumentiert; UI-Automation des Wizards war ebenfalls nicht zuverlässig.
+- Dieser Ansatz wird nicht erneut verfolgt. `Outlook.ps1`, `config/outlook.psd1` und die Office-Deployment-Tool-Abhängigkeit werden entfernt.
+
+**Canary Mail**
+
+- Canary wurde als möglicher EWS-Client praktisch getestet.
+- Die eingebettete Java-Runtime enthielt zunächst nicht die für den Exchange-Endpunkt benötigte aktuelle Certum-Zertifikatskette; ein separater Java-TLS-Test mit ergänztem Truststore bestätigte anschließend funktionierendes TLS.
+- Danach antwortete Exchange korrekt mit `401` und `WWW-Authenticate: NTLM`; Canary schloss die für diesen Server benötigte Anmeldung dennoch nicht erfolgreich ab.
+- Canary ist deshalb verworfen und erhält keine Setup-/Restore-Integration.
+
+**eM-Client-Credential-Reverse-Engineering**
+
+- Die lokale `accounts.dat` wurde ausschließlich diagnostisch als SQLite-Datenbank betrachtet; eM Client speichert Credentials intern als verschlüsselte Secrets.
+- Ein Nachbau dieser Verschlüsselung wurde bewusst abgebrochen.
+- Verbindliche Regel: keine internen Credential-Formate, privaten APIs oder Assemblies von eM Client reverse-engineeren. Wiederherstellung erfolgt ausschließlich über den offiziellen Settings-Export/-Import.
+
+#### Besonderheit des eM-Client-CLI-Imports
+
+Die dokumentierte Passwortübergabe per `-p PASS` wurde mit eM Client 10.4.5663 praktisch getestet, verhinderte den Passwortdialog jedoch nicht. Deshalb wird das Passwort bewusst nicht als CLI-Argument weitergereicht. Der sichere Fallback ist die einmalige Zwischenablage-Übergabe an den Benutzer. So erscheint das Secret weder im Warp-Terminal-Log noch in der Prozesskommandozeile.
+
+#### Akzeptanzkriterien
+
+- [x] eM Client reproduzierbar über Winget installiert
+- [x] Exchange/EWS praktisch funktionsfähig
+- [x] IMAP/SMTP praktisch funktionsfähig
+- [x] vollständiger Settings-Export inklusive gespeicherter Account-Credentials erfolgreich wiederhergestellt
+- [x] SOPS-Verschlüsselung eines neuen `.generated\emclient\settings.xml`-Snapshots erfolgreich getestet
+- [x] Klartext-Snapshot wird erst nach erfolgreicher Verschlüsselung entfernt
+- [x] verschlüsseltes Backup wird nur nach erfolgreicher Neuerzeugung ersetzt
+- [x] Restore-Passwort erscheint nicht im Bootstrap-/Warp-Log
+- [x] Zwischenablage wird nach dem manuellen Einfügen geleert
+- [x] temporäre entschlüsselte XML wird nach Restore gelöscht
+- [x] wiederholter Bootstrap überspringt unveränderten Import per State-Hash
+- [x] vollständiger Bootstrap nach Integration fehlerfrei ausgeführt
 # 26. Phase 23 – Gaming
 
 ## Ziel

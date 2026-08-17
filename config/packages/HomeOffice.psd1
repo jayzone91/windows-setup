@@ -15,8 +15,8 @@
         },
 
         @{
-            Name   = "Office Deployment Tool"
-            Id     = "Microsoft.OfficeDeploymentTool"
+            Name   = "eM Client"
+            Id     = "eMClient.eMClient"
             Source = "winget"
             Update = $true
         }
