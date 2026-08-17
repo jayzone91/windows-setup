@@ -574,7 +574,16 @@ Der NanaZip-Workflow ist absichtlich generisch aufgebaut und soll für weitere P
 - [x] Power-Einstellungen
 - [x] HDR
 - [x] Wallpaper Slideshow
-- [x] Windows Snap deaktiviert; produktives optionales Window Management erfolgt über FancyZones
+- [x] Windows Snap war während des früheren Tiling-Manager-Workflows deaktiviert; diese Entscheidung wird nach Entfernung des Tiling Managers bewusst revidiert
+- [ ] Windows Snap wieder deklarativ/idempotent aktivieren und praktisch testen
+- [ ] native Windows-Snap-Funktionen und FancyZones so konfigurieren, dass beide ohne konkurrierendes Verhalten sinnvoll zusammenarbeiten
+- [ ] PowerToys FancyZones als produktiven Window-Management-Workflow vollständig konfigurieren
+  - eigenes zum aktuellen Desktop-Workflow passendes FancyZones-Layout erstellen und reproduzierbar als Desired State verwalten
+  - mindestens ein alternatives Layout für unterschiedliche Arbeitsmodi definieren
+  - schnellen Wechsel zwischen den vorgesehenen Layouts per Tastenkombination implementieren
+  - Layout-/Hotkey-Konfiguration nur bei tatsächlichem Drift ändern
+  - Verhalten gemeinsam mit wieder aktiviertem Windows Snap praktisch testen
+  - wiederholten `just update-log` ohne unnötige PowerToys-Neustarts oder Settings-Schreiboperationen bestätigen
 - [x] geschützte Registry-Werte dürfen Bootstrap nicht abbrechen
 - [x] Computername deklarativ über `config/windows.psd1` verwalten
 - [x] Computername nur bei tatsächlichem Drift über `Rename-Computer` setzen
