@@ -1830,6 +1830,12 @@ Zusätzlich offen:
   - keine invasive Lösung übernehmen, die Windows-Integrität, Stabilität oder Performance merklich verschlechtert
 - [ ] WSL-Workflow mit wählbarer Distribution und Nix-Paketmanagement entwerfen und testen
 - [ ] weitere Anwendungen nur anpassen, wenn die Methode stabil, reproduzierbar und Windows-kompatibel ist
+- [ ] **Niedrige Priorität / erst nach Abschluss der übrigen Roadmap:** FluentFlyout-LockWindow mit echtem Liquid-Glass-/Refraction-Effekt analog zum Seelen Volume Flyout evaluieren
+  - aktueller `ACCENT_ENABLE_BLURBEHIND`-Pfad bleibt bis dahin unverändert produktiv
+  - eine 1:1-Übernahme des Seelen-CSS-/SVG-Displacement-Pfads ist in WPF technisch nicht möglich
+  - bei späterer Umsetzung einen GPU-/Windows-Composition-/Direct2D- bzw. Shader-basierten Refraction-Pfad prüfen
+  - bestehende Blur-Lösung als stabilen Fallback beibehalten
+  - nur übernehmen, wenn Darstellung, Performance, Multi-Monitor und allgemeine Stabilität praktisch überzeugen
 
 ---
 ## Nächste technische Prioritäten
