@@ -136,6 +136,7 @@ $PowerToys = Import-PowerShellDataFile "$Root\config\powertoys.psd1"
 $Raycast = Import-PowerShellDataFile "$Root\config\raycast.psd1"
 $FluentFlyout = Import-PowerShellDataFile "$Root\config\fluentflyout.psd1"
 $Files = Import-PowerShellDataFile "$Root\config\files.psd1"
+$Windhawk = Import-PowerShellDataFile "$Root\config\windhawk.psd1"
 $Theme = Import-PowerShellDataFile "$Root\config\theme.psd1"
 $Terminal = Import-PowerShellDataFile "$Root\config\terminal.psd1"
 $Windows = Import-PowerShellDataFile "$Root\config\windows.psd1"
@@ -186,6 +187,10 @@ finally {
 Install-PcVisitSupporterModule
 
 Install-FluentFlyout -Config $FluentFlyout
+
+Initialize-Windhawk `
+    -Config $Windhawk `
+    -RepositoryPath $Root
 
 
 # Pfade neu einlesen

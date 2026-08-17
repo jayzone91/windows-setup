@@ -6,9 +6,9 @@
       "schemaVersion": 1,
       "general": {
         "openAtLogin": true,
-        "showInMenuBar": true,
+        "showInMenuBar": false,
         "appearance": "dark",
-        "themeDarkId": "01KZPDNQ5TRDGCX7PB249BWNHX",
+        "themeDarkId": "bundled-raycast-dark",
         "windowMode": "compact",
         "windowPresentationMode": "mouse-screen",
         "windowActivationBehavior": "move-to-active-space",
@@ -18,7 +18,7 @@
             "shortcut": {
               "modifiers": [
                 {
-                  "modifier": "Meta"
+                  "modifier": "Alt"
                 }
               ],
               "key": {
