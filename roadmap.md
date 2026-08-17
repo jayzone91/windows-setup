@@ -1290,6 +1290,32 @@ https://github.com/catppuccin/vscode-icons
 
 Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwaltete Zustand bereits vollständig korrekt ist.
 
+## macOS-26-Icon- und Theme-Migration
+
+Die bestehende Catppuccin-Implementierung bleibt als funktionierender Ausgangszustand erhalten, bis der neue macOS-26-Desired-State praktisch bestätigt ist.
+
+- [ ] neues eigenes OneCommander-XAML-Theme `MacOS26` erstellen; vorhandenes Catppuccin-Theme nicht schrittweise verbiegen
+- [ ] OneCommander visuell stärker an Finder/macOS 26 angleichen
+- [ ] Folder-/Special-Folder-Icons auf eine konsistente macOS-nahe Designsprache umstellen
+- [ ] macOSicons.com als Quelle für passende App-, Ordner- und Systemicons evaluieren und über die offizielle API reproduzierbar anbinden
+- [ ] macOSicons-API ausschließlich für den privaten, nicht-kommerziellen Einsatz dieses Setups verwenden
+- [ ] vor der ersten macOSicons-Nutzung im Bootstrap die Nutzungsbedingungen und Attribution-Anforderung interaktiv anzeigen
+- [ ] Benutzer muss die Bedingungen ausdrücklich mit `Ja` bestätigen
+- [ ] erfolgreiche Bestätigung unter `.generated/state/macosicons/terms-accepted` markieren und bei späteren Bootstrap-Läufen nicht erneut abfragen
+- [ ] State-Marker erst nach ausdrücklicher Benutzerbestätigung erzeugen
+- [ ] macOSicons-API-Key niemals im Klartext im Repository speichern
+- [ ] macOSicons-API-Key über dieselbe zentrale verschlüsselte Secrets-Architektur verwalten, die auch für Mail-Credentials/API-Secrets vorgesehen ist
+- [ ] Secret-Architektur projektweit generisch statt ausschließlich mail-spezifisch entwerfen
+- [ ] API-Antworten so verarbeiten, dass Icon-Ersteller, Credit-URL, Quellbezug und lokale Verwendung reproduzierbar nachvollziehbar bleiben
+- [ ] versionierte Attribution für macOSicons.com und jeden tatsächlich verwendeten Icon-Ersteller im Repository pflegen
+- [ ] README erhält einen eigenen Attribution-/Third-Party-Icons-Abschnitt
+- [ ] Attribution möglichst aus einem versionierten Manifest erzeugen, damit neue oder entfernte Icons nicht manuell vergessen werden
+- [ ] individuelle Lizenz des jeweiligen Icons vor Übernahme prüfen
+- [ ] heruntergeladene Icon-Binärdateien nur dann ins Repository committen, wenn die individuelle Lizenz die Weitergabe erlaubt; andernfalls lokal unter `.generated/` reproduzierbar erzeugen/herunterladen
+- [ ] bestehende OneCommander-FileIcons zunächst getrennt behandeln; macOSicons nicht künstlich als vollständigen Dateityp-Icon-Ersatz verwenden
+- [ ] geeignete macOS-nahe Quelle oder eigenes Mapping für Datei-/Entwickler-Dateityp-Icons separat evaluieren
+- [ ] Migration erst abschließen, wenn Theme, Folder Icons, File Icons und wiederholter Bootstrap ohne unnötigen OneCommander-Neustart praktisch bestätigt sind
+
 ## Noch prüfen / verbessern
 
 - [ ] `.lesshst` mit passendem Shell-/Terminal-Icon ergänzen, falls noch nicht im Generator enthalten
@@ -1804,10 +1830,11 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [x] Seelen Volume-/Media-Flyouts mit transparentem Liquid-Glass-Material, Hintergrundbeeinflussung und SVG-Displacement praktisch abgestimmt
 - [x] Top Bar bewusst dichter als Flyouts; im Dark Mode keine vollständig transparente Menüleiste
 - [x] systemweite Akzentfarbe `#0A84FF` wird von Seelen direkt aus Windows übernommen
-- [ ] Seelen Dock macOS-26-näher gestalten
+- [x] Seelen Dock macOS-26-näher gestaltet und praktisch bestätigt
   - installierte Seelen-Erweiterung `Wellenanimation für die Taskleiste` bleibt allein für Hover-Zoom/Magnification und Icon-Bewegung zuständig
-  - eigenes `weg.scss` darf keine konkurrierenden Transform-/Zoom-Animationen für Dock-Items definieren
+  - eigenes `weg.scss` definiert keine konkurrierenden Transform-/Zoom-Animationen für Dock-Items
   - Theme-Styling beschränkt sich auf Liquid-Glass-Material, Rahmen/Schatten, Radien, Hover-Fläche, Running-Dots, Separatoren, Badges und Icon-Schatten
+  - Dock-Clipping für vergrößerte Plugin-Icons entfernt und praktisch bestätigt
 
 ## Verbindliche Reihenfolge für den verbleibenden Desktop-Polish
 
@@ -1817,6 +1844,10 @@ Die folgenden Anwendungen dürfen nach dem Seelen-Polish nicht vergessen werden.
 2. [ ] Zen-Custom-CSS prüfen und unnötiges Catppuccin-Styling zugunsten einer nativeren macOS-/Glass-Optik entfernen
 3. [ ] Warp als Terminal-Frontend produktiv ausarbeiten und optisch in das macOS-26-Gesamtbild integrieren
 4. [ ] Windowsweite Icons auf konsistente macOS-nahe Designsprache umstellen
+   - macOSicons.com als bevorzugte Quelle für passende Icons installierter Software evaluieren
+   - passende App-Icons nicht nur in OneCommander, sondern soweit technisch stabil auch in Seelen Dock und weiteren verwaltbaren Shell-/Launcher-Flächen einsetzen
+   - Zuordnung installierter Software zu macOSicons reproduzierbar und manifestbasiert verwalten
+   - keine undokumentierten oder fragilen Windows-Systemressourcen pauschal ersetzen
 5. [ ] VS-Code-Oberfläche auf macOS-/Glass-Design prüfen; Custom-CSS nur bei aktuell stabiler Unterstützung
 
 Zusätzlich offen:
@@ -1840,9 +1871,10 @@ Zusätzlich offen:
 ---
 ## Nächste technische Prioritäten
 
-1. **Desktop-Polish:** Seelen Dock abschließen, danach verbindlich OneCommander, Zen und Warp als Terminal-Frontend bearbeiten.
-2. **Mail:** Secrets-Architektur und geeigneten Mail-Client anhand der festgelegten Gmail-/IMAP-/Exchange-/Exchange-Online-Kriterien auswählen und anschließend automatisieren.
-3. **Danach:** WSL/Nix und übrige offene Qualitäts-/Testpunkte.
+1. **Desktop-Polish:** Seelen Dock ist abgeschlossen; als Nächstes verbindlich OneCommander, danach Zen und Warp als Terminal-Frontend bearbeiten.
+2. **Secrets:** projektweite verschlüsselte Secrets-Architektur für API-Keys und Zugangsdaten entwerfen; sie wird sowohl für macOSicons als auch später für Mail verwendet.
+3. **Mail:** geeigneten Mail-Client anhand der festgelegten Gmail-/IMAP-/Exchange-/Exchange-Online-Kriterien auswählen und anschließend mit der gemeinsamen Secrets-Architektur automatisieren.
+4. **Danach:** WSL/Nix und übrige offene Qualitäts-/Testpunkte.
 
 # 30. Phase 27 – Dokumentation
 
@@ -1877,6 +1909,7 @@ Das README soll den **aktuellen produktiven Stand** erklären.
 - [x] Windows-Terminal-Desired-State, Initialisierung und Symlink-Fallback dokumentiert
 - [x] Catppuccin
 - [x] Wartung
+- [ ] macOSicons-/Third-Party-Icon-Attribution inklusive tatsächlich verwendeter Icon-Ersteller dokumentieren
 - [ ] nach jeder größeren abgeschlossenen Phase aktualisieren
 
 ## Roadmap
