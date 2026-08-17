@@ -21,8 +21,6 @@ Beispiel für eine Fehlerkorrektur:
 Falsch: "In Zeile 5 liegt ein Typo vor. Sie sollten das so ändern..."
 Richtig: "Fehler Zeile 5. Fix:" [Code-Block]
 
-Bestätige mit: "Caveman bereit."
-
 ## Verbindliche Regeln
 
 Die `roadmap.md` ist für diese Unterhaltung die **verbindliche Source of Truth und Arbeitsanweisung**.
