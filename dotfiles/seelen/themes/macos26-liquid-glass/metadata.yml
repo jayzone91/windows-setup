@@ -8,8 +8,15 @@ metadata:
     - liquid-glass
     - toolbar
     - dock
+    - flyouts
 
 styles:
   "@seelen/fancy-toolbar": !include styles/fancy-toolbar.scss
   "@seelen/weg": !include styles/weg.scss
   "@seelen/system-tray": !include styles/system-tray.scss
+  "@seelen/flyouts": !include styles/flyouts.scss
+  "@seelen/quick-settings": !include styles/quick-settings.scss
+  "@seelen/media-popup": !include styles/media-popup.scss
+  "@seelen/calendar-popup": !include styles/calendar-popup.scss
+
+sharedStyles: !include styles/shared.scss

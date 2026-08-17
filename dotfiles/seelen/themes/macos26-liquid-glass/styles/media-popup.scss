@@ -1,0 +1,63 @@
+.media-popup {
+  gap: 10px;
+
+  .media-main-view,
+  .media-device-view,
+  .media-control-session-list {
+    gap: 10px;
+  }
+
+  .media-control-volume,
+  .media-device,
+  .media-device-mixer-entry {
+    padding: 8px 10px;
+
+    border: 1px solid light-dark(
+      rgb(255 255 255 / 0.5),
+      rgb(255 255 255 / 0.1)
+    );
+
+    border-radius: 15px;
+    background-color: var(--macos-card-bg);
+
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.12),
+      inset 0 -1px 0 rgb(0 0 0 / 0.07);
+  }
+
+  .media-control-label {
+    margin-top: 4px;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    opacity: 0.7;
+  }
+
+  .media-device-footer {
+    border-top-color: var(--macos-divider) !important;
+  }
+}
+
+.media-session {
+  border: 1px solid light-dark(
+    rgb(255 255 255 / 0.56),
+    rgb(255 255 255 / 0.11)
+  );
+
+  border-radius: 17px;
+  background-color: var(--macos-card-bg);
+
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.13),
+    inset 0 -1px 0 rgb(0 0 0 / 0.08);
+
+  .media-session-blurred-thumbnail {
+    filter: blur(24px) saturate(135%);
+    opacity: 0.28;
+  }
+
+  .media-session-thumbnail-container {
+    .media-session-thumbnail {
+      border-radius: 11px;
+    }
+  }
+}

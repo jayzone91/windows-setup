@@ -183,6 +183,9 @@ Begründung:
 ## Design
 
 - [x] globale Windows-Designsprache auf macOS 26 / Liquid Glass umgestellt
+- [x] systemweite Windows-Akzentfarbe auf macOS-Systemblau `#0A84FF` festgelegt und über `config/windows.psd1` als Desired State in den Bootstrap integriert
+- [x] Akzentfarbe praktisch mit vollständigem `just update-log`, wiederholtem Drift-Check und `just check` bestätigt
+- [x] Seelen liest die Windows-Akzentfarbe direkt aus dem System; keine separate Seelen-Akzentfarbe pflegen
 - [x] Catppuccin Mocha ist **keine** globale Windows-Designvorgabe mehr
 - [x] Seelen UI ist die zentrale Basis für Top Bar, Dock und Volume-/Media-OSD
 - [x] FluentFlyout ersetzt Windhawk vollständig für Lock-Key-Hinweise
@@ -566,6 +569,8 @@ Der NanaZip-Workflow ist absichtlich generisch aufgebaut und soll für weitere P
 - [x] Taskbar-Grundeinstellungen
 - [x] Startmenü-Grundeinstellungen
 - [x] Windows Theme
+- [x] systemweite Akzentfarbe `#0A84FF` deklarativ über `config/windows.psd1` verwalten
+- [x] DWM-/Explorer-Akzentwerte nur bei Drift setzen; wiederholter `just update-log` bleibt idempotent
 - [x] Power-Einstellungen
 - [x] HDR
 - [x] Wallpaper Slideshow
@@ -578,6 +583,18 @@ Der NanaZip-Workflow ist absichtlich generisch aufgebaut und soll für weitere P
 - [x] wiederholter `just update-log` nach der Computerumbenennung ohne erneute Umbenennung erfolgreich
 - [x] finaler `just check` nach der Computername-Integration erfolgreich
 - [x] Windows-Taskbar-AutoHide für den Seelen-Workflow deaktiviert
+
+### Priorität 1 – Windows-Entwickler-/Terminal-Grundzustand
+
+Diese Punkte werden vor weiterem größeren Komfort-/Mail-Ausbau umgesetzt:
+
+- [ ] prüfen, ob Warp über einen stabilen und offiziell unterstützten Windows-Pfad als Standard-Terminalanwendung gesetzt werden kann; nur dann deklarativ im Bootstrap verwalten
+- [ ] Windows `sudo` aktivieren und den gewünschten Modus deklarativ/idempotent setzen
+- [ ] nach praktisch bestätigtem Windows-`sudo`: manuelle Projektläufe auf `sudo just update`, `sudo just update-warning`, `sudo just update-log` und `sudo just update-performance` umstellen
+- [ ] erst nach praktisch bestätigtem `sudo`-Workflow die aktuelle Bootstrap-Self-Elevation entfernen; bis dahin bleibt Self-Elevation unverändert aktiv
+- [ ] Windows-Entwicklermodus deklarativ/idempotent aktivieren
+- [ ] lange Win32-Pfade (`LongPathsEnabled`) deklarativ/idempotent aktivieren
+- [ ] alle vier Einstellungen mit erstem `just update-log`, praktischem Funktionstest, zweitem Drift-freien Lauf und `just check` bestätigen
 - [ ] Lock-Screen optisch angleichen
 - [ ] weitere Datenschutz-/Telemetry-Einstellungen nur gezielt ergänzen
 - [ ] keine aggressive pauschale Service-Deaktivierung
@@ -1606,6 +1623,33 @@ Remote Desktop Manager verwendet eine externe Datenbank als zentrale Quelle der 
 - [x] wiederholter `just update` verursacht keine unerwartete Neuinstallation
 - [x] sensible Verbindungsdaten bleiben außerhalb des Repositories
 
+## E-Mail / Konten-Automatisierung
+
+Ziel ist eine reproduzierbare Mail-Einrichtung, ohne Klartext-Zugangsdaten im Repository abzulegen.
+
+### Secrets
+
+- [ ] verschlüsseltes Secrets-Konzept für Mail-Zugangsdaten entwerfen, vergleichbar mit dem Prinzip von `sops-nix` + `age`
+- [ ] ausschließlich verschlüsselte Daten dürfen versioniert werden; private Entschlüsselungsschlüssel bleiben außerhalb des Repositories
+- [ ] Bootstrap darf Secrets nur für den unmittelbar benötigten Konfigurationsschritt entschlüsseln und keine Klartext-Credentials dauerhaft in `.generated/`, Logs oder Git-Artefakten hinterlassen
+- [ ] OAuth-Tokens und anwendungsspezifische Tokens nur über offiziell unterstützte Client-/Provider-Mechanismen verwalten
+- [ ] Secrets-Architektur vor Implementierung anhand aktueller Windows-/Client-Schnittstellen verifizieren
+
+### Mail-Client
+
+Der Client wird erst nach aktueller technischer Prüfung festgelegt.
+
+Pflichtkriterien:
+
+- [ ] modernes, zum macOS-26-/Liquid-Glass-Ziel passendes Erscheinungsbild
+- [ ] Gmail mit OAuth
+- [ ] klassisches IMAP + SMTP für übrige Konten
+- [ ] aktuelles Exchange für Work-Mail
+- [ ] Exchange Online für die zukünftige Firmenumstellung
+- [ ] automatisierbare Installation und soweit stabil möglich automatisierbare Kontoeinrichtung
+- [x] Thunderbird ist ausdrücklich keine Option
+- [ ] falls kein anderer Client alle Pflichtkriterien zuverlässig erfüllt, Microsoft Outlook verwenden; Microsoft-365-Abonnement ist vorhanden
+
 # 26. Phase 23 – Gaming
 
 ## Ziel
@@ -1752,20 +1796,39 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [x] OneCommander wird künftig Finder-/macOS-orientiert statt als Catppuccin-Leitkomponente betrachtet
 - [x] Zen benötigt keinen globalen Catppuccin-Zwang; vorhandenes Styling darf zugunsten nativer macOS-Nähe reduziert werden
 
-## Offen
+## Aktueller Seelen-Stand
 
-- [ ] Seelen Top Bar macOS-26-näher gestalten
+- [x] Seelen Top Bar macOS-26-näher gestaltet
+- [x] Seelen Volume-/Media-Flyouts mit transparentem Liquid-Glass-Material, Hintergrundbeeinflussung und SVG-Displacement praktisch abgestimmt
+- [x] Top Bar bewusst dichter als Flyouts; im Dark Mode keine vollständig transparente Menüleiste
+- [x] systemweite Akzentfarbe `#0A84FF` wird von Seelen direkt aus Windows übernommen
 - [ ] Seelen Dock macOS-26-näher gestalten
+
+## Verbindliche Reihenfolge für den verbleibenden Desktop-Polish
+
+Die folgenden Anwendungen dürfen nach dem Seelen-Polish nicht vergessen werden. Vor neuen rein optischen Nebenbaustellen wird diese Reihenfolge abgearbeitet:
+
+1. [ ] OneCommander stärker an Finder/macOS 26 angleichen und vorhandenes Catppuccin-Leitstyling entsprechend reduzieren
+2. [ ] Zen-Custom-CSS prüfen und unnötiges Catppuccin-Styling zugunsten einer nativeren macOS-/Glass-Optik entfernen
+3. [ ] Warp als Terminal-Frontend produktiv ausarbeiten und optisch in das macOS-26-Gesamtbild integrieren
+4. [ ] Windowsweite Icons auf konsistente macOS-nahe Designsprache umstellen
+5. [ ] VS-Code-Oberfläche auf macOS-/Glass-Design prüfen; Custom-CSS nur bei aktuell stabiler Unterstützung
+
+Zusätzlich offen:
+
 - [x] FluentFlyout LockWindow macOS-26-/Liquid-Glass-näher gestaltet
-- [ ] Windowsweite Icons auf konsistente macOS-nahe Designsprache umstellen
-- [ ] OneCommander stärker an Finder angleichen
-- [ ] Zen-Custom-CSS prüfen und unnötiges Catppuccin-Styling entfernen
-- [ ] VS-Code-Oberfläche auf macOS-/Glass-Design prüfen; Custom-CSS nur bei aktuell stabiler Unterstützung
-- [ ] Warp als Terminal-Frontend produktiv ausarbeiten
 - [ ] WSL-Workflow mit wählbarer Distribution und Nix-Paketmanagement entwerfen und testen
 - [ ] weitere Anwendungen nur anpassen, wenn die Methode stabil, reproduzierbar und Windows-kompatibel ist
 
 ---
+## Nächste technische Prioritäten
+
+1. **Priorität 1:** Warp als Windows-Standardterminal prüfen/setzen, Windows `sudo`, Entwicklermodus und lange Pfade in den deklarativen Bootstrap aufnehmen.
+2. **Priorität 1 danach:** Windows-`sudo` praktisch bestätigen und erst anschließend den manuellen Just-Workflow auf `sudo just ...` umstellen sowie die Bootstrap-Self-Elevation entfernen.
+3. **Desktop-Polish:** Seelen Dock abschließen, danach verbindlich OneCommander, Zen und Warp bearbeiten.
+4. **Mail:** Secrets-Architektur und geeigneten Mail-Client anhand der festgelegten Gmail-/IMAP-/Exchange-/Exchange-Online-Kriterien auswählen und anschließend automatisieren.
+5. **Danach:** WSL/Nix und übrige offene Qualitäts-/Testpunkte.
+
 # 30. Phase 27 – Dokumentation
 
 ## README

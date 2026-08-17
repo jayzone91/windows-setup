@@ -190,16 +190,49 @@ function Set-StartMenuPreferences {
 }
 
 function Set-WindowsTheme {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Config
+    )
+
     Write-Host ""
     Write-Host "========================================"
     Write-Host " Windows Design"
     Write-Host "========================================"
 
+    $accentColor = [string] $Config.Theme.AccentColor
+
+    if ($accentColor -notmatch '^#(?<R>[0-9A-Fa-f]{2})(?<G>[0-9A-Fa-f]{2})(?<B>[0-9A-Fa-f]{2})$') {
+        throw "Ungültige Windows-Akzentfarbe: $accentColor"
+    }
+
+    [byte] $red = [Convert]::ToByte($Matches.R, 16)
+    [byte] $green = [Convert]::ToByte($Matches.G, 16)
+    [byte] $blue = [Convert]::ToByte($Matches.B, 16)
+
+    $argb = [BitConverter]::ToInt32(
+        [byte[]] @($blue, $green, $red, 0xFF),
+        0
+    )
+
+    $abgr = [BitConverter]::ToInt32(
+        [byte[]] @($red, $green, $blue, 0xFF),
+        0
+    )
+
     $changed = $false
     $personalizePath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
     $desktopPath = "HKCU:\Control Panel\Desktop"
+    $dwmPath = "HKCU:\Software\Microsoft\Windows\DWM"
+    $explorerAccentPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent"
 
-    foreach ($path in @($personalizePath, $desktopPath)) {
+    foreach ($path in @(
+            $personalizePath,
+            $desktopPath,
+            $dwmPath,
+            $explorerAccentPath
+        )) {
         if (-not (Test-Path -LiteralPath $path)) {
             New-Item `
                 -Path $path `
@@ -225,7 +258,22 @@ function Set-WindowsTheme {
             @{
                 Path  = $desktopPath
                 Name  = "AutoColorization"
-                Value = 1
+                Value = 0
+            },
+            @{
+                Path  = $dwmPath
+                Name  = "AccentColor"
+                Value = $abgr
+            },
+            @{
+                Path  = $dwmPath
+                Name  = "ColorizationColor"
+                Value = $argb
+            },
+            @{
+                Path  = $explorerAccentPath
+                Name  = "AccentColorMenu"
+                Value = $abgr
             }
         )) {
         if (
@@ -239,8 +287,10 @@ function Set-WindowsTheme {
     }
 
     if ($changed) {
-        Write-Host "[OK] Windows Design aktualisiert." `
-            -ForegroundColor Green
+        Write-Host (
+            "[OK] Windows Design aktualisiert. Akzentfarbe: " +
+            $accentColor
+        ) -ForegroundColor Green
     }
     else {
         Write-Host "[SKIP] Windows Design unverändert." `
@@ -291,9 +341,22 @@ function Set-RegistryDword {
         -Name $Name `
         -ErrorAction SilentlyContinue
 
+    $desiredDword = [uint64] (
+        ([int64] $Value) -band [int64] 4294967295
+    )
+
+    $currentDword = if ($null -eq $currentValue) {
+        $null
+    }
+    else {
+        [uint64] (
+            ([int64] $currentValue) -band [int64] 4294967295
+        )
+    }
+
     if (
-        $null -ne $currentValue -and
-        [int] $currentValue -eq $Value
+        $null -ne $currentDword -and
+        $currentDword -eq $desiredDword
     ) {
         return $false
     }

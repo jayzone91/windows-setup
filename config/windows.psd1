@@ -1,6 +1,10 @@
 @{
     ComputerName = "Jay-PC"
 
+    Theme        = @{
+        AccentColor = "#0A84FF"
+    }
+
     Taskbar      = @{
         AutoHide = $false
     }

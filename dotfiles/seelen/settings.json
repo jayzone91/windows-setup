@@ -4,7 +4,8 @@
   ],
   "activeThemes": [
     "@default/theme",
-    "@jayzone91/macos26-liquid-glass"
+    "@jayzone91/macos26-liquid-glass",
+    "95493b72-90e9-45f5-a3cb-5059ebd90333"
   ],
   "backupSyncEnabled": true,
   "byTheme": {},

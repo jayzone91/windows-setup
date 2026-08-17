@@ -242,7 +242,8 @@ $startMenuChanged = Set-StartMenuPreferences `
     -Config $Windows
 
 $windowsSnapChanged = Disable-WindowsSnap
-$windowsThemeChanged = Set-WindowsTheme
+$windowsThemeChanged = Set-WindowsTheme `
+    -Config $Windows
 $null = Set-WindowsPowerPreferences
 
 Set-WindowsHDR
@@ -341,6 +342,7 @@ Install-WindowsUpdates
 
 if (
     $seelenConfigurationChanged -or
+    $windowsThemeChanged -or
     -not (Test-SeelenUiRunning)
 ) {
     Restart-WindowsDesktopEnvironment

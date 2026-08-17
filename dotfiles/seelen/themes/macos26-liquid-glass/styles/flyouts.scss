@@ -1,0 +1,89 @@
+body,
+#root {
+  background: transparent;
+}
+
+.flyout {
+  overflow: hidden;
+
+  padding: 13px 15px;
+  margin: 12px;
+
+  border: 1px solid var(--macos-border);
+  border-radius: 24px;
+
+  background-color: light-dark(
+    rgb(245 246 248 / 0.42),
+    rgb(52 54 60 / 0.36)
+  );
+
+  box-shadow:
+    inset 0 0 1px 1px rgb(255 255 255 / 0.12),
+    inset 0 0 7px 2px rgb(255 255 255 / 0.025),
+    inset 0 4px 14px rgb(17 17 26 / 0.025),
+    inset 0 8px 20px rgb(17 17 26 / 0.02),
+    0 11px 26px rgb(0 0 0 / 0.11),
+    0 2px 4px rgb(0 0 0 / 0.06);
+
+  -webkit-backdrop-filter:
+    blur(38px)
+    saturate(180%);
+  backdrop-filter:
+    blur(38px)
+    saturate(180%);
+
+  -webkit-backdrop-filter:
+    var(--macos-liquid-filter)
+    blur(10px)
+    saturate(160%);
+  backdrop-filter:
+    var(--macos-liquid-filter)
+    blur(10px)
+    saturate(160%);
+
+  .volume,
+  .brightness {
+    width: 22rem;
+    height: 3rem;
+    gap: 12px;
+  }
+
+  .workspace,
+  .player,
+  .shortcuts-state {
+    min-width: 18rem;
+    min-height: 2.25rem;
+    gap: 10px;
+  }
+
+  .flyout-value-label {
+    width: 3em;
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.9;
+  }
+
+  .player-thumbnail-container {
+    border-radius: 8px !important;
+  }
+}
+
+.notification {
+  border: 1px solid var(--macos-border);
+  border-radius: 20px;
+
+  background-color: var(--macos-panel-bg-strong);
+
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.2),
+    inset 0 -1px 0 rgb(0 0 0 / 0.12),
+    var(--macos-shadow);
+
+  backdrop-filter:
+    blur(34px)
+    saturate(190%);
+
+  .notification-header {
+    border-bottom-color: var(--macos-divider);
+  }
+}

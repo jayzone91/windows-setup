@@ -24,11 +24,12 @@ Bereits umgesetzt sind unter anderem:
 - vorbereitete Game-Library-Verzeichnisse unter `G:\Games\`
 - einmalige interaktive Initialisierung der Launcher-Installationspfade mit eigenem State-Marker pro Launcher
 - Battle.net-Installation über den generischen Winget-`InstallLocation`-Pfad
-- Steam, GOG GALAXY, EA app und Battle.net mit normalem Windows-Fensterverhalten außerhalb des komorebi-Tilings
-- komorebi-Movement-Animationen bewusst deaktiviert, da sie selbst bei 240 FPS sichtbar ruckelten; ohne Animationen reagiert das Tiling deutlich schneller
+- Steam, Epic Games Launcher, GOG GALAXY, EA app, Battle.net und Ubisoft Connect mit vorbereiteten Bibliothekspfaden auf `G:`
+- produktives Window Management über PowerToys FancyZones; der frühere komorebi-/whkd-/masir-/Zebar-Desktop-Stack ist nicht mehr Teil des aktuellen Zielbilds
 - PCVisit Supporter Modul mit Installation-bei-Bedarf und PCVisit-eigenem Auto-Update
 - Versions-Pinning einzelner Pakete
 - Windows-Debloat und Grundkonfiguration
+- systemweite Windows-Akzentfarbe `#0A84FF` als deklarativer Desired State; Seelen übernimmt diese Akzentfarbe direkt aus Windows
 - Computername als deklarativer Desired State in `config/windows.psd1`; Umbenennung nur bei Drift und ohne automatischen Neustart
 - Windows- und Microsoft-Updates
 - Treiberlogik für NVIDIA und Intel
@@ -86,9 +87,9 @@ Bereits umgesetzt sind unter anderem:
 - persistenter Initialisierungsstatus unter `.generated/state/default-apps/`
 - Datei-Dotfiles werden standardmäßig als NTFS-Hardlinks eingebunden und bei wiederholten Läufen nur bei tatsächlichem Link-Drift neu erzeugt
 - Verzeichnis-Dotfiles werden als NTFS-Junctions eingebunden
-- Symbolic Links werden nur als dokumentierter Kompatibilitäts-Fallback verwendet; VS Code und Windows Terminal `settings.json` nutzen diese praktisch bestätigte Ausnahme
-- Catppuccin Mocha als gemeinsame Designsprache
-- zentrale Catppuccin-Mocha-Palette unter `config/theme.psd1`
+- Symbolic Links werden nur als dokumentierter Kompatibilitäts-Fallback verwendet; VS Code, Windows Terminal und Seelen `settings.json` nutzen diese praktisch bestätigte Ausnahme
+- globale Designsprache ist macOS 26 / Liquid Glass; Catppuccin bleibt nur für Anwendungen erhalten, bei denen es weiterhin bewusst eingesetzt wird
+- zentrale Catppuccin-Mocha-Palette unter `config/theme.psd1` bleibt für diese Anwendungen erhalten
 - Windows-Shell-, Theme-, Power- und Wallpaper-Einstellungen werden vor Schreiboperationen auf Drift geprüft; Debloat bleibt bewusst bei jedem Bootstrap aktiv
 - Windows Explorer wird nur noch bei tatsächlichem Shell-Drift neu gestartet
 - Chromium-/Zen-Browser-Policies werden nur bei tatsächlichem Drift neu geschrieben
@@ -96,7 +97,9 @@ Bereits umgesetzt sind unter anderem:
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 - Zen-Mod-Precheck: Browser-Neustart nur, wenn konfigurierte Mods tatsächlich fehlen
 
-Die Gaming-Launcher einschließlich ihrer Library-/Default-Spielpfade auf `G:` sind eingerichtet und der einmalige Initialisierungsworkflow ist praktisch getestet. Als Nächstes folgen sinnvolle Windows-Gaming-Einstellungen sowie anschließend Logging/Tests und weitere Qualitätssicherung.
+Die Desktop-Architektur ist auf Seelen UI + PowerToys FancyZones + Raycast + OneCommander umgestellt. Top Bar und Volume-/Media-Flyouts verwenden das macOS-26-/Liquid-Glass-orientierte Seelen-Theme; die systemweite Akzentfarbe ist `#0A84FF`.
+
+Als nächste Priorität werden Warp als Windows-Standardterminal soweit offiziell unterstützt, Windows `sudo`, Entwicklermodus und lange Pfade in den Bootstrap aufgenommen. Nach bestätigtem `sudo`-Workflow soll die aktuelle Bootstrap-Self-Elevation entfallen. Beim anschließenden Desktop-Polish bleiben OneCommander, Zen und Warp ausdrücklich offene Pflichtpunkte. Danach folgen Mail-Secrets und die Auswahl eines modernen Gmail-/IMAP-/Exchange-/Exchange-Online-fähigen Mail-Clients.
 
 Siehe auch [`roadmap.md`](roadmap.md).
 
@@ -216,9 +219,9 @@ Der Bootstrap vergleicht denselben Zustand. Ist der PowerShell-Code unverändert
 just desktop-restart
 ```
 
-Die Recipe erzwingt bewusst einen kontrollierten Neustart von Volume-OSD, Zebar und den komorebi-Komponenten. Anschließend werden komorebi, whkd und masir gestartet, danach Zebar und anschließend das Volume-OSD.
+Die Recipe erzwingt bewusst einen kontrollierten Neustart der aktuellen Desktop-Umgebung. Seelen UI wird dabei als zuständige Shell-Komponente für Top Bar, Dock und Volume-/Media-OSD neu gestartet.
 
-Der normale Bootstrap führt diesen Neustart dagegen nur bei tatsächlichem Drift aus. komorebi, whkd, masir und Zebar bleiben funktional gekoppelt und werden gemeinsam neu gestartet, wenn sich ein relevanter Teil des Desktop-Stacks geändert hat oder ein erwarteter Prozess fehlt. Ist ausschließlich das Volume OSD betroffen, wird nur dieses gezielt neu gestartet.
+Der normale Bootstrap startet Seelen dagegen nur bei tatsächlichem Desktop-/Konfigurations-Drift oder wenn die erwartete Seelen-UI nicht läuft. Der frühere komorebi-/whkd-/masir-/Zebar-Stack sowie das eigene Volume-OSD gehören nicht mehr zum produktiven Desktop-Workflow.
 
 ## Logitech G HUB sichern und wiederherstellen
 
