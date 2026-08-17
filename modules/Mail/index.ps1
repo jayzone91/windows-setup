@@ -1,5 +1,6 @@
 $parts = @(
     "Thunderbird.ps1"
+    "Provisioning.State.ps1"
     "Provisioning.ps1"
 )
 
