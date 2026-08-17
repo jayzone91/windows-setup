@@ -1822,7 +1822,7 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [x] bereits initialisierte Standard-App-Konfigurationen über `.generated/state/default-apps/` erkennen und überspringen
 - [x] Zen-Mods vor möglichem Browser-Neustart lokal prüfen
 - [x] Seelen-Konfiguration aus dem Repository anwenden
-- [x] OneCommander-Desired-State vor möglichem Neustart prüfen
+- [x] Files-Desired-State anwenden und Windhawk Resource Redirect für die repositoryverwalteten macOS-nahen Systemicons konfigurieren
 - [x] initialisiertes Raycast ohne erneuten Restore behandeln und aktuellen lokalen Export in den generischen Desired State sanitizen
 - [x] Seelen UI bei tatsächlichem Desktop-Drift definiert neu starten; unveränderte Seelen-Konfiguration bleibt laufend
 - [x] Volume-/Media-OSD an Seelen UI delegiert; kein eigener OSD-Prozess oder Scheduled Task mehr
@@ -1864,7 +1864,7 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [x] Seelen UI als zentrale Shell-Basis gewählt
 - [x] VS Code darf Catppuccin weiterhin verwenden
 - [x] Terminal darf Catppuccin weiterhin verwenden, solange der eingesetzte Terminal-Workflow dies sinnvoll macht
-- [x] OneCommander wird künftig Finder-/macOS-orientiert statt als Catppuccin-Leitkomponente betrachtet
+- [x] OneCommander vollständig verworfen; Files ist der Finder-/macOS-orientierte Explorer-Ersatz
 - [x] Zen benötigt keinen globalen Catppuccin-Zwang; vorhandenes Styling darf zugunsten nativer macOS-Nähe reduziert werden
 
 ## Aktueller Seelen-Stand
@@ -1883,14 +1883,22 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 
 Die folgenden Anwendungen dürfen nach dem Seelen-Polish nicht vergessen werden. Vor neuen rein optischen Nebenbaustellen wird diese Reihenfolge abgearbeitet:
 
-1. [ ] OneCommander stärker an Finder/macOS 26 angleichen und vorhandenes Catppuccin-Leitstyling entsprechend reduzieren
-2. [ ] Zen-Custom-CSS prüfen und unnötiges Catppuccin-Styling zugunsten einer nativeren macOS-/Glass-Optik entfernen
-3. [ ] Warp als Terminal-Frontend produktiv ausarbeiten und optisch in das macOS-26-Gesamtbild integrieren
-4. [ ] Windowsweite Icons auf konsistente macOS-nahe Designsprache umstellen
-   - macOSicons.com als bevorzugte Quelle für passende Icons installierter Software evaluieren
-   - passende App-Icons nicht nur in OneCommander, sondern soweit technisch stabil auch in Seelen Dock und weiteren verwaltbaren Shell-/Launcher-Flächen einsetzen
-   - Zuordnung installierter Software zu macOSicons reproduzierbar und manifestbasiert verwalten
-   - keine undokumentierten oder fragilen Windows-Systemressourcen pauschal ersetzen
+1. [x] OneCommander vollständig verwerfen und durch Files ersetzen
+   - Files als täglichen Explorer-Ersatz übernehmen
+   - `Win + E` über die von Files bereitgestellte Explorer-Integration verwenden
+   - Files-Desired-State auf transparenten Hintergrund, Acrylic-Backdrop und Spaltenansicht ausrichten
+   - alte OneCommander-Module, Dotfiles und Icon-Build-Skripte vollständig entfernen
+2. [x] Windowsweite Systemicons auf konsistente macOS-nahe Designsprache umstellen
+   - Windhawk 2.0 Alpha wegen der verfügbaren `windhawk-cli` reproduzierbar aus offiziellen GitHub-Releases installieren/aktualisieren
+   - `icon-resource-redirect` per CLI installieren, aktualisieren und aktivieren
+   - macOS-nahes Resource-Redirect-Theme unter `dotfiles/windhawk/themes/macos-27` versionieren
+   - Theme-Pfad dynamisch aus dem Repository-Root setzen
+   - `iconTheme` leer lassen und ausschließlich das eigene `themePaths[0]` verwenden
+   - `disableThumbnails = 1` und `allResourceRedirect = 0` als Desired State setzen
+   - keine Windows-Systemdateien dauerhaft patchen
+   - vollständigen Bootstrap praktisch erfolgreich getestet
+3. [ ] Zen-Custom-CSS prüfen und unnötiges Catppuccin-Styling zugunsten einer nativeren macOS-/Glass-Optik entfernen
+4. [ ] Warp als Terminal-Frontend produktiv ausarbeiten und optisch in das macOS-26-Gesamtbild integrieren
 5. [ ] macOS-26-nahes Cursor-Theme systemweit als Ersatz für die Windows-Standardcursor evaluieren und reproduzierbar im Bootstrap verwalten
    - vollständige Cursor-Rollen einschließlich Normal, Link, Text, Busy, Resize und Precision Select abdecken
    - Quelle und Lizenz vor Übernahme prüfen

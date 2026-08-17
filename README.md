@@ -4,7 +4,7 @@ Automatisiertes, reproduzierbares und weitgehend idempotentes Setup für meine W
 
 Das Repository dient sowohl zur Einrichtung eines frisch installierten Windows-Systems als auch zur regelmäßigen Wartung eines bereits eingerichteten Rechners. Derselbe zentrale `bootstrap.ps1` wird für Neuinstallation, manuelle Setup-Durchläufe und automatische Wartung verwendet.
 
-Ein zweites wichtiges Ziel ist eine Windows-11-Desktop-Umgebung, die optisch so nah wie sinnvoll an macOS 26 / Liquid Glass kommt, ohne die Windows-Integrität zu beschädigen. Seelen UI übernimmt Top Bar, Dock und Volume-/Media-OSD, PowerToys FancyZones das optionale Window Management, FluentFlyout die Lock-Key-Hinweise und OneCommander den täglichen Dateimanager-Workflow.
+Ein zweites wichtiges Ziel ist eine Windows-11-Desktop-Umgebung, die optisch so nah wie sinnvoll an macOS 26 / Liquid Glass kommt, ohne die Windows-Integrität zu beschädigen. Seelen UI übernimmt Top Bar, Dock und Volume-/Media-OSD, PowerToys FancyZones das optionale Window Management, FluentFlyout die Lock-Key-Hinweise und Files den täglichen Dateimanager-Workflow. Windhawk Resource Redirect stellt die Windows-Systemicons auf das repositoryverwaltete macOS-nahe Icon-Theme um.
 
 ## Aktueller Stand
 
@@ -75,12 +75,13 @@ Bereits umgesetzt sind unter anderem:
 - Everything als schneller Datei-/Ordnerindex für die Raycast-Extension
 - PowerToys Command Palette und PowerToys Run deaktiviert; PowerToys bleibt für weiterhin verwendete Module installiert
 - Dev-Drive-Paketcache-Konfiguration für npm/pnpm/Yarn sowie Bun-/Go-Umgebungswerte wird über lokalen State nur bei geändertem Desired State erneut geschrieben
-- OneCommander als Explorer-Ersatz
-- OneCommander-Desired-State-Precheck: Neustart nur bei tatsächlichem Konfigurations-Drift
-- OneCommander verwendet nach einer Windows-Computerumbenennung einen eindeutig vorhandenen maschinenspezifischen Settings-Block als Fallback, ohne den anwendungseigenen Schlüssel umzuschreiben
-- Catppuccin-Mocha-Theme für OneCommander
-- Catppuccin-Mocha-Folder-Icons für OneCommander
-- automatisch generiertes Catppuccin-Mocha-File-Icon-Pack aus `catppuccin/vscode-icons`
+- Files als Explorer-Ersatz mit `Win + E`-Integration und Finder-/macOS-orientiertem Desired State
+- Files verwendet transparenten App-Hintergrund, Acrylic-Backdrop und Spaltenansicht als verwaltete Grundeinstellungen
+- Windhawk 2.0 Alpha wird direkt aus dem offiziellen GitHub-Release-Kanal installiert und aktualisiert, damit `windhawk-cli` für reproduzierbare Mod-Verwaltung verfügbar ist
+- Windhawk `icon-resource-redirect` wird per CLI installiert, aktualisiert und aktiviert
+- Resource Redirect verwendet ausschließlich das repositoryverwaltete macOS-nahe Theme unter `dotfiles/windhawk/themes/macos-27`
+- Windhawk-Theme-Pfade werden dynamisch aus dem Repository-Root erzeugt; benutzerspezifische absolute Pfade sind nicht versioniert
+- Windows-Systemdateien werden für die macOS-nahen Systemicons nicht dauerhaft gepatcht
 - NanaZip als Archivmanager
 - interaktive Initialisierung von Windows-Standard-Apps
 - direkte Navigation zur anwendungsspezifischen Standard-App-Konfiguration, sofern Windows eine passende App-ID bereitstellt
@@ -99,9 +100,9 @@ Bereits umgesetzt sind unter anderem:
 - präzisere Reboot-Erkennung mit Auswertung konkreter Ursachen
 - Zen-Mod-Precheck: Browser-Neustart nur, wenn konfigurierte Mods tatsächlich fehlen
 
-Die Desktop-Architektur ist auf Seelen UI + PowerToys FancyZones + Raycast + OneCommander umgestellt. Top Bar und Volume-/Media-Flyouts verwenden das macOS-26-/Liquid-Glass-orientierte Seelen-Theme; die systemweite Akzentfarbe ist `#0A84FF`.
+Die Desktop-Architektur ist auf Seelen UI + PowerToys FancyZones + Raycast + Files + Windhawk Resource Redirect umgestellt. Top Bar und Volume-/Media-Flyouts verwenden das macOS-26-/Liquid-Glass-orientierte Seelen-Theme; die systemweite Akzentfarbe ist `#0A84FF`.
 
-Windows `sudo`, Entwicklermodus und lange Win32-Pfade sind deklarativ im Bootstrap integriert und praktisch bestätigt. Manuelle Bootstrap-Läufe werden über `sudo just ...` erhöht; die frühere Bootstrap-Self-Elevation wurde entfernt. Warp kann über keinen offiziell unterstützten Windows-Pfad als systemweite Standard-Terminalanwendung registriert werden und wird deshalb nicht als solcher Desired State verwaltet. Als nächste Priorität folgt der Desktop-Polish mit dem Seelen Dock, danach OneCommander, Zen und Warp als Terminal-Frontend. Anschließend folgen Mail-Secrets und die Auswahl eines modernen Gmail-/IMAP-/Exchange-/Exchange-Online-fähigen Mail-Clients.
+Windows `sudo`, Entwicklermodus und lange Win32-Pfade sind deklarativ im Bootstrap integriert und praktisch bestätigt. Manuelle Bootstrap-Läufe werden über `sudo just ...` erhöht; die frühere Bootstrap-Self-Elevation wurde entfernt. Warp kann über keinen offiziell unterstützten Windows-Pfad als systemweite Standard-Terminalanwendung registriert werden und wird deshalb nicht als solcher Desired State verwaltet. Der Dateimanager- und Systemicon-Polish ist mit Files sowie Windhawk Resource Redirect umgesetzt. Als nächste Desktop-Prioritäten folgen Zen und Warp als Terminal-Frontend. Anschließend folgen Mail-Secrets und die Auswahl eines modernen Gmail-/IMAP-/Exchange-/Exchange-Online-fähigen Mail-Clients.
 
 Siehe auch [`roadmap.md`](roadmap.md).
 
