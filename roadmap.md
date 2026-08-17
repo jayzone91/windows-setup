@@ -1805,6 +1805,9 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [x] Top Bar bewusst dichter als Flyouts; im Dark Mode keine vollständig transparente Menüleiste
 - [x] systemweite Akzentfarbe `#0A84FF` wird von Seelen direkt aus Windows übernommen
 - [ ] Seelen Dock macOS-26-näher gestalten
+  - installierte Seelen-Erweiterung `Wellenanimation für die Taskleiste` bleibt allein für Hover-Zoom/Magnification und Icon-Bewegung zuständig
+  - eigenes `weg.scss` darf keine konkurrierenden Transform-/Zoom-Animationen für Dock-Items definieren
+  - Theme-Styling beschränkt sich auf Liquid-Glass-Material, Rahmen/Schatten, Radien, Hover-Fläche, Running-Dots, Separatoren, Badges und Icon-Schatten
 
 ## Verbindliche Reihenfolge für den verbleibenden Desktop-Polish
 
@@ -1819,6 +1822,12 @@ Die folgenden Anwendungen dürfen nach dem Seelen-Polish nicht vergessen werden.
 Zusätzlich offen:
 
 - [x] FluentFlyout LockWindow macOS-26-/Liquid-Glass-näher gestaltet
+- [x] macOS-Genie-/Trichteranimation für Minimieren/Wiederherstellen mit Seelen UI geprüft; Seelen bietet aktuell keinen geeigneten Animationspfad für native Fenster
+- [ ] systemweite macOS-nahe Fensteranimationen weiter untersuchen, insbesondere Genie-/Trichtereffekt beim Minimieren und Wiederherstellen
+  - Seelen UI muss dafür nicht zwingend die Implementierung liefern
+  - separate Software oder ein spezialisierter Windows-Compositor-/Animationslayer darf geprüft werden
+  - Lösung muss mit Seelen Dock, Multi-Monitor, Fullscreen/Gaming und normalen Win32-/UWP-Fenstern stabil funktionieren
+  - keine invasive Lösung übernehmen, die Windows-Integrität, Stabilität oder Performance merklich verschlechtert
 - [ ] WSL-Workflow mit wählbarer Distribution und Nix-Paketmanagement entwerfen und testen
 - [ ] weitere Anwendungen nur anpassen, wenn die Methode stabil, reproduzierbar und Windows-kompatibel ist
 
