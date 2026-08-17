@@ -76,7 +76,23 @@
             Id     = "voidtools.Everything"
             Source = "winget"
             Update = $true
-        }
+        },
+
+        @{
+            Name   = "SOPS"
+            Id     = "sops"
+            Source = "scoop"
+            Bucket = "main"
+            Update = $true
+        },
+
+        @{
+            Name   = "age"
+            Id     = "age"
+            Source = "scoop"
+            Bucket = "extras"
+            Update = $true
+        },
 
         @{
             Name   = "Phone Link"

@@ -23,6 +23,7 @@ $modules = @(
     "Raycast.ps1"
     "PowerShell\index.ps1"
     "ScheduledTasks\index.ps1"
+    "Secrets\index.ps1"
     "Security.ps1"
     "Seelen.ps1"
     "Storage\index.ps1"

@@ -199,6 +199,9 @@ Initialize-Windhawk `
 # Pfade neu einlesen
 Update-SessionPath
 
+Initialize-WindowsSetupAgeIdentity `
+    -RepositoryPath $Root
+
 Set-PowerToysConfiguration `
     -Config $PowerToys `
     -RepositoryPath $Root

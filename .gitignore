@@ -4,3 +4,5 @@ node_modules/
 
 # Generated OneCommander assets
 .generated/
+
+**/*.tmp.[extension]

@@ -1,0 +1,6 @@
+creation_rules:
+  - age: age136vcjcwyudzpytpvufuzh6x6p48ltdpavs9r2e835sg4v5ufr9sq9lcw43
+
+stores:
+  json:
+    indent: 2
