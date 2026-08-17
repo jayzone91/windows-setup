@@ -1843,8 +1843,18 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [x] ungepushte Commits
 - [x] kein automatischer Reboot
 
-## Robustheit externer Content-Repositories
+## Robustheit externer GitHub-/Content-Abhängigkeiten
 
+- [ ] temporäre GitHub-Ausfälle dürfen nichtkritische Bootstrap-Schritte nicht abbrechen
+  - zentralen GitHub-Verfügbarkeitstest mit begrenztem Retry und Backoff verwenden
+  - bei GitHub-Ausfall vorhandene lokale Installationen, Repositories und Konfigurationen weiterverwenden
+  - Windhawk-Release-/Update-Prüfung bei GitHub-Ausfall mit Warnung überspringen
+  - Neovim-Remote-Update bei vorhandenem lokalen Submodule mit Warnung überspringen
+  - noch nicht initialisierte optionale GitHub-Abhängigkeiten bei Ausfall überspringen statt den Bootstrap abzubrechen
+  - eigener Repository-`fetch` bleibt nichtfatal; initialer Clone von `windows-setup` bleibt zwingend
+  - Wallpaper behält vorhandene Retry-/Local-Fallback-Logik
+  - lokale/strukturelle Fehler bleiben echte Fehler
+  - GitHub-Ausfall praktisch simulieren und wiederholten Bootstrap testen, bevor der Punkt als `[x]` markiert wird
 - [ ] externe, nichtkritische Content-Repositories wie das Wallpaper-Repository dürfen den gesamten Bootstrap bei temporären Netzwerk-/GitHub-Fehlern nicht abbrechen
   - Git-Netzwerkoperationen mit begrenzter Retry-Logik und Backoff ausführen
   - bei vorhandenem gültigem lokalen Wallpaper-Repository nach fehlgeschlagenen Retries den lokalen Stand weiterverwenden

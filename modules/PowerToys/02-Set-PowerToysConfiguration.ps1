@@ -11,6 +11,9 @@ function Set-PowerToysConfiguration {
     Write-Host "========================================"
     Write-Host ""
     $powerToysRoot = Join-Path $env:LOCALAPPDATA "Microsoft\PowerToys"
+    $fancyZonesCustomLayoutsPath = Join-Path `
+        $powerToysRoot `
+        "FancyZones\custom-layouts.json"
     $paths = @{
         Global = Join-Path $powerToysRoot "settings.json"
         AdvancedPaste = Join-Path $powerToysRoot "AdvancedPaste\settings.json"
@@ -242,6 +245,43 @@ function Set-PowerToysConfiguration {
     # --------------------------------------------------------
     # Command Palette
     # --------------------------------------------------------
+    # --------------------------------------------------------
+    # FancyZones
+    # --------------------------------------------------------
+    $fancyZonesChanged = $false
+    $fancyZonesSourcePath = Join-Path `
+        $RepositoryPath `
+        $Config.FancyZones.CustomLayoutsPath
+
+    if (-not (Test-Path -LiteralPath $fancyZonesSourcePath -PathType Leaf)) {
+        throw "FancyZones-Desired-State fehlt: $fancyZonesSourcePath"
+    }
+
+    $fancyZonesDesired = Get-Content `
+        -LiteralPath $fancyZonesSourcePath `
+        -Raw |
+        ConvertFrom-Json -Depth 100
+
+    if (Test-Path -LiteralPath $fancyZonesCustomLayoutsPath -PathType Leaf) {
+        $fancyZonesCurrent = Get-Content `
+            -LiteralPath $fancyZonesCustomLayoutsPath `
+            -Raw |
+            ConvertFrom-Json -Depth 100
+
+        if (
+            -not (
+                Test-PowerToysJsonEqual `
+                    -Current $fancyZonesCurrent `
+                    -Desired $fancyZonesDesired
+            )
+        ) {
+            $fancyZonesChanged = $true
+        }
+    }
+    else {
+        $fancyZonesChanged = $true
+    }
+
     $commandPaletteChanged = $false
     $desiredHotkey = ConvertTo-PowerToysHotkeyObject `
         -Hotkey $Config.CommandPalette.Hotkey
@@ -369,12 +409,23 @@ function Set-PowerToysConfiguration {
         $fileLocksmithChanged -or
         $findMyMouseChanged -or
         $powerRenameChanged -or
+        $fancyZonesChanged -or
         $commandPaletteChanged -or
         $commandPaletteRuntimeDrift
     if (-not $changed) {
         Write-Host "[OK] PowerToys entspricht bereits dem Desired State."
         return
     }
+    if ($fancyZonesChanged) {
+        Write-Host "[CHANGE] FancyZones Custom Layouts"
+
+        if (Test-Path -LiteralPath $fancyZonesCustomLayoutsPath -PathType Leaf) {
+            Backup-UnmanagedPowerToysFile `
+                -Path $fancyZonesCustomLayoutsPath `
+                -RepositoryPath $RepositoryPath
+        }
+    }
+
     foreach ($path in $paths.Values) {
         if (-not [string]::IsNullOrWhiteSpace($path)) {
             Backup-UnmanagedPowerToysFile `
@@ -423,6 +474,22 @@ function Set-PowerToysConfiguration {
             Stop-Process -Force -ErrorAction SilentlyContinue
         Start-Sleep -Milliseconds 800
     }
+    if ($fancyZonesChanged) {
+        $fancyZonesDirectory = Split-Path `
+            -Parent $fancyZonesCustomLayoutsPath
+
+        if (-not (Test-Path -LiteralPath $fancyZonesDirectory -PathType Container)) {
+            $null = New-Item `
+                -ItemType Directory `
+                -Path $fancyZonesDirectory
+        }
+
+        Copy-Item `
+            -LiteralPath $fancyZonesSourcePath `
+            -Destination $fancyZonesCustomLayoutsPath `
+            -Force
+    }
+
     if ($changed) {
         Write-PowerToysJson -Path $paths.Global -Object $global
     }

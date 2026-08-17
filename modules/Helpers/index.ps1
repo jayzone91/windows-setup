@@ -1,6 +1,7 @@
 $parts = @(
     "01-Test-DirectoryJunctionTarget.ps1"
     "02-Set-FileSymbolicLink.ps1"
+    "03-Test-GitHubAvailability.ps1"
 )
 
 foreach ($part in $parts) {

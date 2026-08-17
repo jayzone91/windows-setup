@@ -247,7 +247,8 @@ $taskbarChanged = Set-TaskbarPreferences `
 $startMenuChanged = Set-StartMenuPreferences `
     -Config $Windows
 
-$windowsSnapChanged = Disable-WindowsSnap
+$windowsSnapChanged = Set-WindowsSnap `
+    -Config $Windows
 $windowsThemeChanged = Set-WindowsTheme `
     -Config $Windows
 $null = Set-WindowsDeveloperPreferences `

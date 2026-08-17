@@ -30,13 +30,55 @@ function Get-LatestWindhawkAlphaRelease {
     $repository = $Config.Release.Repository
     $uri = "https://api.github.com/repos/$repository/releases?per_page=30"
 
-    $releases = Invoke-RestMethod `
-        -Uri $uri `
-        -Headers @{
-            Accept       = "application/vnd.github+json"
-            "User-Agent" = "windows-setup"
-        } `
-        -ErrorAction Stop
+    $releases = $null
+    $maxAttempts = 3
+
+    for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+        try {
+            $releases = Invoke-RestMethod `
+                -Uri $uri `
+                -Headers @{
+                    Accept       = "application/vnd.github+json"
+                    "User-Agent" = "windows-setup"
+                } `
+                -ErrorAction Stop
+
+            break
+        }
+        catch {
+            $statusCode = if (
+                $null -ne $_.Exception.Response -and
+                $null -ne $_.Exception.Response.StatusCode
+            ) {
+                [int] $_.Exception.Response.StatusCode
+            }
+            else {
+                $null
+            }
+
+            $retryable = (
+                $null -eq $statusCode -or
+                $statusCode -eq 408 -or
+                $statusCode -eq 429 -or
+                $statusCode -ge 500
+            )
+
+            if (-not $retryable -or $attempt -eq $maxAttempts) {
+                throw
+            }
+
+            $delaySeconds = $attempt * 2
+
+            Write-Warning (
+                "Windhawk-Release-Abfrage fehlgeschlagen" +
+                $(if ($null -ne $statusCode) { " (HTTP $statusCode)" } else { "" }) +
+                ". Neuer Versuch in $delaySeconds Sekunden " +
+                "($attempt/$maxAttempts)."
+            )
+
+            Start-Sleep -Seconds $delaySeconds
+        }
+    }
 
     $release = $releases |
         Where-Object {
@@ -72,7 +114,19 @@ function Install-WindhawkAlpha {
         [hashtable] $Config
     )
 
-    $release = Get-LatestWindhawkAlphaRelease -Config $Config
+    try {
+        $release = Get-LatestWindhawkAlphaRelease -Config $Config
+    }
+    catch {
+        Write-Warning (
+            "Windhawk-GitHub-Abfrage fehlgeschlagen. " +
+            "Windhawk wird für diesen Bootstrap übersprungen. Fehler: {0}" -f
+            $_.Exception.Message
+        )
+
+        return $null
+    }
+
     $cli = Get-WindhawkCliPath
 
     if ($cli) {
@@ -198,7 +252,17 @@ function Initialize-Windhawk {
         [string] $RepositoryPath
     )
 
+    if (-not (Test-GitHubAvailability)) {
+        Write-Warning "GitHub nicht erreichbar. Windhawk-Update wird übersprungen."
+        return
+    }
+
     $cli = Install-WindhawkAlpha -Config $Config
+
+    if (-not $cli) {
+        Write-Warning "Windhawk-Schritt übersprungen."
+        return
+    }
 
     Set-WindhawkResourceRedirect `
         -CliPath $cli `

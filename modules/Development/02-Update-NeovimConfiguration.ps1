@@ -60,6 +60,30 @@ function Update-NeovimConfiguration {
         Write-Host "[OK] Neovim-Submodule ist bereits initialisiert."
     }
 
+    if (-not (Test-GitHubAvailability)) {
+        if ($isInitialized) {
+            Write-Warning (
+                "GitHub nicht erreichbar. Neovim-Remote-Update wird übersprungen; " +
+                "der vorhandene lokale Stand wird weiterverwendet."
+            )
+
+            $nvimConfigPath = Join-Path $env:LOCALAPPDATA "nvim"
+
+            Set-DirectoryJunction `
+                -Path $nvimConfigPath `
+                -Target $submodulePath
+
+            return
+        }
+
+        Write-Warning (
+            "GitHub nicht erreichbar und Neovim-Submodule noch nicht initialisiert. " +
+            "Neovim-Konfigurationsschritt wird übersprungen."
+        )
+
+        return
+    }
+
     $originalHead = (
         @(
             & git -C $submodulePath rev-parse HEAD

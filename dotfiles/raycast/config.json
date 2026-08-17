@@ -9,7 +9,7 @@
         "showInMenuBar": false,
         "appearance": "dark",
         "themeDarkId": "bundled-raycast-dark",
-        "windowMode": "compact",
+        "windowMode": "expanded",
         "windowPresentationMode": "mouse-screen",
         "windowActivationBehavior": "move-to-active-space",
         "globalHotkey": {

@@ -18,6 +18,12 @@
         AutoHide = $false
     }
 
+    WindowManagement = @{
+        Snap = @{
+            Enabled = $true
+        }
+    }
+
     StartMenu    = @{
         ShowRecentlyAddedApps = $false
         ShowRecentItems       = $false

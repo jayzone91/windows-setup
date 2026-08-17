@@ -321,12 +321,29 @@ function Set-WindowsHDR {
     )
 }
 
-function Disable-WindowsSnap {
+function Set-WindowsSnap {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Config
+    )
+
     Write-Host ""
     Write-Host "========================================"
     Write-Host " Windows Snap"
     Write-Host "========================================"
 
+    if (
+        -not $Config.Contains("WindowManagement") -or
+        -not $Config.WindowManagement.Contains("Snap") -or
+        -not $Config.WindowManagement.Snap.Contains("Enabled")
+    ) {
+        throw "WindowManagement.Snap.Enabled fehlt in config/windows.psd1."
+    }
+
+    $enabled = [bool] $Config.WindowManagement.Snap.Enabled
+    $desiredDword = if ($enabled) { 1 } else { 0 }
+    $desiredString = if ($enabled) { "1" } else { "0" }
     $changed = $false
     $desktopPath = "HKCU:\Control Panel\Desktop"
     $explorerAdvancedPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
@@ -336,11 +353,11 @@ function Disable-WindowsSnap {
         -Name "WindowArrangementActive" `
         -ErrorAction SilentlyContinue
 
-    if ([string] $currentArrangement -ne "0") {
+    if ([string] $currentArrangement -ne $desiredString) {
         Set-ItemProperty `
             -Path $desktopPath `
             -Name "WindowArrangementActive" `
-            -Value "0" `
+            -Value $desiredString `
             -ErrorAction Stop
 
         $changed = $true
@@ -354,14 +371,14 @@ function Disable-WindowsSnap {
             Set-RegistryDword `
                 -Path $explorerAdvancedPath `
                 -Name $name `
-                -Value 0
+                -Value $desiredDword
         ) {
             $changed = $true
         }
     }
 
     if ($changed) {
-        Write-Host "[OK] Windows Snap deaktiviert/aktualisiert." `
+        Write-Host "[OK] Windows Snap aktualisiert. Enabled=$enabled." `
             -ForegroundColor Green
     }
     else {

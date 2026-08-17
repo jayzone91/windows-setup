@@ -34,6 +34,9 @@
         ZoomIt                 = $false
     }
 
+    FancyZones = @{
+        CustomLayoutsPath = 'dotfiles\powertoys\fancyzones\custom-layouts.json'
+    }
     CommandPalette = @{
         Hotkey = @{
             win   = $false
