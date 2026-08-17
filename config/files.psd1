@@ -4,7 +4,7 @@
     AppId             = "Files_1y0xx7n9077q4!App"
     AppInstallerUrl   = "https://cdn.files.community/files/stable/Files.Package.appinstaller"
 
-    DesiredSettings = @{
+    DesiredSettings   = @{
         AppThemeBackdropMaterial               = 3
         AppThemeBackgroundColor                = "#00000000"
         AppThemeAddressBarBackgroundColor      = "#00000001"
@@ -13,7 +13,7 @@
         AppThemeFileAreaBackgroundColor        = "#00000001"
         AppThemeInfoPaneBackgroundColor        = "#00000001"
 
-        DefaultLayoutMode                      = 3
+        DefaultLayoutMode                      = 0
         ColumnsViewSize                        = 1
         SyncFolderPreferencesAcrossDirectories = $true
 
