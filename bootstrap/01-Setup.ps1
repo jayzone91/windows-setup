@@ -202,6 +202,9 @@ Update-SessionPath
 Initialize-WindowsSetupAgeIdentity `
     -RepositoryPath $Root
 
+Initialize-ThunderbirdMailAccounts `
+    -RepositoryPath $Root
+
 Set-PowerToysConfiguration `
     -Config $PowerToys `
     -RepositoryPath $Root

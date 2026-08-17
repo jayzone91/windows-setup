@@ -1,5 +1,6 @@
 $parts = @(
     "Thunderbird.ps1"
+    "Provisioning.ps1"
 )
 
 foreach ($part in $parts) {
