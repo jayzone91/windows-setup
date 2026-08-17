@@ -2017,6 +2017,13 @@ Noch offen aus dem Paketmanager-Umbau:
 - [x] Legacy-Code anschließend aus dem Repository entfernt
 - [ ] Fullscreen-/Borderless-Verhalten mit Seelen weiter praktisch prüfen
 - [ ] Multi-Monitor-Verhalten mit Seelen weiter praktisch prüfen
+- [ ] PowerToys `Find My Mouse` bei laufenden Spielen und anderen echten Vollbildanwendungen automatisch deaktivieren und nach Verlassen/Beenden der Vollbildanwendung automatisch wieder aktivieren
+  - vorhandenes `FindMyMouse.DoNotActivateOnGameMode = $true` bleibt als native PowerToys-Schutzschicht bestehen
+  - diese native Option deckt nur Windows Game Mode ab und reicht für beliebige Vollbildanwendungen nicht aus
+  - Runtime-Erkennung muss generisch über den tatsächlichen Vordergrund-/Vollbildzustand erfolgen; keine statische Spieleliste als alleinige Erkennung
+  - Umschaltung darf PowerToys nicht unnötig komplett neu starten und muss den vorherigen Desired State von `FindMyMouse = $true` zuverlässig wiederherstellen
+  - kein dauerhafter deaktivierter Zustand nach Crash, Abbruch, Benutzerwechsel oder Ende der Vollbildanwendung
+  - erst nach praktischem Test mit mindestens einem Spiel und einer Nicht-Spiel-Vollbildanwendung als `[x]` markieren
 ## Kürzlich abgeschlossen – CLI Tools / Shell UX
 
 - [x] `ripgrep` (`rg`) installiert
