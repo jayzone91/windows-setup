@@ -365,3 +365,41 @@
     line-height: normal !important;
     margin-block: 0 !important;
 }
+/* Safari active-tab hard centering */
+#browser .tab-strip .tab-wrapper.active,
+#browser .tab-strip .tab-wrapper.active > .tab,
+#browser .tab-strip .tab-wrapper.active > .tab > .tab-header {
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
+}
+
+#browser .tab-strip .tab-wrapper.active > .tab {
+    display: flex !important;
+    align-items: stretch !important;
+}
+
+#browser .tab-strip .tab-wrapper.active > .tab > .tab-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding-block: 0 !important;
+}
+
+#browser .tab-strip .tab-wrapper.active .favicon,
+#browser .tab-strip .tab-wrapper.active .title,
+#browser .tab-strip .tab-wrapper.active .close {
+    position: static !important;
+    top: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    margin-block: 0 !important;
+    align-self: center !important;
+}
+
+#browser .tab-strip .tab-wrapper.active .title {
+    display: flex !important;
+    align-items: center !important;
+    height: 28px !important;
+    line-height: 28px !important;
+}
