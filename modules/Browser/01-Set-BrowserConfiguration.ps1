@@ -41,6 +41,15 @@ function Set-BrowserConfiguration {
         }
     }
 
+    if ($Config.Vivaldi -and $Config.Vivaldi.Enabled) {
+        $vivaldiChanged = Set-VivaldiConfiguration `
+            -Config $Config.Vivaldi `
+            -RepositoryPath $script:WindowsSetupRoot
+
+        if ($vivaldiChanged) {
+            $configurationChanged = $true
+        }
+    }
     Write-Host ""
     Write-Host "[OK] Browser Konfiguration abgeschlossen." `
         -ForegroundColor Green

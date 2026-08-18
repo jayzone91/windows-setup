@@ -191,6 +191,16 @@ Begründung:
 - [x] VS Code darf Catppuccin unabhängig vom Windows-Gesamtdesign weiterverwenden
 - [x] Terminal darf Catppuccin unabhängig vom Windows-Gesamtdesign weiterverwenden, solange der eingesetzte Terminal-Workflow dies sinnvoll macht
 - [x] Zen Browser verwendet wieder sein natives Standard-Theme; repositoryverwaltetes Catppuccin-CSS wurde vollständig verworfen
+- [x] Vivaldi ist der Hauptbrowser unter Windows
+- [x] Zen bleibt als Firefox-basierter Testbrowser für Webentwicklung vollständig erhalten
+- [x] Vivaldi-Safari-/macOS-26-Layout wird über `dotfiles/vivaldi/window.html`, `dotfiles/vivaldi/safari.js` und `dotfiles/vivaldi/css/` versioniert
+- [x] Vivaldi verwendet macOS-artige Traffic-Lights, Safari-orientierte Toolbar-/Tab-Geometrie und ein Liquid-Glass-Material
+- [x] das Vivaldi-Logo in der Toolbar wurde durch einen neutralen Menüindikator ersetzt
+- [x] Vivaldi-Upstream-`window.html` bleibt als Referenz unter `dotfiles/vivaldi/upstream/` erhalten
+- [ ] Vivaldi-Icon für `Neuer Tab` durch Safari-/macOS-artiges Symbol ersetzen
+- [ ] Vivaldi-Download-Icon durch Safari-/macOS-artiges Symbol ersetzen
+- [ ] Vivaldi als Windows-Standardbrowser für HTTP/HTTPS automatisiert und reproduzierbar setzen
+- [ ] Vivaldi-Custom-UI-CSS-Pfad ohne manuellen Settings-Schritt als Desired State herstellen
 - [x] Zen `userChrome.css`, `userContent.css`, das Catppuccin-Logo und hostbezogene Website-Styles wurden vollständig entfernt
 - [x] Zen-Custom-CSS wird erst wieder eingeführt, wenn eine konkrete stabile UI-Anpassung benötigt und praktisch bestätigt wurde
 - [x] der Zen-Desired-State entfernt veraltete verwaltete Custom-CSS-Artefakte aus dem aktiven Profil; fremde nicht verwaltete `chrome\websites`-Verzeichnisse bleiben unangetastet

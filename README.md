@@ -20,14 +20,14 @@ Der Desktop orientiert sich optisch an macOS 26 / Liquid Glass, ohne Windows-Sys
 | Launcher | Raycast + Everything |
 | Dateimanager | Files |
 | Archivmanager | NanaZip |
-| Browser | Zen |
+| Browser | Vivaldi (Hauptbrowser) / Zen (Firefox-WebDev-Testbrowser) |
 | Lock-Key-OSD | FluentFlyout |
 | Volume / Media | Seelen UI |
 | Systemicons | Windhawk Resource Redirect |
 | Editor | VS Code / Neovim |
 | Terminal | Windows Terminal / Nushell / Starship |
 
-Zen verwendet sein natives Standard-Theme. Catppuccin ist keine globale Designvorgabe und bleibt nur dort erhalten, wo es bewusst für einzelne Entwicklungswerkzeuge eingesetzt wird.
+Vivaldi ist der Hauptbrowser und erhält über versionierte `window.html`, `safari.js` und CSS-Dotfiles ein Safari-/macOS-26-orientiertes Layout mit Liquid-Glass-Material. Zen bleibt bewusst installiert und konfiguriert und dient als Firefox-basierter Testbrowser für Webentwicklung. Zen verwendet weiterhin sein natives Standard-Theme. Catppuccin ist keine globale Designvorgabe und bleibt nur dort erhalten, wo es bewusst für einzelne Entwicklungswerkzeuge eingesetzt wird.
 
 ## Was der Bootstrap verwaltet
 

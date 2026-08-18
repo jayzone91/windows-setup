@@ -18,6 +18,13 @@
     }
 
 
+    Vivaldi    = @{
+        Enabled       = $true
+        MainBrowser   = $true
+        DotfilesPath  = "dotfiles\vivaldi"
+        CustomCssPath = "dotfiles\vivaldi\css"
+    }
+
     Zen        = @{
         Extensions  = @(
             @{
