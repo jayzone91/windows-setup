@@ -12,6 +12,13 @@
             Id     = "Google.Chrome.Beta"
             Source = "winget"
             Update = $true
+        },
+
+        @{
+            Name   = "Vivaldi"
+            Id     = "Vivaldi.Vivaldi"
+            Source = "winget"
+            Update = $true
         }
     )
 }
