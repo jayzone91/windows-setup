@@ -344,3 +344,24 @@
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
 }
+/* Safari active-tab vertical alignment */
+#browser .tab-wrapper.active .tab,
+#browser .tab-wrapper.active .tab-header {
+    height: 100% !important;
+}
+
+#browser .tab-wrapper.active .tab-header {
+    display: flex !important;
+    align-items: center !important;
+}
+
+#browser .tab-wrapper.active .favicon,
+#browser .tab-wrapper.active .title,
+#browser .tab-wrapper.active .close {
+    align-self: center !important;
+}
+
+#browser .tab-wrapper.active .title {
+    line-height: normal !important;
+    margin-block: 0 !important;
+}
