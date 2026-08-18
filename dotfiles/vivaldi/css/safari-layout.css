@@ -1210,3 +1210,110 @@
     padding-inline: 8px !important;
     column-gap: 8px !important;
 }
+/* Safari toolbar optical balance */
+#browser .safari-toolbar-left {
+    gap: 3px !important;
+}
+
+#browser .safari-toolbar-right {
+    gap: 3px !important;
+}
+
+/* Windows controls */
+#browser .safari-toolbar-left > .window-buttongroup {
+    height: 26px !important;
+    margin-right: 7px !important;
+}
+
+#browser .safari-toolbar-left > .window-buttongroup button {
+    width: 24px !important;
+    min-width: 24px !important;
+    height: 24px !important;
+}
+
+#browser .safari-toolbar-left > .window-buttongroup button svg {
+    width: 13.5px !important;
+    height: 13.5px !important;
+}
+
+/* Vivaldi button */
+#browser .safari-toolbar-left > button.vivaldi {
+    width: 26px !important;
+    min-width: 26px !important;
+    height: 26px !important;
+    margin-right: 7px !important;
+    padding: 5px !important;
+}
+
+#browser .safari-toolbar-left > button.vivaldi svg {
+    width: 15.5px !important;
+    height: 15.5px !important;
+}
+
+/* Navigation */
+#browser .safari-toolbar-left > .button-toolbar {
+    flex-basis: 26px !important;
+    width: 26px !important;
+    min-width: 26px !important;
+    height: 26px !important;
+    margin-right: 1px !important;
+}
+
+#browser .safari-toolbar-left > .button-toolbar > .ToolbarButton-Button {
+    width: 26px !important;
+    min-width: 26px !important;
+    height: 26px !important;
+    padding: 5px !important;
+}
+
+#browser .safari-toolbar-left > .button-toolbar svg {
+    width: 15px !important;
+    height: 15px !important;
+}
+
+/* Right side: optical rather than identical SVG sizing */
+#browser .safari-toolbar-right > .button-toolbar {
+    flex-basis: 26px !important;
+    width: 26px !important;
+    min-width: 26px !important;
+    height: 26px !important;
+}
+
+#browser .safari-toolbar-right > .button-toolbar > .ToolbarButton-Button {
+    width: 26px !important;
+    min-width: 26px !important;
+    height: 26px !important;
+    padding: 5px !important;
+}
+
+/* Default */
+#browser .safari-toolbar-right > .button-toolbar svg {
+    width: 15px !important;
+    height: 15px !important;
+}
+
+/* Download icon tends to look visually small */
+#browser .safari-toolbar-right [data-name="Downloads"] svg,
+#browser .safari-toolbar-right [data-name="Download"] svg {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+/* Extension / menu-like glyphs tend to look visually large */
+#browser .safari-toolbar-right [data-name="Extensions"] svg,
+#browser .safari-toolbar-right [data-name="ExtensionToggle"] svg {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+/* Keep hover hitboxes consistent */
+#browser .safari-toolbar-left > .button-toolbar > .ToolbarButton-Button,
+#browser .safari-toolbar-right > .button-toolbar > .ToolbarButton-Button,
+#browser .safari-toolbar-left > button.vivaldi {
+    border-radius: 7px !important;
+}
+
+#browser .toolbar-addressbar {
+    padding-inline: 9px !important;
+    column-gap: 9px !important;
+}
