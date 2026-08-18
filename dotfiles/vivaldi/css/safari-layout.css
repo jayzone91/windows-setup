@@ -2,9 +2,9 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    min-height: 36px;
-    padding: 3px 6px;
-    column-gap: 8px;
+    min-height: 38px;
+    padding: 4px 8px;
+    column-gap: 10px;
 }
 
 #browser .safari-toolbar-left,
@@ -17,26 +17,41 @@
 
 #browser .safari-toolbar-left {
     justify-self: start;
+    gap: 2px;
 }
 
 #browser .safari-toolbar-center {
     justify-self: center;
-    width: clamp(420px, 42vw, 820px);
+    width: clamp(360px, 31vw, 560px);
+    transition: width 160ms ease;
+}
+
+#browser .safari-toolbar-center:focus-within {
+    width: clamp(560px, 48vw, 880px);
 }
 
 #browser .safari-toolbar-right {
     justify-self: end;
+    gap: 2px;
 }
 
 #browser .safari-toolbar-center > [data-name="AddressField"] {
     width: 100%;
     min-width: 0;
     flex: 1 1 auto;
+    border-radius: 9px;
+    transition:
+        box-shadow 140ms ease,
+        background-color 140ms ease;
+}
+
+#browser .safari-toolbar-center:focus-within > [data-name="AddressField"] {
+    box-shadow: 0 0 0 2px rgb(10 132 255 / 30%);
 }
 
 #browser #urlFieldInput {
     min-height: 28px;
-    font-size: 13px;
+    font-size: 12px;
     text-align: center;
 }
 
@@ -46,37 +61,83 @@
 }
 
 #browser [data-name="AddressField"] [data-name="Reload"] {
-    width: 24px;
-    min-width: 24px;
-    height: 24px;
+    width: 22px;
+    min-width: 22px;
+    height: 22px;
 }
 
-#browser .safari-toolbar-right > button.vivaldi {
-    flex: 0 0 auto;
-    align-self: stretch;
-    margin-left: 2px;
-    border-radius: 8px;
-}
-
-#browser .safari-toolbar-right > .window-buttongroup {
+#browser .safari-toolbar-left > .window-buttongroup {
     position: static;
     flex: 0 0 auto;
     align-self: stretch;
+    order: -20;
+}
+
+#browser .safari-toolbar-left > button.vivaldi {
+    order: -10;
+    flex: 0 0 auto;
+    align-self: stretch;
+    margin: 0 4px 0 2px;
+}
+
+#browser .safari-toolbar-left > .button-toolbar > .ToolbarButton-Button,
+#browser .safari-toolbar-right > .button-toolbar > .ToolbarButton-Button,
+#browser .safari-toolbar-left > button.vivaldi {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 7px;
+}
+
+#browser .safari-toolbar-left > .button-toolbar > .ToolbarButton-Button:hover,
+#browser .safari-toolbar-right > .button-toolbar > .ToolbarButton-Button:hover,
+#browser .safari-toolbar-left > button.vivaldi:hover {
+    background: rgb(255 255 255 / 9%);
 }
 
 #browser #header,
 #browser #tabs-tabbar-container,
 #browser #tabs-container {
-    min-height: 32px;
+    min-height: 36px;
+}
+
+#browser #tabs-tabbar-container {
+    padding: 3px 8px 5px;
+}
+
+#browser #tabs-container {
+    min-height: 34px;
+    padding: 3px;
+    border-radius: 11px;
+    background: rgb(255 255 255 / 8%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 4%);
+}
+
+#browser .tab-strip .tab-position {
+    --Height: 28px !important;
 }
 
 #browser .tab-strip .tab {
+    margin: 0 1px;
     border-radius: 8px;
-    margin: 2px 1px;
+    background: transparent;
+    box-shadow: none;
+}
+
+#browser .tab-strip .tab .tab-header {
+    justify-content: center;
+    padding-inline: 12px;
+}
+
+#browser .tab-strip .tab .title {
+    text-align: center;
 }
 
 #browser .tab-strip .tab.active {
-    background: rgb(255 255 255 / 12%);
+    background: rgb(255 255 255 / 18%);
+    box-shadow:
+        0 1px 2px rgb(0 0 0 / 18%),
+        inset 0 0 0 1px rgb(255 255 255 / 7%);
 }
 
 #browser .tab-strip .tab:not(.active):hover {
@@ -85,16 +146,201 @@
 
 @media (max-width: 1100px) {
     #browser .safari-toolbar-center {
-        width: clamp(320px, 46vw, 620px);
+        width: clamp(300px, 36vw, 480px);
+    }
+
+    #browser .safari-toolbar-center:focus-within {
+        width: clamp(440px, 52vw, 700px);
     }
 }
 
 @media (prefers-color-scheme: light) {
-    #browser .tab-strip .tab.active {
+    #browser .safari-toolbar-left > .button-toolbar > .ToolbarButton-Button:hover,
+    #browser .safari-toolbar-right > .button-toolbar > .ToolbarButton-Button:hover,
+    #browser .safari-toolbar-left > button.vivaldi:hover {
+        background: rgb(0 0 0 / 6%);
+    }
+
+    #browser #tabs-container {
         background: rgb(0 0 0 / 10%);
+        box-shadow: inset 0 0 0 1px rgb(0 0 0 / 4%);
+    }
+
+    #browser .tab-strip .tab.active {
+        background: rgb(255 255 255 / 82%);
+        box-shadow:
+            0 1px 2px rgb(0 0 0 / 12%),
+            inset 0 0 0 1px rgb(255 255 255 / 70%);
     }
 
     #browser .tab-strip .tab:not(.active):hover {
-        background: rgb(0 0 0 / 6%);
+        background: rgb(255 255 255 / 34%);
     }
+}
+
+/* Safari tab track */
+#browser #tabs-tabbar-container {
+    padding: 3px 8px 6px !important;
+}
+
+#browser #tabs-container {
+    min-height: 36px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+#browser #tabs-container > .resize {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    height: 32px !important;
+    padding: 2px !important;
+    border-radius: 10px !important;
+    background: rgb(255 255 255 / 10%) !important;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%) !important;
+}
+
+#browser #tabs-container > .resize > .tab-strip {
+    width: 100% !important;
+    height: 28px !important;
+}
+
+#browser .tab-strip .tab-position {
+    --Height: 28px !important;
+}
+
+#browser .tab-strip .tab,
+#browser .tab-strip .tab:hover,
+#browser .tab-strip .tab:not(.active),
+#browser .tab-strip .tab:not(.active):hover {
+    margin: 0 1px !important;
+    border-radius: 8px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+#browser .tab-strip .tab.active {
+    background: rgb(255 255 255 / 18%) !important;
+    box-shadow:
+        0 1px 2px rgb(0 0 0 / 20%),
+        inset 0 0 0 1px rgb(255 255 255 / 8%) !important;
+}
+
+#browser .tab-strip .tab .tab-header {
+    height: 28px !important;
+    justify-content: center !important;
+    padding-inline: 11px !important;
+}
+
+#browser .tab-strip .tab .title {
+    text-align: center !important;
+}
+
+#browser .tab-strip .tab-position.is-pinned {
+    --Width: 34px !important;
+}
+
+#browser .tab-strip .tab.pinned .tab-header {
+    padding-inline: 8px !important;
+}
+
+@media (prefers-color-scheme: light) {
+    #browser #tabs-container > .resize {
+        background: rgb(0 0 0 / 12%) !important;
+        box-shadow: inset 0 0 0 1px rgb(0 0 0 / 5%) !important;
+    }
+
+    #browser .tab-strip .tab.active {
+        background: rgb(255 255 255 / 88%) !important;
+        box-shadow:
+            0 1px 2px rgb(0 0 0 / 12%),
+            inset 0 0 0 1px rgb(255 255 255 / 75%) !important;
+    }
+}
+
+/* Safari equal-width tabs */
+#browser #tabs-container > .resize > .tab-strip {
+    display: flex !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+#browser #tabs-container > .resize > .tab-strip > span {
+    display: block !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+}
+
+#browser #tabs-container > .resize > .tab-strip > span > .tab-position {
+    position: relative !important;
+    inset: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 28px !important;
+}
+
+#browser #tabs-container > .resize > .tab-strip > span > .tab-position > .tab-wrapper,
+#browser #tabs-container > .resize > .tab-strip > span > .tab-position > .tab-wrapper > .tab {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+}
+
+#browser .tab-strip .tab-header {
+    min-width: 0 !important;
+}
+
+#browser .tab-strip .title {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+/* Safari active-tab priority */
+#browser #tabs-container > .resize > .tab-strip > span {
+    container-type: inline-size;
+    flex: 1 1 0 !important;
+    min-width: 34px !important;
+}
+
+#browser #tabs-container > .resize > .tab-strip > span:has(.tab-wrapper.active) {
+    flex: 1.6 1 180px !important;
+    min-width: 180px !important;
+}
+
+#browser #tabs-container > .resize > .tab-strip > span:not(:has(.tab-wrapper.active)) .tab-header {
+    min-width: 0 !important;
+}
+
+#browser #tabs-container > .resize > .tab-strip > span:not(:has(.tab-wrapper.active)) .title {
+    min-width: 0 !important;
+}
+
+@container (max-width: 72px) {
+    .tab-wrapper:not(.active) .title,
+    .tab-wrapper:not(.active) .close {
+        display: none !important;
+    }
+
+    .tab-wrapper:not(.active) .tab-header {
+        justify-content: center !important;
+        padding-inline: 0 !important;
+    }
+
+    .tab-wrapper:not(.active) .favicon {
+        margin-inline: auto !important;
+    }
+}
+
+#browser .tab-wrapper.active .title {
+    display: block !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
 }

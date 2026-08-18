@@ -58,6 +58,40 @@
             const center = ensureGroup(addressbar, "safari-toolbar-center");
             const right = ensureGroup(addressbar, "safari-toolbar-right");
 
+            const windowButtons =
+                document.querySelector(".window-buttongroup") ??
+                left.querySelector(":scope > .window-buttongroup");
+
+            const vivaldiButton =
+                document.querySelector("#tabs-container > button.vivaldi") ??
+                addressbar.querySelector(":scope > button.vivaldi") ??
+                left.querySelector(":scope > button.vivaldi") ??
+                right.querySelector(":scope > button.vivaldi");
+
+            moveIfNeeded(windowButtons, left);
+
+            if (windowButtons) {
+                const close = windowButtons.querySelector(".window-close");
+                const minimize = windowButtons.querySelector(".window-minimize");
+                const maximize = windowButtons.querySelector(".window-maximize");
+
+                if (
+                    close &&
+                    minimize &&
+                    maximize &&
+                    (
+                        windowButtons.children[0] !== close ||
+                        windowButtons.children[1] !== minimize ||
+                        windowButtons.children[2] !== maximize
+                    )
+                ) {
+                    windowButtons.replaceChildren(close, minimize, maximize);
+                }
+            }
+
+            vivaldiButton?.querySelector(".expand-arrow")?.remove();
+            moveIfNeeded(vivaldiButton, left);
+
             moveIfNeeded(getToolbarItem("Back"), left);
             moveIfNeeded(getToolbarItem("Forward"), left);
             moveIfNeeded(addressField, center);
@@ -68,6 +102,7 @@
 
             if (reload && addressFieldRightToolbar) {
                 const bookmark = addressFieldRightToolbar.querySelector(".BookmarkButton");
+
                 if (reload.parentElement !== addressFieldRightToolbar) {
                     addressFieldRightToolbar.insertBefore(reload, bookmark ?? null);
                 }
@@ -75,20 +110,7 @@
 
             moveIfNeeded(document.querySelector("#downloads"), right);
             moveIfNeeded(addressbar.querySelector(":scope > .toolbar-extensions"), right);
-
-            const vivaldiButton =
-                document.querySelector("#tabs-container > button.vivaldi") ??
-                addressbar.querySelector(":scope > button.vivaldi") ??
-                right.querySelector(":scope > button.vivaldi");
-
-            vivaldiButton?.querySelector(".expand-arrow")?.remove();
-            moveIfNeeded(vivaldiButton, right);
-
-            const windowButtons =
-                document.querySelector(".window-buttongroup") ??
-                right.querySelector(":scope > .window-buttongroup");
-
-            moveIfNeeded(windowButtons, right);
+            moveIfNeeded(getToolbarItem("NewTab"), right);
         } finally {
             applying = false;
         }
