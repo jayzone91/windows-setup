@@ -403,3 +403,27 @@
     height: 28px !important;
     line-height: 28px !important;
 }
+/* Safari active-tab horizontal centering */
+#browser .tab-strip .tab-wrapper.active .tab-header {
+    position: relative !important;
+}
+
+#browser .tab-strip .tab-wrapper.active .title {
+    position: absolute !important;
+    left: 50% !important;
+    width: auto !important;
+    max-width: calc(100% - 64px) !important;
+    transform: translateX(-50%) !important;
+    justify-content: center !important;
+    text-align: center !important;
+}
+
+#browser .tab-strip .tab-wrapper.active .favicon {
+    position: absolute !important;
+    left: 10px !important;
+}
+
+#browser .tab-strip .tab-wrapper.active .close {
+    position: absolute !important;
+    right: 8px !important;
+}
