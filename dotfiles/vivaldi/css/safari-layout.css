@@ -1635,3 +1635,22 @@
 #browser .safari-toolbar-right > .button-toolbar > .ToolbarButton-Button:hover {
     background: rgb(255 255 255 / 5%) !important;
 }
+/* Safari right controls svg scale */
+#browser .safari-toolbar-right > .button-toolbar svg {
+    transform: scale(1.22) !important;
+    transform-origin: center !important;
+}
+
+#browser .safari-toolbar-right [data-name="Downloads"] svg,
+#browser .safari-toolbar-right [data-name="Download"] svg {
+    transform: scale(1.25) !important;
+}
+
+#browser .safari-toolbar-right [data-name="Extensions"] svg,
+#browser .safari-toolbar-right [data-name="ExtensionToggle"] svg {
+    transform: scale(1.30) !important;
+}
+
+#browser .safari-toolbar-right [data-name="NewTab"] svg {
+    transform: scale(1.20) !important;
+}
