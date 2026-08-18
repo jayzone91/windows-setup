@@ -58,10 +58,38 @@ function Set-WarpConfiguration {
         throw "Versionierte Warp settings.toml fehlt: $repositorySettingsPath"
     }
 
-    Set-FileHardLink `
+    Set-FileSymbolicLink `
         -Path $settingsPath `
         -Target $repositorySettingsPath `
         -ReplaceExistingFile
+    $script:warpRestartRequired = $false
+
+    $settingsLastWriteTime = (
+        Get-Item `
+            -LiteralPath $repositorySettingsPath `
+            -Force
+    ).LastWriteTime
+
+    $warpProcesses = @(
+        Get-Process `
+            -Name "warp" `
+            -ErrorAction SilentlyContinue
+    )
+
+    foreach ($warpProcess in $warpProcesses) {
+        try {
+            if ($warpProcess.StartTime -lt $settingsLastWriteTime) {
+                $script:warpRestartRequired = $true
+                break
+            }
+        }
+        catch {
+            Write-Verbose (
+                "Warp-Prozessstartzeit konnte nicht gelesen werden: {0}" `
+                    -f $_.Exception.Message
+            )
+        }
+    }
 
     if (-not $Config.Contains("Theme")) {
         throw "Warp-Konfiguration enthält keinen Theme-Bereich."

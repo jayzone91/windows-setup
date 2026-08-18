@@ -405,6 +405,16 @@ Get-PendingRebootStatus
 $script:rebootRequired =
 $rebootStatus.RebootRequired
 
+if ($script:warpRestartRequired) {
+    Write-Host ""
+    Write-Host "[ACTION] Warp neu starten." `
+        -ForegroundColor Yellow
+    Write-Host (
+        "Die versionierte Warp settings.toml wurde seit dem Start " +
+        "des laufenden Warp-Prozesses geändert."
+    ) -ForegroundColor Yellow
+}
+
 if ($rebootStatus.RebootRequired) {
 
     Write-Host ""
