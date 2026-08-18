@@ -458,3 +458,58 @@
     opacity: 1 !important;
     visibility: visible !important;
 }
+/* Safari favicon persistence + ellipsis */
+#browser .tab-strip .tab-header {
+    overflow: hidden !important;
+}
+
+#browser .tab-strip .favicon,
+#browser .tab-strip .tab:hover .favicon,
+#browser .tab-strip .tab-wrapper.active .favicon,
+#browser .tab-strip .tab-wrapper.active .tab:hover .favicon {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    flex: 0 0 16px !important;
+    width: 16px !important;
+    min-width: 16px !important;
+    max-width: 16px !important;
+    height: 16px !important;
+    margin: 0 !important;
+}
+
+#browser .tab-strip .favicon > img {
+    display: block !important;
+    width: 16px !important;
+    height: 16px !important;
+    opacity: 1 !important;
+}
+
+#browser .tab-strip .title,
+#browser .tab-strip .tab-wrapper.active .title {
+    display: block !important;
+    min-width: 0 !important;
+    max-width: calc(100% - 50px) !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+    flex: 0 1 auto !important;
+}
+
+#browser .tab-strip .tab:hover .title,
+#browser .tab-strip .tab-wrapper.active .tab:hover .title {
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+    text-overflow: ellipsis !important;
+}
+
+#browser .tab-strip .close,
+#browser .tab-strip .tab-wrapper.active .close {
+    z-index: 3 !important;
+}
+
+#browser .tab-strip .tab-header > .favicon + .title {
+    margin-left: 0 !important;
+}
