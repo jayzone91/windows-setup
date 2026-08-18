@@ -994,3 +994,40 @@
         );
     opacity: 0.72;
 }
+/* Safari liquid glass final dark balance */
+#browser .toolbar-addressbar {
+    background:
+        linear-gradient(
+            180deg,
+            rgb(28 30 38 / 18%),
+            rgb(16 18 24 / 22%)
+        ) !important;
+    border-bottom-color: rgb(255 255 255 / 4%) !important;
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 4%),
+        0 1px 0 rgb(0 0 0 / 16%) !important;
+}
+
+#browser .tab-strip .tab.active {
+    background:
+        linear-gradient(
+            180deg,
+            rgb(255 255 255 / 10.5%),
+            rgb(255 255 255 / 4.8%)
+        ) !important;
+    border-color: rgb(255 255 255 / 7%) !important;
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 12%),
+        inset 0 -1px 0 rgb(0 0 0 / 6%),
+        0 1px 3px rgb(0 0 0 / 12%) !important;
+}
+
+#browser .tab-strip .tab.active::before {
+    background:
+        linear-gradient(
+            180deg,
+            rgb(255 255 255 / 8%),
+            transparent 38%
+        ) !important;
+    opacity: 0.52 !important;
+}
