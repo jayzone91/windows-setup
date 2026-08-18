@@ -191,6 +191,10 @@ Begründung:
 - [x] FluentFlyout ersetzt Windhawk vollständig für Lock-Key-Hinweise
 - [x] VS Code darf Catppuccin unabhängig vom Windows-Gesamtdesign weiterverwenden
 - [x] Terminal darf Catppuccin unabhängig vom Windows-Gesamtdesign weiterverwenden, solange der eingesetzte Terminal-Workflow dies sinnvoll macht
+- [x] Zen Browser verwendet wieder sein natives Standard-Theme; repositoryverwaltetes Catppuccin-CSS wurde vollständig verworfen
+- [x] Zen `userChrome.css`, `userContent.css`, das Catppuccin-Logo und hostbezogene Website-Styles wurden vollständig entfernt
+- [x] Zen-Custom-CSS wird erst wieder eingeführt, wenn eine konkrete stabile UI-Anpassung benötigt und praktisch bestätigt wurde
+- [x] der Zen-Desired-State entfernt veraltete verwaltete Custom-CSS-Artefakte aus dem aktiven Profil; fremde nicht verwaltete `chrome\websites`-Verzeichnisse bleiben unangetastet
 - [x] keine künstliche universelle CSS-Datei für alle Programme
 - [x] jedes Programm nutzt seine native bzw. stabilste Anpassungsmethode
 - [x] Funktionalität, Windows-Integrität und Wartbarkeit haben Vorrang vor rein optischem Styling
@@ -1069,16 +1073,16 @@ Integration:
 - [x] nur tatsächlich fehlende Mods an Marionette übergeben
 - [x] Zen bei vollständig vorhandenen Mods geöffnet lassen
 - [x] Zen nur bei erforderlicher Mod-Konfiguration schließen und danach normal neu starten
-- [x] Browser-UI an Catppuccin Mocha/Mauve angepasst
-- [x] stabile eigene CSS-Anpassungen versioniert
-  - Zen-UI und interne Browserseiten werden über versionierte `userChrome.css` / `userContent.css` gestaltet
-  - Catppuccin Mocha mit Mauve bleibt der definierte Zen-Desired-State
-  - Theme-Dateien werden über den bestehenden Hardlink-/Junction-Workflow in das aktive Zen-Profil eingebunden
-  - ausgewählte Website-Styles werden hostbezogen unter `dotfiles/zen/catppuccin-mocha-mauve/websites/` gepflegt
-  - produktiv beibehalten werden GitHub, ChatGPT, YouTube, Google Search, PayPal und Reddit
-  - iCloud, Exchange OWA (`compex.msxremote.de`) und Intrexx 11 (`cenet.msxremote.de:446`) wurden praktisch getestet und wegen unzuverlässiger bzw. unvollständiger Darstellung wieder aus dem Desired State entfernt
-  - für diese drei Weboberflächen wird kein weiterer eigener CSS-Override verfolgt, solange kein neuer stabiler technischer Ansatz vorliegt
-  - Website-Styling bleibt bewusst selektiv; es gibt keinen universellen CSS-Override für beliebige Webseiten
+- [x] früheres Catppuccin-Mocha/Mauve-Custom-CSS vollständig entfernt
+- [x] Zen wieder auf das native Standard-Theme zurückgeführt und praktisch bestätigt
+- [x] `userChrome.css` vollständig entfernt; keine leere Platzhalterdatei im Repository
+- [x] `userContent.css` vollständig entfernt
+- [x] Catppuccin-Zen-Logo vollständig entfernt
+- [x] hostbezogene Website-Styles für GitHub, ChatGPT, YouTube, Google Search, PayPal und Reddit vollständig entfernt
+- [x] frühere Website-Style-Junction aus dem aktiven Zen-Profil entfernt
+- [x] alter lokaler Catppuccin-State unter `.generated/state/zen/` wird bereinigt
+- [x] `Set-ZenTheme` verwaltet als Desired State ausschließlich die Abwesenheit der früheren repositoryverwalteten Custom-CSS-Artefakte
+- [x] Zen wird bei tatsächlichem Cleanup-Drift kontrolliert neu gestartet; ein wiederholter Lauf ohne Altbestand bleibt störungsarm
 
 ### Akzeptanzkriterien für Zen-Mods
 
@@ -1989,7 +1993,7 @@ Die folgenden Anwendungen dürfen nach dem Seelen-Polish nicht vergessen werden.
    - `disableThumbnails = 1` und `allResourceRedirect = 0` als Desired State setzen
    - keine Windows-Systemdateien dauerhaft patchen
    - vollständigen Bootstrap praktisch erfolgreich getestet
-3. [ ] Zen-Custom-CSS prüfen und unnötiges Catppuccin-Styling zugunsten einer nativeren macOS-/Glass-Optik entfernen
+3. [x] Zen-Custom-CSS vollständig entfernen und auf natives Zen-Standard-Theme zurückkehren; praktisch bestätigt
 4. [ ] Warp als Terminal-Frontend produktiv ausarbeiten und optisch in das macOS-26-Gesamtbild integrieren
 5. [ ] macOS-26-nahes Cursor-Theme systemweit als Ersatz für die Windows-Standardcursor evaluieren und reproduzierbar im Bootstrap verwalten
    - vollständige Cursor-Rollen einschließlich Normal, Link, Text, Busy, Resize und Precision Select abdecken
@@ -2020,7 +2024,7 @@ Zusätzlich offen:
 ---
 ## Nächste technische Prioritäten
 
-1. **Desktop-Polish:** Seelen Dock ist abgeschlossen; als Nächstes verbindlich OneCommander, danach Zen und Warp als Terminal-Frontend bearbeiten.
+1. **Desktop-Polish:** Files, Systemicons und Zen sind abgeschlossen; als Nächstes verbindlich Warp als Terminal-Frontend bearbeiten.
 2. **Secrets:** projektweite verschlüsselte Secrets-Architektur für API-Keys und Zugangsdaten entwerfen; sie wird sowohl für macOSicons als auch später für Mail verwendet.
 3. **Mail:** geeigneten Mail-Client anhand der festgelegten Gmail-/IMAP-/Exchange-/Exchange-Online-Kriterien auswählen und anschließend mit der gemeinsamen Secrets-Architektur automatisieren.
 4. **Danach:** WSL/Nix und übrige offene Qualitäts-/Testpunkte.
@@ -2177,7 +2181,7 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
 7. [ ] Seelen Top Bar / Tray / Dock an macOS 26 angleichen
 8. [ ] systemweite macOS-nahe Icon-Strategie festlegen und reproduzierbar umsetzen
 9. [ ] OneCommander weiter Richtung Finder umbauen
-10. [ ] Zen-Styling auf native/macOS-nahe Darstellung überprüfen
+10. [x] Zen-Styling auf native Darstellung zurückführen; repositoryverwaltetes Custom-CSS vollständig entfernt und praktisch bestätigt
 11. [ ] Warp produktiv konfigurieren
 12. [ ] WSL + Nix Desired State implementieren
 13. [ ] VS Code auf macOS-/Liquid-Glass-Design prüfen

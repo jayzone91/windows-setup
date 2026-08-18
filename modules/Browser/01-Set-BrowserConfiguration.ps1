@@ -34,7 +34,7 @@ function Set-BrowserConfiguration {
                 -Mods $Config.Zen.Mods
         }
 
-        $zenThemeChanged = Set-ZenCatppuccinTheme
+        $zenThemeChanged = Set-ZenTheme
 
         if ($zenThemeChanged) {
             $configurationChanged = $true
