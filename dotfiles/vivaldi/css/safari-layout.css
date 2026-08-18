@@ -1595,3 +1595,43 @@
 #browser .safari-toolbar-left {
     gap: 4px !important;
 }
+/* Safari right controls optical weight */
+#browser .safari-toolbar-right {
+    gap: 6px !important;
+    padding-right: 4px !important;
+}
+
+#browser .safari-toolbar-right > .button-toolbar {
+    flex-basis: 36px !important;
+    width: 36px !important;
+    min-width: 36px !important;
+    height: 34px !important;
+}
+
+#browser .safari-toolbar-right > .button-toolbar > .ToolbarButton-Button {
+    width: 36px !important;
+    min-width: 36px !important;
+    height: 34px !important;
+    padding: 5px !important;
+}
+
+#browser .safari-toolbar-right > .button-toolbar svg {
+    width: 23px !important;
+    height: 23px !important;
+}
+
+#browser .safari-toolbar-right [data-name="Downloads"] svg,
+#browser .safari-toolbar-right [data-name="Download"] svg {
+    width: 24px !important;
+    height: 24px !important;
+}
+
+#browser .safari-toolbar-right [data-name="Extensions"] svg,
+#browser .safari-toolbar-right [data-name="ExtensionToggle"] svg {
+    width: 22px !important;
+    height: 22px !important;
+}
+
+#browser .safari-toolbar-right > .button-toolbar > .ToolbarButton-Button:hover {
+    background: rgb(255 255 255 / 5%) !important;
+}
