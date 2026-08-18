@@ -1317,3 +1317,61 @@
     padding-inline: 9px !important;
     column-gap: 9px !important;
 }
+/* Safari toolbar icon scale */
+#browser .safari-toolbar-left > .button-toolbar {
+    flex-basis: 30px !important;
+    width: 30px !important;
+    min-width: 30px !important;
+    height: 30px !important;
+}
+
+#browser .safari-toolbar-left > .button-toolbar > .ToolbarButton-Button {
+    width: 30px !important;
+    min-width: 30px !important;
+    height: 30px !important;
+    padding: 5px !important;
+}
+
+#browser .safari-toolbar-left > .button-toolbar svg {
+    width: 19px !important;
+    height: 19px !important;
+}
+
+#browser .safari-toolbar-left {
+    gap: 4px !important;
+}
+
+#browser .safari-toolbar-right > .button-toolbar {
+    flex-basis: 30px !important;
+    width: 30px !important;
+    min-width: 30px !important;
+    height: 30px !important;
+}
+
+#browser .safari-toolbar-right > .button-toolbar > .ToolbarButton-Button {
+    width: 30px !important;
+    min-width: 30px !important;
+    height: 30px !important;
+    padding: 5px !important;
+}
+
+#browser .safari-toolbar-right > .button-toolbar svg {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+#browser .safari-toolbar-right [data-name="Downloads"] svg,
+#browser .safari-toolbar-right [data-name="Download"] svg {
+    width: 19px !important;
+    height: 19px !important;
+}
+
+#browser .safari-toolbar-right [data-name="Extensions"] svg,
+#browser .safari-toolbar-right [data-name="ExtensionToggle"] svg {
+    width: 17px !important;
+    height: 17px !important;
+}
+
+#browser .safari-toolbar-right {
+    gap: 4px !important;
+}
