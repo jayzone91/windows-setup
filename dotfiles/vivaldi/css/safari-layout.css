@@ -1654,3 +1654,31 @@
 #browser .safari-toolbar-right [data-name="NewTab"] svg {
     transform: scale(1.20) !important;
 }
+/* Neutral browser menu icon */
+#browser .safari-toolbar-left > button.vivaldi {
+    position: relative !important;
+    color: currentColor !important;
+}
+
+#browser .safari-toolbar-left > button.vivaldi svg {
+    display: none !important;
+}
+
+#browser .safari-toolbar-left > button.vivaldi::before {
+    content: "•••";
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 1.2px;
+    color: currentColor;
+    opacity: .82;
+    transform: translateY(-1px);
+}
+
+#browser .safari-toolbar-left > button.vivaldi:hover::before {
+    opacity: 1;
+}
