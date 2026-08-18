@@ -1468,3 +1468,87 @@
 #browser .safari-toolbar-left > .window-buttongroup {
     margin-block: 0 !important;
 }
+/* macOS traffic lights */
+#browser .safari-toolbar-left > .window-buttongroup {
+    display: flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    margin-right: 10px !important;
+}
+
+#browser .safari-toolbar-left > .window-buttongroup button {
+    position: relative !important;
+    width: 13px !important;
+    min-width: 13px !important;
+    height: 13px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    box-shadow:
+        inset 0 0 0 0.5px rgb(0 0 0 / 24%),
+        inset 0 1px 0 rgb(255 255 255 / 18%) !important;
+    overflow: visible !important;
+}
+
+#browser .safari-toolbar-left > .window-buttongroup button > svg,
+#browser .safari-toolbar-left > .window-buttongroup button svg {
+    display: none !important;
+}
+
+#browser .safari-toolbar-left > .window-buttongroup .window-close {
+    background: #ff5f57 !important;
+}
+
+#browser .safari-toolbar-left > .window-buttongroup .window-minimize {
+    background: #febc2e !important;
+}
+
+#browser .safari-toolbar-left > .window-buttongroup .window-maximize {
+    background: #28c840 !important;
+}
+
+#browser .safari-toolbar-left > .window-buttongroup button::after {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgb(0 0 0 / 58%);
+    font-family: Arial, sans-serif;
+    font-weight: 700;
+    line-height: 13px;
+    opacity: 0;
+    transition: opacity 80ms linear;
+    pointer-events: none;
+}
+
+#browser .safari-toolbar-left > .window-buttongroup:hover button::after {
+    opacity: 1;
+}
+
+#browser .safari-toolbar-left > .window-buttongroup .window-close::after {
+    content: "×";
+    font-size: 10px;
+    transform: translateY(-0.25px);
+}
+
+#browser .safari-toolbar-left > .window-buttongroup .window-minimize::after {
+    content: "−";
+    font-size: 10px;
+    transform: translateY(-1px);
+}
+
+#browser .safari-toolbar-left > .window-buttongroup .window-maximize::after {
+    content: "+";
+    font-size: 9px;
+    transform: translateY(-0.5px);
+}
+
+#browser .safari-toolbar-left > .window-buttongroup button:hover {
+    filter: brightness(.96);
+}
+
+#browser .safari-toolbar-left > .window-buttongroup button:active {
+    filter: brightness(.84);
+}
