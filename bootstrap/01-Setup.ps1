@@ -139,6 +139,7 @@ $Files = Import-PowerShellDataFile "$Root\config\files.psd1"
 $Windhawk = Import-PowerShellDataFile "$Root\config\windhawk.psd1"
 $Theme = Import-PowerShellDataFile "$Root\config\theme.psd1"
 $Terminal = Import-PowerShellDataFile "$Root\config\terminal.psd1"
+$Warp = Import-PowerShellDataFile "$Root\config\warp.psd1"
 $Windows = Import-PowerShellDataFile "$Root\config\windows.psd1"
 $Debloat = Import-PowerShellDataFile "$Root\config\debloat.psd1"
 $Storage = Import-PowerShellDataFile `
@@ -290,6 +291,10 @@ Test-NeovimRequirements
 Set-WindowsTerminalPreferences `
     -Config $Terminal `
     -Theme $Theme `
+    -RepositoryPath $Root
+
+Set-WarpConfiguration `
+    -Config $Warp `
     -RepositoryPath $Root
 Install-PowerShellModules `
     -Modules $PowerShell.Modules

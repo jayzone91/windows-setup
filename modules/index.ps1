@@ -29,6 +29,7 @@ $modules = @(
     "Storage\index.ps1"
     "Terminal.ps1"
     "VSCode.ps1"
+    "Warp.ps1"
     "Windhawk\index.ps1"
     "WindowsUpdate.ps1"
 )
