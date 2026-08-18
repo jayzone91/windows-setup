@@ -513,3 +513,152 @@
 #browser .tab-strip .tab-header > .favicon + .title {
     margin-left: 0 !important;
 }
+/* Safari liquid glass foundation */
+#browser .toolbar-addressbar {
+    background:
+        linear-gradient(
+            180deg,
+            rgb(255 255 255 / 7%),
+            rgb(255 255 255 / 2%)
+        ) !important;
+    border-bottom: 1px solid rgb(255 255 255 / 5%) !important;
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 7%),
+        0 1px 0 rgb(0 0 0 / 18%) !important;
+    backdrop-filter: blur(18px) saturate(135%) !important;
+}
+
+#browser .safari-toolbar-center > [data-name="AddressField"] {
+    overflow: hidden !important;
+    background:
+        linear-gradient(
+            180deg,
+            rgb(8 8 12 / 72%),
+            rgb(5 5 8 / 82%)
+        ) !important;
+    border: 1px solid rgb(255 255 255 / 9%) !important;
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 8%),
+        inset 0 -1px 0 rgb(0 0 0 / 25%),
+        0 1px 3px rgb(0 0 0 / 24%) !important;
+    backdrop-filter: blur(22px) saturate(150%) !important;
+}
+
+#browser .safari-toolbar-center:focus-within > [data-name="AddressField"] {
+    border-color: rgb(120 185 255 / 45%) !important;
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 11%),
+        0 0 0 2px rgb(10 132 255 / 28%),
+        0 3px 12px rgb(0 0 0 / 28%) !important;
+}
+
+#browser #tabs-container > .resize {
+    background:
+        linear-gradient(
+            180deg,
+            rgb(255 255 255 / 13%),
+            rgb(255 255 255 / 7%)
+        ) !important;
+    border: 1px solid rgb(255 255 255 / 7%) !important;
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 10%),
+        inset 0 -1px 0 rgb(0 0 0 / 14%),
+        0 1px 3px rgb(0 0 0 / 16%) !important;
+    backdrop-filter: blur(22px) saturate(145%) !important;
+}
+
+#browser .tab-strip .tab.active {
+    background:
+        linear-gradient(
+            180deg,
+            rgb(255 255 255 / 25%),
+            rgb(255 255 255 / 14%)
+        ) !important;
+    border: 1px solid rgb(255 255 255 / 11%) !important;
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 16%),
+        inset 0 -1px 0 rgb(0 0 0 / 10%),
+        0 1px 4px rgb(0 0 0 / 20%) !important;
+    backdrop-filter: blur(16px) saturate(135%) !important;
+}
+
+#browser .tab-strip .tab:not(.active):hover {
+    background: rgb(255 255 255 / 8%) !important;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%) !important;
+}
+
+#browser .safari-toolbar-left > .button-toolbar > .ToolbarButton-Button:hover,
+#browser .safari-toolbar-right > .button-toolbar > .ToolbarButton-Button:hover,
+#browser .safari-toolbar-left > button.vivaldi:hover {
+    background:
+        linear-gradient(
+            180deg,
+            rgb(255 255 255 / 13%),
+            rgb(255 255 255 / 7%)
+        ) !important;
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 9%),
+        0 1px 2px rgb(0 0 0 / 16%) !important;
+}
+
+@media (prefers-color-scheme: light) {
+    #browser .toolbar-addressbar {
+        background:
+            linear-gradient(
+                180deg,
+                rgb(255 255 255 / 78%),
+                rgb(245 245 247 / 62%)
+            ) !important;
+        border-bottom-color: rgb(0 0 0 / 6%) !important;
+        box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 85%),
+            0 1px 0 rgb(0 0 0 / 8%) !important;
+    }
+
+    #browser .safari-toolbar-center > [data-name="AddressField"] {
+        background:
+            linear-gradient(
+                180deg,
+                rgb(255 255 255 / 76%),
+                rgb(245 245 247 / 68%)
+            ) !important;
+        border-color: rgb(0 0 0 / 7%) !important;
+        box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 92%),
+            inset 0 -1px 0 rgb(0 0 0 / 5%),
+            0 1px 3px rgb(0 0 0 / 10%) !important;
+    }
+
+    #browser #tabs-container > .resize {
+        background:
+            linear-gradient(
+                180deg,
+                rgb(232 232 234 / 78%),
+                rgb(218 218 220 / 72%)
+            ) !important;
+        border-color: rgb(255 255 255 / 58%) !important;
+        box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 80%),
+            inset 0 -1px 0 rgb(0 0 0 / 5%),
+            0 1px 3px rgb(0 0 0 / 10%) !important;
+    }
+
+    #browser .tab-strip .tab.active {
+        background:
+            linear-gradient(
+                180deg,
+                rgb(255 255 255 / 94%),
+                rgb(248 248 249 / 86%)
+            ) !important;
+        border-color: rgb(255 255 255 / 84%) !important;
+        box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 96%),
+            inset 0 -1px 0 rgb(0 0 0 / 4%),
+            0 1px 4px rgb(0 0 0 / 12%) !important;
+    }
+
+    #browser .tab-strip .tab:not(.active):hover {
+        background: rgb(255 255 255 / 34%) !important;
+        box-shadow: inset 0 1px 0 rgb(255 255 255 / 48%) !important;
+    }
+}
