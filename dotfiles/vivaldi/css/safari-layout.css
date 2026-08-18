@@ -1130,3 +1130,83 @@
 #browser .safari-toolbar-right {
     padding-right: 2px !important;
 }
+/* Safari toolbar controls rebalance */
+#browser .safari-toolbar-left,
+#browser .safari-toolbar-right {
+    gap: 2px !important;
+}
+
+#browser .safari-toolbar-left > .window-buttongroup {
+    height: 24px !important;
+    margin-right: 5px !important;
+}
+
+#browser .safari-toolbar-left > .window-buttongroup button {
+    width: 22px !important;
+    min-width: 22px !important;
+    height: 22px !important;
+    padding: 0 !important;
+}
+
+#browser .safari-toolbar-left > .window-buttongroup button svg {
+    width: 12px !important;
+    height: 12px !important;
+}
+
+#browser .safari-toolbar-left > button.vivaldi {
+    width: 24px !important;
+    min-width: 24px !important;
+    height: 24px !important;
+    margin-right: 5px !important;
+    padding: 5px !important;
+}
+
+#browser .safari-toolbar-left > button.vivaldi svg {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+#browser .safari-toolbar-left > .button-toolbar {
+    flex-basis: 24px !important;
+    width: 24px !important;
+    min-width: 24px !important;
+    height: 24px !important;
+}
+
+#browser .safari-toolbar-left > .button-toolbar > .ToolbarButton-Button {
+    width: 24px !important;
+    min-width: 24px !important;
+    height: 24px !important;
+    padding: 4px !important;
+    border-radius: 7px !important;
+}
+
+#browser .safari-toolbar-left > .button-toolbar svg {
+    width: 15px !important;
+    height: 15px !important;
+}
+
+#browser .safari-toolbar-right > .button-toolbar {
+    flex-basis: 24px !important;
+    width: 24px !important;
+    min-width: 24px !important;
+    height: 24px !important;
+}
+
+#browser .safari-toolbar-right > .button-toolbar > .ToolbarButton-Button {
+    width: 24px !important;
+    min-width: 24px !important;
+    height: 24px !important;
+    padding: 4px !important;
+    border-radius: 7px !important;
+}
+
+#browser .safari-toolbar-right > .button-toolbar svg {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+#browser .toolbar-addressbar {
+    padding-inline: 8px !important;
+    column-gap: 8px !important;
+}
