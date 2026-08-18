@@ -158,7 +158,6 @@ Projektweite Regel:
 
 Begründung:
 
-- OneCommander behandelt Hardlinks wie normale Dateien.
 - Änderungen auf beiden Seiten wirken sofort auf dieselben Dateidaten.
 - Das Repository liegt durch `init.ps1` immer unter dem Benutzerprofil auf `C:`.
 - Verzeichnis-Hardlinks existieren unter NTFS nicht; dafür werden Junctions verwendet.
@@ -188,7 +187,7 @@ Begründung:
 - [x] Seelen liest die Windows-Akzentfarbe direkt aus dem System; keine separate Seelen-Akzentfarbe pflegen
 - [x] Catppuccin Mocha ist **keine** globale Windows-Designvorgabe mehr
 - [x] Seelen UI ist die zentrale Basis für Top Bar, Dock und Volume-/Media-OSD
-- [x] FluentFlyout ersetzt Windhawk vollständig für Lock-Key-Hinweise
+- [x] FluentFlyout ersetzt Windhawk vollständig für Lock-Key-Hinweise; Windhawk bleibt davon unabhängig ausschließlich für Systemicon-Redirects aktiv
 - [x] VS Code darf Catppuccin unabhängig vom Windows-Gesamtdesign weiterverwenden
 - [x] Terminal darf Catppuccin unabhängig vom Windows-Gesamtdesign weiterverwenden, solange der eingesetzte Terminal-Workflow dies sinnvoll macht
 - [x] Zen Browser verwendet wieder sein natives Standard-Theme; repositoryverwaltetes Catppuccin-CSS wurde vollständig verworfen
@@ -327,7 +326,6 @@ Feste Architekturentscheidungen:
 - [x] korrekte Hardlinks werden bei wiederholten Läufen nicht neu erzeugt
 - [x] Dev-Drive-Paketcache-Konfiguration wird nur bei geändertem Desired State erneut geschrieben
 - [x] Zebar führt `npm ci` nur bei Dependency-Drift bzw. fehlendem `node_modules` aus
-- [x] Zebar baut sein Bundle nur bei geändertem Build-Input bzw. fehlenden Build-Artefakten neu
 - [x] VS Code ermittelt die installierten Extensions pro Bootstrap nur einmal
 - [x] Node.js wird über fnm gegen die aktuelle LTS-Version geprüft
 - [x] npm, pnpm und Yarn werden gegen ihre aktuellen Registry-Versionen geprüft und bei unverändertem Stand nicht neu installiert
@@ -344,17 +342,11 @@ Zweite Performance-/Desired-State-Runde:
   - Boolean-Settings werden entsprechend Windhawks Runtime-Repräsentation semantisch normalisiert
   - wiederholter `just update-log` bestätigt für alle verwalteten Mods unveränderte Settings und Enable-Zustände als `CURRENT`
 - [x] Scheduled Tasks nur bei tatsächlichem Drift von Action, Trigger, Principal oder Settings neu registrieren
-  - komorebi, Zebar und Volume OSD melden bei unverändertem Zustand `CURRENT`
   - Weekly Maintenance normalisiert Weekly-Trigger vor dem Vergleich auf lokale Wall-Clock-Zeit, damit UTC-/Offset-Darstellungen desselben Zeitpunkts keinen False Positive erzeugen
   - Benutzeridentitäten in Principal und Logon-Trigger werden für den Vergleich auf stabile SIDs normalisiert; nach einer Computerumbenennung wird ein gespeicherter alter `COMPUTER\Benutzer`-Wert für dasselbe lokale Konto über die lokale Benutzer-SID kanonisiert
-  - praktischer `just update-log` nach der Computerumbenennung bestätigt komorebi, Zebar, Volume OSD und Weekly Maintenance als `CURRENT` sowie den vollständigen Skip unnötiger Desktop-Neustarts
 - [x] Windows-Shell-/Theme-/Power-/Wallpaper-Konfiguration nur bei Drift schreiben; Debloat bleibt bewusst bei jedem Bootstrap aktiv
 - [x] Explorer-Neustart auf tatsächliche Shell-Änderungen begrenzen
   - der bisherige Restart diente der zuverlässigen Übernahme von Shell-/Taskleistenänderungen; bei unverändertem Shell-Desired-State bleibt Explorer nun geöffnet
-- [x] komorebi/whkd/masir/Zebar gemeinsam nur neu starten, wenn sich ein relevanter Teil des Desktop-Stacks geändert hat; die funktionale Kopplung und Startreihenfolge bleiben erhalten
-  - Desktop-Konfiguration, Zebar-Build, Runtime-Versionen und Startup-Tasks fließen in die Driftentscheidung ein
-  - Volume OSD kann bei eigenständigem Drift separat neu gestartet werden
-  - wiederholter `just update-log` bestätigt den vollständigen Skip des Desktop-Neustarts bei unverändertem Zustand
 - [x] Zig-`cc`-/`c++`-Shims vor dem Neuschreiben auf den gewünschten Zustand prüfen
   - gewünschtes Zig-Ziel/Argumente und tatsächlicher Shim-Zustand werden verglichen
   - wiederholter `just update-log` bestätigt beide Shims als `CURRENT`
@@ -438,11 +430,6 @@ Für Scoop muss zusätzlich der gewünschte `Bucket` direkt am Paket angegeben w
 - [x] Raycast (`9PFXXSHC64H3`) über Microsoft Store
 - [x] OpenVPN
 - [x] Logitech G HUB
-- [x] komorebi
-- [x] whkd
-- [x] masir
-- [x] Zebar
-- [x] OneCommander
 - [x] **NanaZip**
 - [x] PowerToys
 - [x] Everything
@@ -780,8 +767,6 @@ Umsetzung / Teststatus:
 - [ ] tatsächliche npm-/pnpm-/Yarn-Updateinstallation bei einer zukünftig vorhandenen neueren Version erneut praktisch bestätigen
 - [x] PATH / `PNPM_HOME`
 - [x] npm während desselben Bootstrap-Laufs verfügbar machen
-- [x] npm für Zebar-Build
-- [x] npm für OneCommander-Icon-Generator
 
 ## Bun
 
@@ -921,7 +906,6 @@ Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games 
 - [x] PSWindowsUpdate
 - [x] fingerprint-gesteuerte strikte Codeprüfung vor der eigentlichen Setup-Logik; unveränderter Code überspringt PSScriptAnalyzer, geänderter Code muss den vollständigen Preflight bestehen
 - [x] Fehler, Warnungen und Hinweise getrennt zählen
-- [x] Analyzer-Probleme im OneCommander-Icon-Build bereinigt
 - [x] `just check` als manueller Einstiegspunkt für PSScriptAnalyzer
 - [ ] GitHub Actions für statische Prüfung
 - [ ] Pester-Tests für kritische Helper
@@ -1198,186 +1182,39 @@ Der alte Stack darf nicht erneut vorgeschlagen oder eingebaut werden, solange ke
 - [ ] nur bei echtem Bedarf prüfen, ob ein vergleichbares Mausakku-Widget stabil in Seelen integrierbar ist
 
 ---
-# 21. Phase 18 – Files / ehemaliges OneCommander
+# 21. Phase 18 – Files
 
-## Aktuelle Entscheidung: Files
+## Aktueller produktiver Zustand
 
-OneCommander wird als produktiver Explorer-Ersatz verworfen. Die vorhandene Implementierung bleibt vorerst als historische, funktionierende Rückfallbasis im Repository, bis die Files-Integration vollständig praktisch bestätigt und anschließend gezielt bereinigt wurde.
+- [x] OneCommander als produktiven Dateimanager vollständig verworfen
+- [x] Files als täglichen Explorer-/Finder-Ersatz übernommen
+- [x] Files über den offiziellen stabilen AppInstaller reproduzierbar im Bootstrap installieren
+- [x] Windows PowerShell 5.1 für Add-AppxPackage -AppInstallerFile verwenden
+- [x] Acrylic-Backdrop als Desired State verwalten
+- [x] transparenten Haupt-Hintergrund als Desired State verwalten
+- [x] Columns-View als Standardlayout verwalten
+- [x] Files-Settings nur bei tatsächlichem Drift ändern
+- [x] laufendes Files nur bei tatsächlichem Settings-Drift schließen und bei zuvor laufender App wieder starten
+- [x] Win + E über die native Files-Default-File-Manager-Funktion verwenden
+- [x] vorhandene Win + E-Integration erkennen statt unvollständig reverse-engineerte Registry-Sonderlösungen zu erzwingen
+- [x] vollständigen just update-log mit Files-Integration praktisch bestätigt
+- [x] wiederholten just update-log ohne unnötigen Files-Neustart praktisch bestätigt
+- [x] OneCommander-Paket, Bootstrap-Aufruf, Module, Dotfiles und Icon-Generatoren nach erfolgreicher Files-Abnahme entfernt
 
-Gründe:
+## Feste Entscheidung
 
-- das OneCommander-XAML-Theming reicht für das gewünschte macOS-26-/Liquid-Glass-Zielbild nicht weit genug
-- Files bietet Acrylic nativ und einen Finder-näheren Columns-View
-- Files 4.2.7 wurde über den offiziellen stabilen AppInstaller praktisch installiert
-- `AppThemeBackdropMaterial = 3` wurde praktisch als Acrylic bestätigt
-- `DefaultLayoutMode = 3` wurde praktisch als Columns bestätigt
-- `Win + E` wurde über die native Files-Default-File-Manager-Funktion praktisch bestätigt
-- Seelen zeigt Files im Dock mit korrektem App-Icon
-- Files wird derzeit weder von der Seelen-Suche noch von Raycast zuverlässig indexiert; dies ist akzeptiert, da `Win + E` der primäre Startweg ist
-- künstliche `explorer.exe`-/Startmenü-Shortcut-Workarounds für die Launcher-Suche sind verworfen
+OneCommander ist kein Rückfallpfad und kein zukünftiger Design-Kandidat mehr. Alte OneCommander-XAML-, Folder-Icon-, File-Icon- und Registry-Integrationsdetails gehören nicht mehr zum aktuellen Desired State und werden in dieser Roadmap nicht weiter gepflegt.
 
-## Files Installation / Desired State
-
-- [x] offiziellen stabilen AppInstaller `https://cdn.files.community/files/stable/Files.Package.appinstaller` praktisch bestätigt
-- [x] Installation muss über Windows PowerShell 5.1 erfolgen; PowerShell 7 ist für `Add-AppxPackage -AppInstallerFile` laut Files-Dokumentation nicht geeignet
-- [x] Files 4.2.7 praktisch installiert
-- [x] Acrylic praktisch bestätigt: `AppThemeBackdropMaterial = 3`
-- [x] Columns praktisch bestätigt: `DefaultLayoutMode = 3`
-- [x] transparenter Haupt-Hintergrund praktisch bestätigt: `AppThemeBackgroundColor = #00000000`
-- [x] `Win + E` praktisch über Files aktiviert
-- [x] Registry-Zustand für `Folder\shell\open\command` und `Folder\shell\explore\command` auf `Files.App.Launcher.exe` praktisch bestätigt
-- [ ] Files über den offiziellen AppInstaller reproduzierbar im Bootstrap installieren
-- [ ] Files-Settings nur bei tatsächlichem Drift ändern
-- [ ] laufendes Files nur bei tatsächlichem Settings-Drift schließen und bei zuvor laufender App wieder starten
-- [ ] `Win + E`-Integration im Bootstrap erkennen; vorerst nicht mit unvollständig reverse-engineerten Registry-Sonderlösungen überschreiben
-- [ ] vollständigen `just update-log` mit Files-Integration praktisch bestätigen
-- [ ] wiederholten `just update-log` ohne unnötigen Files-Neustart praktisch bestätigen
-- [ ] nach erfolgreicher Files-Abnahme OneCommander-Paket, aktiven Bootstrap-Aufruf, Module und nicht mehr benötigte Dotfiles/Generatoren gezielt entfernen
-
-## Verworfener Vorgänger: OneCommander
-
-Der native Windows Explorer wird **nicht weiter über Windhawk File Explorer Styler thematisiert**.
-
-Grund:
-
-- File Explorer Styler lieferte kein zufriedenstellendes vollständiges Ergebnis.
-- OneCommander bietet bessere Theme- und Icon-Möglichkeiten.
-- OneCommander soll den Explorer für den täglichen Dateimanager-Workflow ersetzen.
-
-## Installation
-
-- [x] `MilosParipovic.OneCommander`
-- [x] Winget-Version statt Store-Version
-- [x] Installation automatisiert
-- [x] OOBE erkennen
-- [x] AGB-/OOBE-Bestätigung bewusst manuell
-- [x] keine unsichere Umgehung der OOBE
-
-## Explorer-Ersatz
-
-- [x] `Win + E` auf OneCommander
-- [x] CLSID-Konfiguration
-- [x] `DelegateExecute`
-- [x] Directory Shell Handler
-- [x] Drive Shell Handler
-- [x] Directory Background
-- [x] Drive Background
-- [x] OneCommander als Default File Manager
-
-## Theme
-
-- [x] eigenes Catppuccin-Mocha-XAML
-- [x] Theme-Verzeichnis per Junction
-- [x] dunkle Bereiche vollständig angepasst
-- [x] Datei-Alter-Farben an Mocha angepasst
-- [x] Accent-Farbe Mauve
-
-## Folder Icons
-
-- [x] Main Folder Icon
-- [x] Special-Folder-Icon-Pack
-- [x] Catppuccin Mocha
-- [x] Main Folder Icon als echte PNG kopieren
-- [x] FolderIcons per Junction
-- [x] von OneCommander generierten `16`-Cache berücksichtigen
-
-## File Icons
-
-Quelle:
-
-```text
-https://github.com/catppuccin/vscode-icons
-```
-
-- [x] kompletter Upstream-Bestand verwenden
-- [x] nicht nur ausgewählte Icons
-- [x] Upstream-Commit pinnen
-- [x] Upstream unter `.generated/onecommander/Sources`
-- [x] Mocha-SVGs bauen
-- [x] SVG → PNG
-- [x] alle gerenderten Icons unter `.generated/onecommander/Rendered`
-- [x] OneCommander-Mappings unter `.generated/onecommander/FileIcons`
-- [x] mappings als Hardlinks, nicht als Dateikopien
-- [x] Extensions übernehmen
-- [x] exakte Dateinamen übernehmen
-- [x] Dotfiles übernehmen
-- [x] `.gitignore`
-- [x] `.gitconfig`
-- [x] `.gitignore_global`
-- [x] JSON
-- [x] TOML
-- [x] YAML
-- [x] TypeScript/JavaScript
-- [x] viele weitere Dev-Dateien automatisch
-- [x] `_manifest.json`
-- [x] Kollisionen dokumentieren
-- [x] ungültige Windows-Dateinamen dokumentieren
-- [x] FileIcons-Theme per Junction einbinden
-- [x] `FileIconsTheme = CatppuccinMocha`
-
-## Desired-State / störungsarme Wiederholung
-
-- [x] vollständigen OneCommander-Desired-State vor dem Beenden prüfen
-- [x] verwaltete OneCommander-Settings prüfen
-- [x] Theme-Junction prüfen
-- [x] Folder-Icon-Junction prüfen
-- [x] Main-Folder-Icon per SHA256 prüfen
-- [x] generiertes File-Icon-Pack und `_manifest.json` prüfen
-- [x] File-Icon-Junction prüfen
-- [x] Registry-Integration für Directory/Drive/Win+E prüfen
-- [x] OneCommander bei vollständig aktuellem Zustand geöffnet lassen
-- [x] OneCommander nur bei tatsächlichem Drift schließen und danach neu starten
-- [x] Verhalten auf dem aktuellen System praktisch getestet
-- [x] nach einer Windows-Computerumbenennung einen eindeutig vorhandenen maschinenspezifischen OneCommander-Block als sicheren Fallback verwenden
-- [x] OneCommander-internen Maschinenschlüssel bei diesem Fallback nicht automatisch umbenennen oder anderweitig manipulieren
-- [x] Fallback nach der Computerumbenennung praktisch getestet; OneCommander blieb bei aktuellem Desired State geöffnet
-- [x] wiederholter `just update-log` mit dem OneCommander-Fallback erfolgreich
-
-### Akzeptanzkriterium für wiederholte Bootstrap-Läufe
-
-Ein normaler `just update` darf OneCommander nicht schließen, wenn der verwaltete Zustand bereits vollständig korrekt ist.
-
-## macOS-26-Icon- und Theme-Migration
-
-Die bestehende Catppuccin-Implementierung bleibt als funktionierender Ausgangszustand erhalten, bis der neue macOS-26-Desired-State praktisch bestätigt ist.
-
-- [ ] neues eigenes OneCommander-XAML-Theme `MacOS26` erstellen; vorhandenes Catppuccin-Theme nicht schrittweise verbiegen
-- [ ] OneCommander visuell stärker an Finder/macOS 26 angleichen
-- [ ] Folder-/Special-Folder-Icons auf eine konsistente macOS-nahe Designsprache umstellen
-- [ ] macOSicons.com als Quelle für passende App-, Ordner- und Systemicons evaluieren und über die offizielle API reproduzierbar anbinden
-- [ ] macOSicons-API ausschließlich für den privaten, nicht-kommerziellen Einsatz dieses Setups verwenden
-- [ ] vor der ersten macOSicons-Nutzung im Bootstrap die Nutzungsbedingungen und Attribution-Anforderung interaktiv anzeigen
-- [ ] Benutzer muss die Bedingungen ausdrücklich mit `Ja` bestätigen
-- [ ] erfolgreiche Bestätigung unter `.generated/state/macosicons/terms-accepted` markieren und bei späteren Bootstrap-Läufen nicht erneut abfragen
-- [ ] State-Marker erst nach ausdrücklicher Benutzerbestätigung erzeugen
-- [ ] macOSicons-API-Key niemals im Klartext im Repository speichern
-- [ ] macOSicons-API-Key über dieselbe zentrale verschlüsselte Secrets-Architektur verwalten, die auch für Mail-Credentials/API-Secrets vorgesehen ist
-- [ ] Secret-Architektur projektweit generisch statt ausschließlich mail-spezifisch entwerfen
-- [ ] API-Antworten so verarbeiten, dass Icon-Ersteller, Credit-URL, Quellbezug und lokale Verwendung reproduzierbar nachvollziehbar bleiben
-- [ ] versionierte Attribution für macOSicons.com und jeden tatsächlich verwendeten Icon-Ersteller im Repository pflegen
-- [ ] README erhält einen eigenen Attribution-/Third-Party-Icons-Abschnitt
-- [ ] Attribution möglichst aus einem versionierten Manifest erzeugen, damit neue oder entfernte Icons nicht manuell vergessen werden
-- [ ] individuelle Lizenz des jeweiligen Icons vor Übernahme prüfen
-- [ ] heruntergeladene Icon-Binärdateien nur dann ins Repository committen, wenn die individuelle Lizenz die Weitergabe erlaubt; andernfalls lokal unter `.generated/` reproduzierbar erzeugen/herunterladen
-- [ ] bestehende OneCommander-FileIcons zunächst getrennt behandeln; macOSicons nicht künstlich als vollständigen Dateityp-Icon-Ersatz verwenden
-- [ ] geeignete macOS-nahe Quelle oder eigenes Mapping für Datei-/Entwickler-Dateityp-Icons separat evaluieren
-- [ ] Migration erst abschließen, wenn Theme, Folder Icons, File Icons und wiederholter Bootstrap ohne unnötigen OneCommander-Neustart praktisch bestätigt sind
-
-## Noch prüfen / verbessern
-
-- [ ] `.lesshst` mit passendem Shell-/Terminal-Icon ergänzen, falls noch nicht im Generator enthalten
-- [ ] weitere fehlende Dotfiles nur als Generator-Alias ergänzen, nicht manuell im Zielordner pflegen
-- [ ] prüfen, ob nach zukünftigen OneCommander-Updates Mapping-Verhalten unverändert bleibt
+Systemweite macOS-nahe Icons werden unabhängig von Files über den aktuellen Windhawk-icon-resource-redirect-Workflow verwaltet.
 
 ---
-
 # 22. Phase 19 – FluentFlyout / Lock Keys
 
 ## Architekturwechsel
 
 - [x] Windhawk Lock Keys Notifier verworfen
 - [x] eigener Windhawk-Lock-Key-Mod verworfen und entfernt
-- [x] Windhawk vollständig aus dem produktiven Setup entfernt
+- [x] Windhawk aus dem Lock-Key-/Shell-Styling entfernt; produktiv bleibt Windhawk ausschließlich für den systemweiten icon-resource-redirect-Workflow
 - [x] FluentFlyout als alleinige Lock-Key-OSD-Komponente gewählt
 - [x] eigener Fork `jayzone91/FluentFlyout`
 - [x] Caps Lock, Num Lock und Scroll Lock aktiviert; Insert bleibt außerhalb des gewünschten Scopes
@@ -1414,43 +1251,14 @@ Windhawk ist für den aktuellen Desktop-Desired-State nicht mehr erforderlich un
 - [x] wiederholten `just update` auf Idempotenz geprüft
 
 ---
-## Windhawk Desired State
+## Windhawk – aktueller Scope
 
-- [x] `config/windhawk/` als deklarative Mod-Liste vorgesehen; produktiv bleibt nur der Lock Keys Notifier
-- [x] Mod-Installation und Aktivierung generisch über `modules/Windhawk/`
-- [x] Windhawk-CLI-2.x-JSON-Envelope bei installierten Mods berücksichtigen
-- [x] generische Übersetzung verschachtelter Settings in Flat-Storage-Keys
-- [x] Windows 11 Taskbar Styler als erster deklarativer Mod
-- [x] RosePine als gewünschtes Basis-Theme hinterlegt
-- [x] Taskbar Styler über `just update` auf dem aktuellen System installiert
-- [x] RosePine praktisch verifiziert
-- [x] wiederholten `just update` mit installiertem Taskbar Styler erfolgreich getestet
-- [x] Catppuccin-Mocha-Farboverrides für RosePine definiert
-- [x] Catppuccin-Mocha-Farboverrides auf dem aktuellen System praktisch getestet
-- [x] Windows 11 Start Menu Styler als zweiten deklarativen Mod ergänzt
-- [x] RosePine als Layout-Basis für das Startmenü verwendet
-- [x] Catppuccin-Mocha-Farboverrides für Startmenü und Suchansicht definiert
-- [x] Startmenü-Außenrahmen auf `Surface1 #45475a` abgestimmt
-- [x] Suchansicht-Außenrahmen auf `Surface1 #45475a` abgestimmt
-- [x] fokussiertes Suchfeld mit `Mauve #cba6f7` als Akzent beibehalten
-- [x] normales Startmenü und Suchansicht optisch praktisch verifiziert
-- [x] wiederholten `just update` mit installiertem Start Menu Styler erfolgreich getestet
-- [x] `Taskbar auto-hide speed` als deklarativen Windhawk-Mod ergänzt
-  - Ein- und Ausblendanimation jeweils auf `250 %` Speedup gesetzt
-  - `90 FPS` als konfigurierte Animations-Framerate
-  - Windows-11-Standardtaskbar verwendet; Legacy-/ExplorerPatcher-Pfad bleibt deaktiviert
-  - Installation und Verhalten auf dem aktuellen System praktisch getestet
-- [x] `Lock Keys Notifier` als deklarativen Windhawk-Mod ergänzt
-  - Benachrichtigungen für Caps Lock, Num Lock und Scroll Lock aktiviert
-  - Insert-Benachrichtigung bleibt deaktiviert
-  - `Pill`-Layout als Basis verwendet
-  - Catppuccin-Mocha-Farben direkt über die nativen Mod-Settings gesetzt
-  - `Base #1e1e2e` als Hintergrund und `Text #cdd6f4` als Schriftfarbe
-  - `Mauve #cba6f7` nur als dünne Border, nicht als große Flächenfarbe
-  - `Green #a6e3a1` als ON-Akzent für Lock-Key-Zustände
-  - Installation, `just check`, `just update` und optische Sichtprüfung auf dem aktuellen System erfolgreich getestet
-  - bleibt dauerhaft das zuständige Lock-Key-OSD; Caps Lock, Num Lock und Scroll Lock werden nicht zusätzlich im eigenen OSD implementiert
-- [ ] Settings-Drift vor dem Schreiben erkennen und unveränderte Mod-Settings unangetastet lassen
+- [x] frühere Taskbar-, Startmenü-, Notification- und Lock-Key-Styler aus dem produktiven Desktop-Stack entfernt
+- [x] Windhawk 2.0 Alpha wegen der verfügbaren windhawk-cli reproduzierbar verwalten
+- [x] produktiv ausschließlich icon-resource-redirect für systemweite macOS-nahe Systemicons verwenden
+- [x] keine parallele Shell-, Taskbar-, Startmenü- oder OSD-Zuständigkeit über Windhawk
+- [x] Seelen UI bleibt für Top Bar, Dock und Volume-/Media-OSD zuständig
+- [x] FluentFlyout bleibt allein für Caps Lock, Num Lock und Scroll Lock zuständig
 
 ### Ehemalige zentrale Catppuccin-Palette
 
@@ -1653,7 +1461,6 @@ Alle für Firmenzugriff/Home Office benötigten Programme werden reproduzierbar 
 - [x] Installation über `just update` praktisch getestet
 - [x] wiederholter Lauf führt nur die Chocolatey-Update-Prüfung aus
 - [x] FTP-Nutzung über Remote Desktop Manager getestet
-- [x] FileZilla vollständig von komorebi ignorieren
 - [x] FileZilla kann von RDM in einen Tab eingebettet werden, ohne einen verwaisten Tiling-Slot zurückzulassen
 
 ## PCVisit Supporter Modul
@@ -1694,7 +1501,6 @@ Remote Desktop Manager verwendet eine externe Datenbank als zentrale Quelle der 
 - [x] PCVisit Supporter Modul ist vorhanden bzw. wird bei Bedarf installiert
 - [x] OpenVPN ist verfügbar
 - [x] RDM kann FileZilla für FTP-Verbindungen starten und in einen Tab einbetten
-- [x] komorebi hinterlässt dabei keinen leeren Tiling-Slot
 - [x] wiederholter `just update` verursacht keine unerwartete Neuinstallation
 - [x] sensible Verbindungsdaten bleiben außerhalb des Repositories
 
@@ -1817,33 +1623,6 @@ Das System soll nach Neuinstallation auch als Gaming-PC möglichst schnell einsa
 - [x] Battle.net installiert und angemeldet
 - [x] Ubisoft Connect installiert und angemeldet
 - [x] Battle.net über den generischen Winget-`InstallLocation`-Pfad erfolgreich installiert
-- [x] Steam vollständig aus komorebi-Tiling ausgeschlossen
-- [x] GOG GALAXY vollständig aus komorebi-Tiling ausgeschlossen
-- [x] EA app vollständig aus komorebi-Tiling ausgeschlossen
-- [x] Battle.net vollständig aus komorebi-Tiling ausgeschlossen
-
-## Launcher-/komorebi-Entscheidungen
-
-Launcher, die normales freies Windows-Fensterverhalten benötigen, werden über stabile EXE-Matcher mit `matching_strategy = Equals` vollständig von komorebi ignoriert.
-
-Praktisch bestätigte Fensteridentitäten:
-
-- Steam-Hauptfenster: `steamwebhelper.exe`
-- GOG GALAXY: `GalaxyClient.exe`
-- EA app: `EADesktop.exe`
-- Battle.net: `Battle.net.exe`
-
-Für GOG GALAXY wird bewusst ausschließlich eine generelle `Exe = GalaxyClient.exe`-Ignore-Regel verwendet. Gleichzeitig vorhandene `manage`- bzw. `tray_and_multi_window`-Regeln für dieselbe EXE wurden verworfen, weil GOG damit weiterhin getiled wurde.
-
-## komorebi-Animationen
-
-- [x] Ausgangszustand mit aktivierten Movement-Animationen praktisch untersucht
-- [x] 60 FPS als vorhandene Konfiguration identifiziert
-- [x] 240 FPS praktisch getestet; sichtbares Ruckeln beim schnellen Öffnen und Neu-Tilen blieb bestehen
-- [x] Animationen vollständig deaktiviert und komorebi neu gestartet
-- [x] Tiling ohne Animationen praktisch als deutlich schneller und flüssiger bestätigt
-- [x] Movement-Animationen für den produktiven Desired State bewusst deaktiviert lassen
-- [x] keine weitere FPS-/Duration-/Easing-Optimierung verfolgen, solange der Animationspfad selbst der bestätigte Engpass ist
 
 ## Launcher-Installationspfade / Erstinitialisierung
 
@@ -2048,12 +1827,12 @@ Das README soll den **aktuellen produktiven Stand** erklären.
 - [x] `just ghub-backup`
 - [x] `just ghub-restore`
 - [x] störungsarme Zen-Mod-Prüfung dokumentiert
-- [x] OneCommander-Desired-State-Prüfung dokumentiert
+- [x] Files-Desired-State und OneCommander-Ablösung dokumentiert
 - [x] G-HUB-Initialisierung/Backup/Restore dokumentiert
 - [x] Desktop-Neustart-Architektur dokumentiert
 - [x] Desktop-Zielbild
 - [x] README auf Seelen UI + FancyZones statt komorebi/masir/Zebar aktualisiert
-- [x] OneCommander
+- [x] Files als produktiver Explorer-Ersatz
 - [x] NanaZip
 - [x] Raycast als primärer Launcher inklusive Desired-State-/Backup-/Restore-Workflow
 - [x] generischer Standard-App-Initialisierungsworkflow
@@ -2081,7 +1860,7 @@ Die Roadmap ist ausführlicher als das README und enthält auch offene Ziele.
 - [x] Execution-Policy-Architektur
 - [x] Desktop-Neustart-Architektur
 - [x] Zen-Mod-Precheck
-- [x] OneCommander-Desired-State-Precheck
+- [x] Files-Desired-State und OneCommander-Ablösung
 - [x] G-HUB-Snapshot-Strategie
 - [x] Standard-App-Initialisierungsstrategie
 - [x] NanaZip-Default-App-Workflow
@@ -2176,11 +1955,11 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
 2. [x] komorebi / whkd / masir / Zebar / eigenes Volume-OSD aus dem produktiven Stack entfernen
 3. [x] Legacy-Desktop-Code nach erfolgreichem Test aus dem Repository entfernen
 4. [x] FancyZones aktivieren
-5. [x] FluentFlyout als Lock-Key-OSD integrieren und Windhawk vollständig entfernen
+5. [x] FluentFlyout als Lock-Key-OSD integrieren und Windhawk aus dem OSD-/Shell-Styling entfernen
 6. [x] FluentFlyout LockWindow an macOS 26 / Liquid Glass angleichen
-7. [ ] Seelen Top Bar / Tray / Dock an macOS 26 angleichen
-8. [ ] systemweite macOS-nahe Icon-Strategie festlegen und reproduzierbar umsetzen
-9. [ ] OneCommander weiter Richtung Finder umbauen
+7. [x] Seelen Top Bar und Dock an macOS 26 angleichen; verbleibende Tray-/Sonderfälle separat weiterführen
+8. [x] systemweite macOS-nahe Icon-Strategie über Windhawk icon-resource-redirect reproduzierbar umgesetzt
+9. [x] OneCommander vollständig durch Files ersetzen
 10. [x] Zen-Styling auf native Darstellung zurückführen; repositoryverwaltetes Custom-CSS vollständig entfernt und praktisch bestätigt
 11. [ ] Warp produktiv konfigurieren
 12. [ ] WSL + Nix Desired State implementieren
@@ -2394,7 +2173,7 @@ Nach Abschluss der Roadmap soll ein frisch installiertes Windows 11 nach möglic
 - Browser
 - iCloud / Apple Passwords Voraussetzungen
 - Seelen UI + PowerToys FancyZones
-- OneCommander mit Dev-File-Icons; weitere Gestaltung soll Finder-/macOS-orientiert erfolgen
+- Files als Finder-/macOS-orientierter Explorer-Ersatz
 - Raycast + Everything als primärer Launcher-/Suchworkflow
 - FluentFlyout für Caps-/Num-/Scroll-Lock-Hinweise
 - Seelen UI für Volume-/Media-OSD; Brightness nur bei künftig praktisch funktionierendem Hardware-/Softwarepfad
