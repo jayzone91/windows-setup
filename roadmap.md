@@ -1871,6 +1871,10 @@ Die Roadmap ist ausführlicher als das README und enthält auch offene Ziele.
 
 ---
 
+## Noch offen
+
+- [ ] separate technische Projektdokumentation erstellen; README bleibt bewusst eine kompakte Benutzerübersicht
+
 # 31. Bewusst verworfene oder nicht weiter zu verfolgende Ansätze
 
 Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neuen technischen Grund.
