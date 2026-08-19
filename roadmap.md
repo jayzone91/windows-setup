@@ -338,7 +338,7 @@ Feste Architekturentscheidungen:
 - [x] Neovim ruft `origin/main` per Fetch ab und führt bei identischem lokalen/Remote-HEAD keinen Stash, Checkout oder Pull aus
 - [ ] optimierten Neovim-Pfad bei einem zukünftig tatsächlich vorhandenen neuen Remote-Commit einschließlich lokaler Änderungen erneut praktisch bestätigen
 - [x] Wiederherstellungspunkt wird vor der eigentlichen Setup-Logik erstellt; Erstellung auf dem aktuellen System praktisch bestätigt
-- [ ] Erkennung eines bereits frischen Wiederherstellungspunkts korrigieren: die aktuelle CIM-Abfrage meldet auf dem Testsystem `Zugriff verweigert`, wodurch derzeit erneut ein Restore Point angelegt wird
+- [x] Erkennung eines bereits frischen Wiederherstellungspunkts korrigiert; Abfrage erfolgt über Windows PowerShell 5.1 / `Get-ComputerRestorePoint`, vorhandener Restore Point innerhalb des 24h-Fensters wurde auf dem aktuellen System praktisch erkannt und kein neuer Restore Point angelegt
 
 Zweite Performance-/Desired-State-Runde:
 
