@@ -80,10 +80,10 @@ Entfernt und nicht Teil des produktiven Zielbilds: Seelen UI, FluentFlyout, Wind
 - [x] Fullscreen, Borderless, Alt+Tab und Fokusverhalten sind Pflichtkriterien für Desktop-nahe Software
 - [x] Seelen UI, FluentFlyout, Windhawk, Files, Nushell und Warp nach wiederkehrenden Stabilitäts-/Nutzenproblemen aus dem Zielbild entfernt
 - [x] Vivaldi-Custom-HTML/CSS/JS vollständig verworfen; Vivaldi bleibt im nativen UI-Zustand
-- [ ] Bereinigten nativen Desktop nach Deinstallation und vollständigem `just update-log` praktisch testen
-- [ ] Fullscreen-Video in Vivaldi nach Rückkehr zum nativen UI praktisch testen
-- [ ] Alt+Tab aus mindestens einem Spiel sowie Rückkehr ins Spiel praktisch testen
-- [ ] normalen Fensterfokus, Maximieren, Verschieben und Windows Snap praktisch testen
+- [x] Bereinigten nativen Desktop nach Deinstallation und vollständigem `just update-log` praktisch getestet
+- [x] Fullscreen-Video in Vivaldi nach Rückkehr zum nativen UI praktisch getestet
+- [x] Alt+Tab aus mindestens einem Spiel sowie Rückkehr ins Spiel praktisch getestet
+- [x] normalen Fensterfokus, Maximieren, Verschieben und Windows Snap praktisch getestet
 ## Bootstrap
 
 - [x] Ein zentraler `bootstrap.ps1`
@@ -118,12 +118,10 @@ Entfernt und nicht Teil des produktiven Zielbilds: Seelen UI, FluentFlyout, Wind
 - [x] `just check` und Bootstrap verwenden denselben zentralen `Test-PowerShellCode`-Workflow; `just check` führt PSScriptAnalyzer für PowerShell und den Compilecheck für verwaltete C#-Dateien aus und aktualisiert danach den Git-basierten Source-Codezustand, während der Bootstrap den vollständigen Check nur bei geändertem Source-Code ausführt
 - [x] interaktive Bootstrap-Kommunikation wird zentral über `Write-WindowsSetupInteractive` und `Read-WindowsSetupPrompt` geführt, wenn sie unabhängig vom gewählten Ausgabemodus sichtbar bleiben muss
 - [x] interne PSScriptAnalyzer-Runtimefehler einzelner Dateien werden einmal in einem frischen `pwsh -NoProfile`-Prozess erneut geprüft
-- [x] `just desktop-restart` startet die Desktop-Umgebung kontrolliert neu
 - [x] `just ghub-backup` sichert die G-HUB-Konfiguration bewusst ins Repository
 - [x] `just ghub-restore` stellt die G-HUB-Konfiguration bewusst wieder her
 - [x] `just update` auf dem aktuellen System erfolgreich getestet
 - [x] `just check` auf dem aktuellen System erfolgreich getestet
-- [x] `just desktop-restart` auf dem aktuellen System erfolgreich getestet
 - [x] Das `Justfile` enthält keine eigentliche Setup-Logik
 - [x] Neue wiederkehrende manuelle Aktionen dürfen als Recipes ergänzt werden, wenn die Implementierung in PowerShell verbleibt
 
@@ -198,7 +196,6 @@ Begründung:
 - [x] keine manuell gepflegte Repository-Source-Datei überschreitet 500 Zeilen; generierte Build-Artefakte und externe/vendorisierte Inhalte sind von dieser Source-Regel ausgenommen
 - [x] `bootstrap.ps1` bleibt der zentrale Einstiegspunkt und lädt die gesplittete Bootstrap-Implementierung über `bootstrap/index.ps1`
 - [x] Paketkonfiguration unter `config/packages/` nach Paketgruppen aufgeteilt und zentral über `config/packages/index.ps1` geladen
-- [x] Windhawk-Konfiguration unter `config/windhawk/` pro Mod aufgeteilt und zentral über `config/windhawk/index.ps1` geladen
 - [x] ehemaliges eigenes Volume-OSD nach erfolgreichem Wechsel auf Seelen vollständig entfernt
 - [x] verwaiste Funktionen und Dateien nach repositoryweiter Prüfung einschließlich `Justfile`, `scripts/` und indirekter Nutzung entfernt
 - [x] Refactor mit `just check` und vollständigen `just update-log`-Läufen praktisch bestätigt
@@ -221,7 +218,6 @@ Begründung:
 - [x] `just update-log`
 - [x] `just update-performance`
 - [x] `just check`
-- [x] `just desktop-restart`
 - [x] `just ghub-backup`
 - [x] `just ghub-restore`
 - [x] direkter Bootstrap-Fallback dokumentiert
@@ -328,7 +324,7 @@ Zweite Performance-/Desired-State-Runde:
   - wiederholter `just update-log` bestätigt beide Shims als `CURRENT`
 - [x] Browser-Policies nur bei tatsächlichem Drift neu schreiben
   - Chromium-Extension-Policies und Zen-`policies.json` bleiben bei identischem Desired State unangetastet
-- [x] zweiter unmittelbar folgender `just update-log` bestätigt die Desired-State-Runde ohne unnötige Windhawk-/Task-/Explorer-/Desktop-/Zig-/Browser-Schreiboperationen bzw. Neustarts
+- [x] zweiter unmittelbar folgender `just update-log` bestätigt die Desired-State-Runde ohne unnötige Task-/Explorer-/Zig-/Browser-Schreiboperationen bzw. Neustarts
 - [x] finaler strikter `just check` mit 68 PowerShell-Dateien ohne PSScriptAnalyzer-Probleme
 - [x] finaler stiller Performance-Lauf mit `58,36 Sekunden` praktisch bestätigt
 ---
@@ -961,10 +957,8 @@ Integration:
 - [x] dynamisches Modul `WindowsSetupProjectCommands` nur innerhalb von `~/windows-setup` laden
 - [x] `update` → `just update`
 - [x] `check` → `just check`
-- [x] `desktop-restart` → `just desktop-restart`
 - [x] Projektcommands beim Verlassen des Repositories wieder vollständig entfernen
 - [x] dynamische Projektcommands mit `zoxide`-Verzeichniswechsel praktisch getestet
-- [ ] prüfen, welche Tools auch sinnvoll in Nushell eingebunden werden sollen
 - [x] CLI-Installation und Wiederholung über `just update` getestet
 - [ ] `just check` nach Profilanpassungen ausführen
 
@@ -1087,9 +1081,9 @@ Grund:
 - [x] Windows 11 übernimmt Desktop, Taskleiste und native System-OSDs
 - [x] PowerToys FancyZones bleibt als optionale, klar abgegrenzte Window-Management-Erweiterung
 - [x] Windows Snap bleibt aktiviert
-- [ ] Fullscreen-/Borderless-Verhalten nach der Bereinigung praktisch bestätigen
-- [ ] Alt+Tab und Fokuswechsel mit Spielen praktisch bestätigen
-- [ ] normalen Desktop-/Fensterworkflow nach der Bereinigung praktisch bestätigen
+- [x] Fullscreen-/Borderless-Verhalten nach der Bereinigung praktisch bestätigt
+- [x] Alt+Tab und Fokuswechsel mit Spielen praktisch bestätigt
+- [x] normalen Desktop-/Fensterworkflow nach der Bereinigung praktisch bestätigt
 
 ## Feste Entscheidung
 
@@ -1618,14 +1612,14 @@ Beibehalten:
 
 ### Akzeptanzkriterien
 
-- [ ] vollständiger `just update-log` nach der Bereinigung erfolgreich
-- [ ] `just check` erfolgreich
-- [ ] zweiter `just update-log` ohne Drift-/Altbestandfehler erfolgreich
-- [ ] Vivaldi-Fullscreen-Video stabil
-- [ ] Alt+Tab aus Spiel und Rückkehr ins Spiel stabil
-- [ ] normale Fenster bleiben fokussierbar, verschiebbar und vollständig erreichbar
-- [ ] Windows Explorer ist wieder Standard für `Win + E`
-- [ ] entfernte Software ist auf dem System nicht mehr installiert
+- [x] vollständiger `just update-log` nach der Bereinigung erfolgreich
+- [x] `just check` erfolgreich
+- [x] zweiter `just update-log` ohne Drift-/Altbestandfehler erfolgreich
+- [x] Vivaldi-Fullscreen-Video stabil
+- [x] Alt+Tab aus Spiel und Rückkehr ins Spiel stabil
+- [x] normale Fenster bleiben fokussierbar, verschiebbar und vollständig erreichbar
+- [x] Windows Explorer ist wieder Standard für `Win + E`
+- [x] entfernte Software ist auf dem System nicht mehr installiert
 
 ---
 # 30. Phase 27 – Dokumentation
@@ -1643,7 +1637,6 @@ Das README soll den **aktuellen produktiven Stand** erklären.
 - [x] `just update-log`
 - [x] `just update-performance`
 - [x] `just check`
-- [x] `just desktop-restart`
 - [x] `just ghub-backup`
 - [x] `just ghub-restore`
 - [x] störungsarme Zen-Mod-Prüfung dokumentiert
@@ -1672,7 +1665,6 @@ Die Roadmap ist ausführlicher als das README und enthält auch offene Ziele.
 - [x] Home Office
 - [x] Gaming
 - [x] NanaZip
-- [x] OSD-Zuständigkeit inklusive Abgrenzung zum Windhawk `Lock Keys Notifier` dokumentiert
 - [x] Just-Workflow
 - [x] Execution-Policy-Architektur
 - [x] Desktop-Neustart-Architektur
@@ -1814,10 +1806,10 @@ Noch offen aus dem Paketmanager-Umbau:
 - [x] zusätzliche OSD-/Hook-/Resource-Redirect-Schichten entfernt
 - [x] Windows File Explorer wieder als produktiven Dateimanager festgelegt
 - [x] Vivaldi-Custom-UI verworfen
-- [ ] vollständigen nativen Desktop-Workflow praktisch testen
-- [ ] Fullscreen-/Borderless-Verhalten praktisch testen
-- [ ] Alt+Tab und Fokuswechsel mit mindestens einem Spiel praktisch testen
-- [ ] Vivaldi-Fullscreen-Video praktisch testen
+- [x] vollständigen nativen Desktop-Workflow praktisch getestet
+- [x] Fullscreen-/Borderless-Verhalten praktisch getestet
+- [x] Alt+Tab und Fokuswechsel mit mindestens einem Spiel praktisch getestet
+- [x] Vivaldi-Fullscreen-Video praktisch getestet
 - [ ] PowerToys `Find My Mouse` bei echten Vollbildanwendungen weiter prüfen, falls nach der Bereinigung noch Probleme bestehen
 ## Kürzlich abgeschlossen – CLI Tools / Shell UX
 
@@ -1829,7 +1821,6 @@ Noch offen aus dem Paketmanager-Umbau:
 - [x] Fish-artige PowerShell-Abbreviations über PSReadLine umgesetzt
 - [x] `zoxide` in PowerShell integriert
 - [x] Git-Root-basierte Projektcommands umgesetzt
-- [x] `update`, `check` und `desktop-restart` nur innerhalb von `windows-setup` verfügbar
 - [x] Projektcommands beim Verlassen des Repositories wieder entfernt
 - [x] Installation und Wiederholung über `just update` getestet
 - [x] `just check` nach dem Umbau ohne relevante Probleme
@@ -1985,7 +1976,6 @@ Nach Abschluss der Roadmap soll ein frisch installiertes Windows 11 nach möglic
 - Just als einheitliche manuelle Repository-Bedienoberfläche
 - `just update` für Wartungs-/Setup-Läufe
 - `just check` für statische Prüfung
-- `just desktop-restart` für einen gezielten Desktop-Neustart
 - `just ghub-backup` / `just ghub-restore` für bewusste G-HUB-Snapshots
 - Browser
 - iCloud / Apple Passwords Voraussetzungen

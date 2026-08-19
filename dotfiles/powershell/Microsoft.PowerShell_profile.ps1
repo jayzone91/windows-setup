@@ -102,7 +102,6 @@ $script:ShellAbbreviations = [ordered]@{
     "gco"    = "git checkout"
     "gsw"    = "git switch"
     "glog"   = "git log --oneline --graph --decorate --all"
-    "window" = "komorebic visible-windows"
 }
 
 function Expand-ShellAbbreviation {
@@ -267,13 +266,6 @@ function Update-ProjectCommands {
             just check
         }
 
-        function Restart-WindowsSetupDesktop {
-            <#
-                .SYNOPSIS
-                Startet die verwaltete Desktop-Umgebung kontrolliert neu.
-                #>
-            just desktop-restart
-        }
 
         Set-Alias `
             -Name update `
@@ -283,19 +275,14 @@ function Update-ProjectCommands {
             -Name check `
             -Value Test-WindowsSetup
 
-        Set-Alias `
-            -Name desktop-restart `
-            -Value Restart-WindowsSetupDesktop
 
         Export-ModuleMember `
             -Function `
             Update-WindowsSetup,
-        Test-WindowsSetup,
-        Restart-WindowsSetupDesktop `
+        Test-WindowsSetup `
             -Alias `
             update,
-        check,
-        desktop-restart
+        check
     }
 
     Import-Module `
