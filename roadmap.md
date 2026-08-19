@@ -1590,20 +1590,22 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 ## Robustheit externer GitHub-/Content-Abhängigkeiten
 
 - [ ] temporäre GitHub-Ausfälle dürfen nichtkritische Bootstrap-Schritte nicht abbrechen
-  - zentralen GitHub-Verfügbarkeitstest mit begrenztem Retry und Backoff verwenden
-  - bei GitHub-Ausfall vorhandene lokale Installationen, Repositories und Konfigurationen weiterverwenden
+  - vorhandene lokale Installationen, Repositories und Konfigurationen bei externen Ausfällen weiterverwenden, wenn ihr lokaler Zustand gültig ist
   - Neovim-Remote-Update bei vorhandenem lokalen Submodule mit Warnung überspringen
   - noch nicht initialisierte optionale GitHub-Abhängigkeiten bei Ausfall überspringen statt den Bootstrap abzubrechen
   - eigener Repository-`fetch` bleibt nichtfatal; initialer Clone von `windows-setup` bleibt zwingend
-  - Wallpaper behält vorhandene Retry-/Local-Fallback-Logik
+  - keine projektweite pauschale Retry-/Backoff-Schicht einführen; Retry-Verhalten nur dort einsetzen, wo ein konkreter technischer Nutzen besteht
   - lokale/strukturelle Fehler bleiben echte Fehler
-  - GitHub-Ausfall praktisch simulieren und wiederholten Bootstrap testen, bevor der Punkt als `[x]` markiert wird
-- [ ] externe, nichtkritische Content-Repositories wie das Wallpaper-Repository dürfen den gesamten Bootstrap bei temporären Netzwerk-/GitHub-Fehlern nicht abbrechen
-  - Git-Netzwerkoperationen mit begrenzter Retry-Logik und Backoff ausführen
-  - bei vorhandenem gültigem lokalen Wallpaper-Repository nach fehlgeschlagenen Retries den lokalen Stand weiterverwenden
-  - wenn bei einer Neuinstallation noch kein lokaler Wallpaper-Stand existiert und Clone nach Retries fehlschlägt, Wallpaper-Schritt mit Warnung überspringen statt den Bootstrap abzubrechen
+  - verbleibende externe Abhängigkeiten gezielt praktisch testen, bevor der Gesamtpunkt als `[x]` markiert wird
+- [x] vorhandenes Wallpaper-Repository bei temporärem Git-/GitHub-Ausfall ohne Bootstrap-Abbruch weiterverwenden
+  - Remote-Abfrage bei einem normalen Wartungslauf nur einmal versuchen
+  - keine festen 2-/4-Sekunden-Retry-Wartezeiten mehr
+  - bei fehlgeschlagener Remote-Abfrage sofort mit dem vorhandenen gültigen lokalen Stand fortfahren
   - strukturelle lokale Fehler wie ungültiges Repository, fehlender Wallpaper-Unterordner oder fehlende Bilddateien bleiben echte Fehler
-  - Verhalten mit simuliertem Fetch-/Clone-Ausfall praktisch testen, bevor der Punkt als `[x]` markiert wird
+  - Verhalten mit real fehlgeschlagener Remote-Abfrage und anschließend erfolgreichem Bootstrap praktisch bestätigt
+- [ ] Wallpaper-Verhalten auf einer Neuinstallation ohne vorhandenen lokalen Stand bei fehlgeschlagenem Clone praktisch testen
+  - fehlgeschlagenen Clone als nichtkritischen Schritt mit Warnung überspringen
+  - keinen unvollständigen Zielordner als gültigen lokalen Stand behandeln
 
 ## Benachrichtigungen
 
@@ -1804,13 +1806,18 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
 
 # 32. Prioritäten / empfohlene nächste Schritte
 
-## Aktuelle Hauptpriorität – Stabilität
+## Aktuelle Hauptpriorität – Qualität / Robustheit
 
-1. [ ] Desktop-Bereinigung praktisch testen
-2. [ ] Fullscreen-/Alt+Tab-/Fokus-Probleme nach Entfernung der zusätzlichen UI-Schichten erneut testen
-3. [ ] offene Windows-Snap-/FancyZones-Konfiguration abschließen
-4. [ ] Performance-Regression des Bootstrap lokalisieren
-5. [ ] Logging / Tests / Robustheit weiter ausbauen
+1. [x] Desktop-Bereinigung praktisch testen
+2. [x] Fullscreen-/Alt+Tab-/Fokus-Probleme nach Entfernung der zusätzlichen UI-Schichten erneut testen
+3. [x] Windows-Snap-/FancyZones-Konfiguration abschließen und praktisch bestätigen
+4. [x] Bootstrap-Performance-Regression lokalisieren, beheben und dokumentieren
+5. [ ] lokale Testbasis mit Pester für kritische Helper aufbauen
+6. [ ] Tests für Paket-Versionserkennung ergänzen
+7. [ ] Tests für Hardlink-/Junction-Migration ergänzen
+8. [ ] Tests für Reboot-Erkennung ergänzen
+9. [ ] Logging / maschinenlesbare Abschluss- und Paket-Zusammenfassung weiter ausbauen
+10. [ ] GitHub Actions erst nach belastbarer lokaler Testbasis ergänzen
 ## Kürzlich abgeschlossen – Home Office / Paketmanager
 
 - [x] `HomeOffice`-Paketgruppe angelegt
@@ -1896,11 +1903,13 @@ Lock Keys bleiben beim bereits getesteten Windhawk `Lock Keys Notifier`; ein eig
 4. [ ] sinnvolle Windows-Gaming-Einstellungen
 ## Priorität 5 – Qualität
 
-1. [ ] Logging
-2. [ ] GitHub Actions
-3. [ ] Pester
-4. [ ] Dry-Run
-5. [ ] maschinenlesbarer Abschlussreport
+1. [ ] Pester-Testbasis für kritische Helper
+2. [ ] Paket-Versionserkennung testen
+3. [ ] Hardlink-/Junction-Migration testen
+4. [ ] Reboot-Erkennung testen
+5. [ ] Logging und maschinenlesbaren Abschlussreport ausbauen
+6. [ ] GitHub Actions auf Basis der lokalen Tests ergänzen
+7. [ ] Dry-Run / WhatIf erst nach den Kern-Tests bewerten
 
 # 33. Regeln für eine KI, die diese Roadmap bearbeitet
 
