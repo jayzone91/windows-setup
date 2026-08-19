@@ -43,61 +43,47 @@ Für wiederkehrende manuelle Aktionen dient `just` als einheitliche Bedienoberfl
 
 # 2. Desktop-Zielbild
 
-Das neue Hauptziel ist eine Windows-11-Umgebung, die **optisch so nah wie sinnvoll an macOS 26 kommt, ohne die Integrität von Windows zu beschädigen**.
+Das Hauptziel ist ein **stabiles, wartbares und reproduzierbares Windows-11-System**.
 
-Tiling ist kein Hauptziel mehr. Bestehende Komponenten sind nicht verpflichtend; sie dürfen ersetzt werden, wenn eine stabilere Lösung näher an macOS führt.
+Optische Anpassungen sind nachrangig. Native Windows-Komponenten werden bevorzugt, wenn Drittsoftware in Shell, Fensterverwaltung, Fullscreen, Fokus, Grafikdarstellung oder Updates eingreift.
 
-## Vergleich
+## Verbindliche Stabilitätsregel
 
-| macOS 26                     | Windows                                      |
-| ---------------------------- | -------------------------------------------- |
-| Menu Bar                     | Seelen UI Top Bar                            |
-| Dock                         | Seelen UI Dock                               |
-| Window Management           | PowerToys FancyZones                         |
-| Spotlight / Launcher        | Raycast + Everything                         |
-| Finder                      | Files                                        |
-| Volume / Media OSD          | Seelen UI                                    |
-| Caps-/Lock-Key-Hinweise     | FluentFlyout                                  |
-| Liquid Glass                | Seelen UI + anwendungsspezifisches Styling   |
-| dotfiles                    | Repository + NTFS-Hardlinks/Junctions        |
+- Systemstabilität hat immer Vorrang vor Design.
+- Rein optische Vorteile rechtfertigen keine zusätzliche Shell-, Hook-, Compositor-, Resource-Redirect- oder Browser-UI-Schicht.
+- Neue tief in die Desktop-/Fenster-/Grafikpipeline eingreifende Software wird nur übernommen, wenn ein klarer funktionaler Nutzen besteht.
+- Fullscreen, Borderless, Alt+Tab, Fokuswechsel, Gaming und normale Fensterbedienung gehören zu den Pflicht-Akzeptanztests jeder Desktop-nahen Änderung.
+- Bei wiederkehrenden Stabilitätsproblemen wird auf native Windows-Funktionalität zurückgefallen.
 
-## Desktop-Architektur
+## Aktueller Desktop
 
-```text
-Windows Desktop
-│
-├── Desktop Shell
-│   └── Seelen UI
-│       ├── Top Bar
-│       ├── Dock
-│       └── Volume / Media OSD
-│
-├── Window Management
-│   └── PowerToys FancyZones
-│
-├── File Manager
-│   └── Files
-│
-├── Archive Manager
-│   └── NanaZip
-│
-├── Launcher / Search
-│   ├── Raycast
-│   └── Everything
-│
-├── Lock-Key OSD
-│   └── FluentFlyout
-│
-└── Design
-    └── macOS-26-/Liquid-Glass-orientiert
-```
+| Bereich                     | Lösung                                                     |
+| --------------------------- | ---------------------------------------------------------- |
+| Desktop / Taskleiste        | Windows 11                                                 |
+| Window Management           | Windows Snap + PowerToys FancyZones                        |
+| Launcher / Search           | Raycast + Everything                                       |
+| Dateimanager                | Windows File Explorer                                      |
+| Archivmanager               | NanaZip                                                    |
+| Volume / Media / System-OSD | Windows 11                                                 |
+| Browser                     | Vivaldi ohne Custom-UI; Zen als Firefox-WebDev-Testbrowser |
+| Terminal                    | Windows Terminal + PowerShell 7 + Starship                 |
 
-VS Code und Terminal dürfen unabhängig vom Windows-Gesamtdesign Catppuccin verwenden, solange dies für den jeweiligen Entwicklungsworkflow sinnvoll bleibt. Bei einem Programmwechsel ist Catppuccin dort ebenfalls nicht verpflichtend.
+Entfernt und nicht Teil des produktiven Zielbilds: Seelen UI, FluentFlyout, Windhawk, Files, Nushell, Warp sowie repositoryverwaltetes Vivaldi-Custom-HTML/CSS/JS.
 
 ---
-
 # 3. Grundprinzipien und feste Architekturentscheidungen
 
+## Stabilität
+
+- [x] **Systemstabilität ist die oberste Architekturvorgabe**
+- [x] native Windows-Komponenten werden gegenüber rein optisch motivierten Drittanbieter-Schichten bevorzugt
+- [x] Fullscreen, Borderless, Alt+Tab und Fokusverhalten sind Pflichtkriterien für Desktop-nahe Software
+- [x] Seelen UI, FluentFlyout, Windhawk, Files, Nushell und Warp nach wiederkehrenden Stabilitäts-/Nutzenproblemen aus dem Zielbild entfernt
+- [x] Vivaldi-Custom-HTML/CSS/JS vollständig verworfen; Vivaldi bleibt im nativen UI-Zustand
+- [ ] Bereinigten nativen Desktop nach Deinstallation und vollständigem `just update-log` praktisch testen
+- [ ] Fullscreen-Video in Vivaldi nach Rückkehr zum nativen UI praktisch testen
+- [ ] Alt+Tab aus mindestens einem Spiel sowie Rückkehr ins Spiel praktisch testen
+- [ ] normalen Fensterfokus, Maximieren, Verschieben und Windows Snap praktisch testen
 ## Bootstrap
 
 - [x] Ein zentraler `bootstrap.ps1`
@@ -150,7 +136,6 @@ Projektweite Regel:
 - [x] Symbolic Links sind ausschließlich als expliziter Kompatibilitäts-Fallback erlaubt, wenn eine Anwendung Hardlinks technisch nicht zuverlässig unterstützt
 - [x] VS Code `settings.json` verwendet einen Symbolic Link, da VS Code beim Speichern die Datei ersetzt und dadurch einen NTFS-Hardlink auftrennt
 - [x] Windows Terminal `settings.json` verwendet ebenfalls den Symbolic-Link-Kompatibilitätsfallback; ein Hardlink wurde beim Speichern über die Settings-GUI praktisch als ungeeignet bestätigt
-- [x] Seelen `settings.json` verwendet ebenfalls den Symbolic-Link-Kompatibilitätsfallback; GUI-Änderungen trennten den bisherigen Hardlink und der Symlink wurde praktisch mit direkter Repository-Synchronisierung bestätigt
 - [x] `Set-FileHardLink` zentral als Standard-Helper
 - [x] korrekte NTFS-Hardlinks vor Änderungen auf ihr tatsächliches Ziel prüfen und bei unverändertem Desired State nicht löschen oder neu erzeugen
 - [x] `Set-FileSymbolicLink` zentral als Kompatibilitäts-Helper
@@ -165,7 +150,6 @@ Begründung:
 - Symbolic Links werden nur verwendet, wenn das Verhalten einer Anwendung praktisch als inkompatibel mit Hardlinks bestätigt wurde.
 - VS Code ersetzt `settings.json` beim Speichern und trennt dadurch einen Hardlink auf; ein Symbolic Link bleibt dagegen erhalten und Änderungen landen direkt in der Repository-Datei.
 - Windows Terminal trennt einen Hardlink beim Speichern über die Settings-GUI ebenfalls auf. Mit dem Symbolic Link landen GUI-Änderungen direkt in `dotfiles/terminal/settings.json`; ein vollständiger Neustart von Windows Terminal ist erforderlich, damit geänderte Einstellungen zuverlässig neu eingelesen werden.
-- Seelen ersetzt bzw. trennt `settings.json` bei Änderungen über die GUI ebenfalls so, dass der Hardlink nicht zuverlässig erhalten bleibt. Deshalb verwendet Seelen denselben expliziten Symbolic-Link-Kompatibilitätsfallback; GUI-Änderungen landen damit direkt in `dotfiles/seelen/settings.json`.
 
 ## Generierte Inhalte und lokaler Zustand
 
@@ -179,38 +163,20 @@ Begründung:
 - [x] State-Marker dürfen einmalige oder bewusst interaktive Schritte bei späteren `just update`-Läufen überspringen
 - [x] State-Marker dürfen erst nach erfolgreich abgeschlossener Benutzerinteraktion erzeugt werden
 
-## Design
+## Desktop-/Design-Entscheidung
 
-- [x] globale Windows-Designsprache auf macOS 26 / Liquid Glass umgestellt
-- [x] systemweite Windows-Akzentfarbe auf macOS-Systemblau `#0A84FF` festgelegt und über `config/windows.psd1` als Desired State in den Bootstrap integriert
-- [x] Akzentfarbe praktisch mit vollständigem `just update-log`, wiederholtem Drift-Check und `just check` bestätigt
-- [x] Seelen liest die Windows-Akzentfarbe direkt aus dem System; keine separate Seelen-Akzentfarbe pflegen
-- [x] Catppuccin Mocha ist **keine** globale Windows-Designvorgabe mehr
-- [x] Seelen UI ist die zentrale Basis für Top Bar, Dock und Volume-/Media-OSD
-- [x] FluentFlyout ersetzt Windhawk vollständig für Lock-Key-Hinweise; Windhawk bleibt davon unabhängig ausschließlich für Systemicon-Redirects aktiv
-- [x] VS Code darf Catppuccin unabhängig vom Windows-Gesamtdesign weiterverwenden
-- [x] Terminal darf Catppuccin unabhängig vom Windows-Gesamtdesign weiterverwenden, solange der eingesetzte Terminal-Workflow dies sinnvoll macht
-- [x] Zen Browser verwendet wieder sein natives Standard-Theme; repositoryverwaltetes Catppuccin-CSS wurde vollständig verworfen
-- [x] Vivaldi ist der Hauptbrowser unter Windows
-- [x] Zen bleibt als Firefox-basierter Testbrowser für Webentwicklung vollständig erhalten
-- [x] Vivaldi-Safari-/macOS-26-Layout wird über `dotfiles/vivaldi/window.html`, `dotfiles/vivaldi/safari.js` und `dotfiles/vivaldi/css/` versioniert
-- [x] Vivaldi verwendet macOS-artige Traffic-Lights, Safari-orientierte Toolbar-/Tab-Geometrie und ein Liquid-Glass-Material
-- [x] das Vivaldi-Logo in der Toolbar wurde durch einen neutralen Menüindikator ersetzt
-- [x] Vivaldi-Upstream-`window.html` bleibt als Referenz unter `dotfiles/vivaldi/upstream/` erhalten
-- [ ] Vivaldi-Icon für `Neuer Tab` durch Safari-/macOS-artiges Symbol ersetzen
-- [ ] Vivaldi-Download-Icon durch Safari-/macOS-artiges Symbol ersetzen
-- [ ] Vivaldi als Windows-Standardbrowser für HTTP/HTTPS automatisiert und reproduzierbar setzen
-- [ ] Vivaldi-Custom-UI-CSS-Pfad ohne manuellen Settings-Schritt als Desired State herstellen
-- [x] Zen `userChrome.css`, `userContent.css`, das Catppuccin-Logo und hostbezogene Website-Styles wurden vollständig entfernt
-- [x] Zen-Custom-CSS wird erst wieder eingeführt, wenn eine konkrete stabile UI-Anpassung benötigt und praktisch bestätigt wurde
-- [x] der Zen-Desired-State entfernt veraltete verwaltete Custom-CSS-Artefakte aus dem aktiven Profil; fremde nicht verwaltete `chrome\websites`-Verzeichnisse bleiben unangetastet
-- [x] keine künstliche universelle CSS-Datei für alle Programme
-- [x] jedes Programm nutzt seine native bzw. stabilste Anpassungsmethode
-- [x] Funktionalität, Windows-Integrität und Wartbarkeit haben Vorrang vor rein optischem Styling
-- [x] ehemalige Zebar-spezifische G-HUB-Mausakku-Anzeige mit dem entfernten Zebar-Stack verworfen
+- [x] kein globales macOS-/Liquid-Glass-Ziel mehr
+- [x] keine zusätzliche Desktop-Shell
+- [x] keine zusätzlichen Lock-Key-/Volume-/Media-OSD-Schichten
+- [x] keine systemweiten Resource-Redirects für rein optische Icons
+- [x] Windows File Explorer ist der produktive Dateimanager
+- [x] Windows Terminal ist das produktive Terminal-Frontend
+- [x] Vivaldi bleibt Hauptbrowser, verwendet aber ausschließlich sein natives UI
+- [x] Zen bleibt Firefox-basierter Testbrowser für Webentwicklung
+- [x] VS Code und Windows Terminal dürfen weiterhin anwendungseigene, stabile Themes verwenden
+- [x] Funktionalität, Windows-Integrität, Stabilität und Wartbarkeit haben Vorrang vor Styling
 
 ---
-
 # 4. Phase 1 – Repository, Bootstrap und Projektstruktur
 
 ## Bestehende Struktur
@@ -472,7 +438,6 @@ Für Scoop muss zusätzlich der gewünschte `Bucket` direkt am Paket angegeben w
 - [x] GitHub Desktop
 - [x] Visual Studio Code
 - [x] PowerShell 7
-- [x] Nushell
 - [x] Starship
 - [x] Neovim Nightly über Scoop `versions`
 - [x] ripgrep (`rg`)
@@ -1003,13 +968,6 @@ Integration:
 - [x] CLI-Installation und Wiederholung über `just update` getestet
 - [ ] `just check` nach Profilanpassungen ausführen
 
-## Nushell
-
-- [x] Installation
-- [x] `config.nu` im Repository
-- [x] `env.nu` im Repository
-- [x] beide Dateien als Hardlinks
-
 ## Starship
 
 - [x] Installation
@@ -1119,62 +1077,25 @@ Grund:
 
 ---
 
-# 18. Phase 15 – Desktop Shell / Seelen UI
+# 18. Phase 15 – Native Windows Desktop
 
-## Architekturwechsel
+## Aktueller produktiver Zustand
 
-- [x] komorebi als produktiven Window Manager abgelöst
-- [x] whkd aus dem produktiven Desktop-Stack entfernt
-- [x] masir aus dem produktiven Desktop-Stack entfernt
-- [x] Zebar als Desktop Bar abgelöst
-- [x] eigenes Volume-/Mute-OSD abgelöst
-- [x] Seelen UI als produktive Desktop-Shell integriert
-- [x] Seelen `settings.json` reproduzierbar aus dem Repository verwaltet
-- [x] Seelen `settings.json` wegen praktisch bestätigter Hardlink-Inkompatibilität per Symbolic Link an das Repository gebunden; GUI-Änderungen erscheinen direkt im Repository
-- [x] Seelen Window Manager deaktiviert
-- [x] PowerToys FancyZones als leichtgewichtiges Window Management aktiviert
-- [x] Windows-Taskbar-AutoHide wieder deaktiviert; Shell-/Dock-Verhalten liegt bei Seelen
-- [x] Desktop-Restart auf Seelen UI umgestellt
-- [x] Legacy Scheduled Tasks entfernt
-- [x] toten komorebi-/whkd-/masir-/Zebar-/Volume-OSD-Code aus dem Repository entfernt
-- [x] `just check` nach dem Architekturwechsel erfolgreich
-- [x] vollständiger `just update-log` nach dem Architekturwechsel erfolgreich
-- [x] praktischer Desktop-Test mit Seelen UI erfolgreich
+- [x] Seelen UI vollständig verworfen
+- [x] FluentFlyout vollständig verworfen
+- [x] Windhawk vollständig verworfen
+- [x] Windows 11 übernimmt Desktop, Taskleiste und native System-OSDs
+- [x] PowerToys FancyZones bleibt als optionale, klar abgegrenzte Window-Management-Erweiterung
+- [x] Windows Snap bleibt aktiviert
+- [ ] Fullscreen-/Borderless-Verhalten nach der Bereinigung praktisch bestätigen
+- [ ] Alt+Tab und Fokuswechsel mit Spielen praktisch bestätigen
+- [ ] normalen Desktop-/Fensterworkflow nach der Bereinigung praktisch bestätigen
 
 ## Feste Entscheidung
 
-Der frühere komorebi-/whkd-/masir-/Zebar-Stack ist **verworfen**.
-
-Gründe:
-
-- neues Hauptziel ist macOS-26-Nähe statt Hyprland-Nachbau
-- Tiling ist optional und kein Architekturzentrum mehr
-- Seelen liefert Top Bar, Dock und OSD aus einer zusammenhängenden Shell
-- FancyZones reicht für das gewünschte optionale Window Management
-- parallele Desktop-Shell-/Tiling-Komponenten führten mit Seelen zu sichtbarem Flackern und konkurrierendem Fensterverhalten
-
-Der alte Stack darf nicht erneut vorgeschlagen oder eingebaut werden, solange kein neuer konkreter technischer Grund vorliegt.
-
-## OSD
-
-- [x] Seelen UI übernimmt Volume-/Media-OSD
-- [x] eigenes C#/PowerShell-Volume-OSD vollständig aus dem aktiven Stack und Repository entfernt
-- [x] FluentFlyout übernimmt Caps Lock, Num Lock und Scroll Lock; Windhawk ist entfernt
-- [x] FluentFlyout LockWindow optisch an macOS 26 / Liquid Glass angepasst und praktisch bestätigt
-
-## Noch offen
-
-- [ ] Seelen Top Bar möglichst nah an macOS 26 gestalten; aktueller Theme-Stand ist praktisch noch zu transparent
-- [ ] Tray-Integration in die Top Bar prüfen/optimieren
-- [ ] Seelen-Flyouts aus dem Default-Styling herauslösen und an macOS 26 / Liquid Glass angleichen
-- [ ] Seelen Dock weiter an macOS 26 angleichen
-- [ ] Liquid-Glass-Design innerhalb der stabil unterstützten Seelen-Möglichkeiten ausbauen
-- [ ] Seelen DevTools für gezielte UI-Anpassungen untersuchen
-- [ ] Verhalten bei Fullscreen-/Borderless-Anwendungen praktisch prüfen
-- [ ] Multi-Monitor-Verhalten praktisch prüfen
+Keine zusätzliche Desktop-Shell oder rein optisch motivierte Windows-Hook-Schicht wird erneut eingeführt, solange kein konkreter funktionaler Bedarf und ein praktisch belegter Stabilitätsgewinn bestehen.
 
 ---
-
 # 19. Phase 16 – ehemaliges masir / Focus Follows Mouse
 
 - [x] masir war implementiert und praktisch getestet
@@ -1183,115 +1104,49 @@ Der alte Stack darf nicht erneut vorgeschlagen oder eingebaut werden, solange ke
 
 ---
 
-# 20. Phase 17 – ehemalige Zebar Desktop Bar
+# 20. Phase 17 – ehemalige Desktop-Bar-Experimente
 
-- [x] Zebar war vollständig implementiert und praktisch getestet
-- [x] Zebar im Zuge des Seelen-Architekturwechsels bewusst entfernt
-- [x] Top Bar, Dock und Desktop-OSD liegen jetzt bei Seelen UI
-- [x] G-HUB-Mausakku-Widget aus dem produktiven Desktop-Stack entfernt
-- [ ] nur bei echtem Bedarf prüfen, ob ein vergleichbares Mausakku-Widget stabil in Seelen integrierbar ist
+- [x] Zebar war implementiert und wurde später verworfen
+- [x] Seelen UI war anschließend produktiv und wurde wegen Stabilitätsproblemen ebenfalls verworfen
+- [x] aktuelle Desktop-/Taskleisten-Zuständigkeit liegt ausschließlich bei Windows 11
+- [x] kein separates Desktop-Bar-/Dock-System mehr
 
 ---
-# 21. Phase 18 – Files
+# 21. Phase 18 – Windows File Explorer
 
 ## Aktueller produktiver Zustand
 
-- [x] OneCommander als produktiven Dateimanager vollständig verworfen
-- [x] Files als täglichen Explorer-/Finder-Ersatz übernommen
-- [x] Files über den offiziellen stabilen AppInstaller reproduzierbar im Bootstrap installieren
-- [x] Windows PowerShell 5.1 für Add-AppxPackage -AppInstallerFile verwenden
-- [x] Acrylic-Backdrop als Desired State verwalten
-- [x] transparenten Haupt-Hintergrund als Desired State verwalten
-- [x] Columns-View als Standardlayout verwalten
-- [x] Files-Settings nur bei tatsächlichem Drift ändern
-- [x] laufendes Files nur bei tatsächlichem Settings-Drift schließen und bei zuvor laufender App wieder starten
-- [x] Win + E über die native Files-Default-File-Manager-Funktion verwenden
-- [x] vorhandene Win + E-Integration erkennen statt unvollständig reverse-engineerte Registry-Sonderlösungen zu erzwingen
-- [x] vollständigen just update-log mit Files-Integration praktisch bestätigt
-- [x] wiederholten just update-log ohne unnötigen Files-Neustart praktisch bestätigt
-- [x] OneCommander-Paket, Bootstrap-Aufruf, Module, Dotfiles und Icon-Generatoren nach erfolgreicher Files-Abnahme entfernt
+- [x] Files als produktiven Dateimanager verworfen und aus dem Setup entfernt
+- [x] Windows File Explorer wieder als alleinigen produktiven Dateimanager festgelegt
+- [x] keine Explorer-Ersatzsoftware als Voraussetzung des Setups
+- [x] `Win + E` bleibt beim nativen Windows Explorer
 
 ## Feste Entscheidung
 
-OneCommander ist kein Rückfallpfad und kein zukünftiger Design-Kandidat mehr. Alte OneCommander-XAML-, Folder-Icon-, File-Icon- und Registry-Integrationsdetails gehören nicht mehr zum aktuellen Desired State und werden in dieser Roadmap nicht weiter gepflegt.
-
-Systemweite macOS-nahe Icons werden unabhängig von Files über den aktuellen Windhawk-icon-resource-redirect-Workflow verwaltet.
+Ein alternativer Dateimanager wird nur wieder aufgenommen, wenn ein klarer funktionaler Bedarf besteht und der Nutzen den zusätzlichen Integrations- und Stabilitätsaufwand rechtfertigt.
 
 ---
-# 22. Phase 19 – FluentFlyout / Lock Keys
+# 22. Phase 19 – Native Windows OSD / Shell-Personalisierung
 
-## Architekturwechsel
+## Aktueller produktiver Zustand
 
-- [x] Windhawk Lock Keys Notifier verworfen
-- [x] eigener Windhawk-Lock-Key-Mod verworfen und entfernt
-- [x] Windhawk aus dem Lock-Key-/Shell-Styling entfernt; produktiv bleibt Windhawk ausschließlich für den systemweiten icon-resource-redirect-Workflow
-- [x] FluentFlyout als alleinige Lock-Key-OSD-Komponente gewählt
-- [x] eigener Fork `jayzone91/FluentFlyout`
-- [x] Caps Lock, Num Lock und Scroll Lock aktiviert; Insert bleibt außerhalb des gewünschten Scopes
-- [x] Bottom-Offset oberhalb des Seelen-Docks im Fork umgesetzt und praktisch bestätigt
-- [x] LockWindow auf `ACCENT_ENABLE_BLURBEHIND` mit dezentem `#0C000000`-Tint umgestellt
-- [x] Text und animierter Balken horizontal zentriert
-- [x] Statusbalken neutral statt Windows-Akzentfarbe
-- [x] native Fensterkontur/-rundung beibehalten; kein zusätzlicher XAML-Border
-- [x] Installation/Update aus dem neuesten Release des eigenen Forks automatisiert
-- [x] MSIX-Bundle und Zertifikat als Release-Assets erkannt
-- [x] vorhandene GitHub-Asset-Digests per SHA256 verifiziert
-- [x] Signaturzertifikat bei Bedarf nach `LocalMachine\TrustedPeople` importiert
-- [x] installierte AppX-Version gegen Release-Version geprüft
-- [x] Legacy-Windhawk-Installation beim Bootstrap entfernt
-- [x] `just check` und vollständiger `just update-log` nach der Migration erfolgreich
-
-## Feste Entscheidung
-
-FluentFlyout ist ausschließlich für Lock-Key-Hinweise zuständig. Andere FluentFlyout-Bereiche werden nicht als parallele OSD-/Shell-Schicht verwendet; Volume und Media bleiben bei Seelen UI.
-
-Windhawk ist für den aktuellen Desktop-Desired-State nicht mehr erforderlich und soll nicht erneut eingeführt werden, solange kein neuer konkreter technischer Bedarf entsteht.
+- [x] FluentFlyout verworfen
+- [x] Windhawk verworfen
+- [x] Lock-Key-, Volume-, Media- und sonstige Systemanzeigen werden nicht mehr durch zusätzliche Overlay-/Hook-Software ersetzt
+- [x] keine systemweiten Resource-Redirects mehr
+- [x] Windows-Shell-Personalisierung beschränkt sich auf stabile, dokumentierte Windows-Einstellungen
+- [x] `config/windows.psd1` bleibt Desired State für Taskleisten-/Start-/Windows-Einstellungen
+- [x] Windows übernimmt die native Desktop-, Taskleisten- und OSD-Zuständigkeit
 
 ---
-## Windows-Shell-Personalisierung
 
-- [x] `config/windows.psd1` als deklarativen Desired State für verwaltete Taskleisten-/Start-Schalter angelegt
-- [x] Taskleisten-Autohide durch gezieltes Setzen von Bit `0x01` in `StuckRects3\Settings[8]` umgesetzt
-- [x] übrige Bits und der restliche `StuckRects3`-Blob bleiben unangetastet
-- [x] Zuletzt hinzugefügte Apps deaktiviert
-- [x] zuletzt verwendete/empfohlene Dateien und Sprunglisten deaktiviert
-- [x] Tipps, Verknüpfungen und App-Empfehlungen deaktiviert
-- [x] meistverwendete Apps aktiviert
-- [x] Windows-Shell-Desired-State über `just update` praktisch getestet
-- [x] wiederholten `just update` auf Idempotenz geprüft
+# 23. Phase 20 – System-OSD
 
----
-## Windhawk – aktueller Scope
-
-- [x] frühere Taskbar-, Startmenü-, Notification- und Lock-Key-Styler aus dem produktiven Desktop-Stack entfernt
-- [x] Windhawk 2.0 Alpha wegen der verfügbaren windhawk-cli reproduzierbar verwalten
-- [x] produktiv ausschließlich icon-resource-redirect für systemweite macOS-nahe Systemicons verwenden
-- [x] keine parallele Shell-, Taskbar-, Startmenü- oder OSD-Zuständigkeit über Windhawk
-- [x] Seelen UI bleibt für Top Bar, Dock und Volume-/Media-OSD zuständig
-- [x] FluentFlyout bleibt allein für Caps Lock, Num Lock und Scroll Lock zuständig
-
-### Ehemalige zentrale Catppuccin-Palette
-
-- [x] `config/theme.psd1` bleibt für Anwendungen erhalten, die weiterhin Catppuccin verwenden
-- [x] die Palette ist keine globale Desktop-Designvorgabe mehr
-- [x] ehemalige Zebar-/Taskbar-Styler-Abhängigkeiten wurden mit dem Legacy-Desktop entfernt
-# 23. Phase 20 – ehemaliges eigenes Volume-OSD
-
-## Architekturwechsel
-
-- [x] eigenes Volume-/Mute-OSD war produktiv implementiert und praktisch getestet
-- [x] Seelen UI übernimmt nun Volume-/Media-OSD
-- [x] eigenes PowerShell-/C#-OSD aus dem aktiven Stack entfernt
-- [x] Scheduled Task `Windows Setup Volume OSD` entfernt
-- [x] `modules/VolumeOsd/` nach erfolgreichem Seelen-Test vollständig entfernt
-- [x] Lock Keys liegen bei FluentFlyout; Windhawk ist aus dem produktiven Setup entfernt
-- [x] kein paralleles zweites Volume-/Media-OSD beibehalten
-
-## Feste Entscheidung
-
-Das eigene Volume-OSD ist **verworfen**, solange Seelen UI die benötigte OSD-Funktion stabil bereitstellt. Ein separater OSD-Prozess würde nur doppelte Zuständigkeit und zusätzliche Wartung erzeugen.
-
-Brightness bleibt außerhalb dieses Projektschritts; der frühere Hardwaretest lieferte keinen zuverlässig steuerbaren Helligkeitspfad.
+- [x] eigenes Volume-/Mute-OSD verworfen
+- [x] Seelen-OSD verworfen
+- [x] FluentFlyout verworfen
+- [x] Windows übernimmt Volume-, Media- und System-OSD nativ
+- [x] kein zusätzlicher OSD-Prozess oder Scheduled Task
 
 ---
 # 24. Phase 21 – Launcher / Suche
@@ -1696,11 +1551,8 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [x] Konfiguration erneut anwenden
 - [x] bereits initialisierte Standard-App-Konfigurationen über `.generated/state/default-apps/` erkennen und überspringen
 - [x] Zen-Mods vor möglichem Browser-Neustart lokal prüfen
-- [x] Seelen-Konfiguration aus dem Repository anwenden
-- [x] Files-Desired-State anwenden und Windhawk Resource Redirect für die repositoryverwalteten macOS-nahen Systemicons konfigurieren
 - [x] initialisiertes Raycast ohne erneuten Restore behandeln und aktuellen lokalen Export in den generischen Desired State sanitizen
-- [x] Seelen UI bei tatsächlichem Desktop-Drift definiert neu starten; unveränderte Seelen-Konfiguration bleibt laufend
-- [x] Volume-/Media-OSD an Seelen UI delegiert; kein eigener OSD-Prozess oder Scheduled Task mehr
+- [x] Volume-/Media-OSD bleibt beim nativen Windows-OSD; kein eigener OSD-Prozess oder Scheduled Task
 - [x] Scheduled Tasks vor dem Schreiben gegen ihren tatsächlichen Desired State vergleichen
 - [x] PSScriptAnalyzer nur bei geändertem PowerShell-Code über den gemeinsamen strikten Preflight ausführen
 - [x] parameterloser/stiller Bootstrap für die automatische Wartung; Konsolenausgabe wird für den Hintergrundtask nicht benötigt
@@ -1714,7 +1566,6 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [ ] temporäre GitHub-Ausfälle dürfen nichtkritische Bootstrap-Schritte nicht abbrechen
   - zentralen GitHub-Verfügbarkeitstest mit begrenztem Retry und Backoff verwenden
   - bei GitHub-Ausfall vorhandene lokale Installationen, Repositories und Konfigurationen weiterverwenden
-  - Windhawk-Release-/Update-Prüfung bei GitHub-Ausfall mit Warnung überspringen
   - Neovim-Remote-Update bei vorhandenem lokalen Submodule mit Warnung überspringen
   - noch nicht initialisierte optionale GitHub-Abhängigkeiten bei Ausfall überspringen statt den Bootstrap abzubrechen
   - eigener Repository-`fetch` bleibt nichtfatal; initialer Clone von `windows-setup` bleibt zwingend
@@ -1740,84 +1591,43 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 
 ---
 
-# 29. Phase 26 – macOS 26 / Liquid Glass Gesamtpolish
+# 29. Phase 26 – Stabilitätsbereinigung
 
-## Architekturentscheidung
+## Architekturentscheidung 2026-08-19
 
-- [x] Catppuccin Mocha ist nicht mehr die globale Windows-Designvorgabe
-- [x] Windows-Gesamtdesign auf macOS-26-/Liquid-Glass-Nähe umgestellt
-- [x] Seelen UI als zentrale Shell-Basis gewählt
-- [x] VS Code darf Catppuccin weiterhin verwenden
-- [x] Terminal darf Catppuccin weiterhin verwenden, solange der eingesetzte Terminal-Workflow dies sinnvoll macht
-- [x] OneCommander vollständig verworfen; Files ist der Finder-/macOS-orientierte Explorer-Ersatz
-- [x] Zen benötigt keinen globalen Catppuccin-Zwang; vorhandenes Styling darf zugunsten nativer macOS-Nähe reduziert werden
+Nach wiederkehrenden Problemen mit Fullscreen, Fokus, Alt+Tab und tiefen UI-Anpassungen wird das macOS-/Liquid-Glass-Gesamtziel beendet.
 
-## Aktueller Seelen-Stand
+Entfernt:
 
-- [x] Seelen Top Bar macOS-26-näher gestaltet
-- [x] Seelen Volume-/Media-Flyouts mit transparentem Liquid-Glass-Material, Hintergrundbeeinflussung und SVG-Displacement praktisch abgestimmt
-- [x] Top Bar bewusst dichter als Flyouts; im Dark Mode keine vollständig transparente Menüleiste
-- [x] systemweite Akzentfarbe `#0A84FF` wird von Seelen direkt aus Windows übernommen
-- [x] Seelen Dock macOS-26-näher gestaltet und praktisch bestätigt
-  - installierte Seelen-Erweiterung `Wellenanimation für die Taskleiste` bleibt allein für Hover-Zoom/Magnification und Icon-Bewegung zuständig
-  - eigenes `weg.scss` definiert keine konkurrierenden Transform-/Zoom-Animationen für Dock-Items
-  - Theme-Styling beschränkt sich auf Liquid-Glass-Material, Rahmen/Schatten, Radien, Hover-Fläche, Running-Dots, Separatoren, Badges und Icon-Schatten
-  - Dock-Clipping für vergrößerte Plugin-Icons entfernt und praktisch bestätigt
+- [x] Seelen UI
+- [x] FluentFlyout
+- [x] Windhawk
+- [x] Files
+- [x] Nushell
+- [x] Warp
+- [x] Vivaldi Custom HTML/CSS/JS
 
-## Verbindliche Reihenfolge für den verbleibenden Desktop-Polish
+Beibehalten:
 
-Die folgenden Anwendungen dürfen nach dem Seelen-Polish nicht vergessen werden. Vor neuen rein optischen Nebenbaustellen wird diese Reihenfolge abgearbeitet:
+- [x] native Windows-11-Shell und Windows File Explorer
+- [x] Windows Terminal + PowerShell 7 + Starship
+- [x] PowerToys/FancyZones, weil funktionaler Nutzen unabhängig vom Design besteht
+- [x] Raycast + Everything
+- [x] Vivaldi als Hauptbrowser im nativen UI
+- [x] Zen als Firefox-basierter WebDev-Testbrowser
 
-1. [x] OneCommander vollständig verwerfen und durch Files ersetzen
-   - Files als täglichen Explorer-Ersatz übernehmen
-   - `Win + E` über die von Files bereitgestellte Explorer-Integration verwenden
-   - Files-Desired-State auf transparenten Hintergrund, Acrylic-Backdrop und Spaltenansicht ausrichten
-   - alte OneCommander-Module, Dotfiles und Icon-Build-Skripte vollständig entfernen
-2. [x] Windowsweite Systemicons auf konsistente macOS-nahe Designsprache umstellen
-   - Windhawk 2.0 Alpha wegen der verfügbaren `windhawk-cli` reproduzierbar aus offiziellen GitHub-Releases installieren/aktualisieren
-   - `icon-resource-redirect` per CLI installieren, aktualisieren und aktivieren
-   - macOS-nahes Resource-Redirect-Theme unter `dotfiles/windhawk/themes/macos-27` versionieren
-   - Theme-Pfad dynamisch aus dem Repository-Root setzen
-   - `iconTheme` leer lassen und ausschließlich das eigene `themePaths[0]` verwenden
-   - `disableThumbnails = 1` und `allResourceRedirect = 0` als Desired State setzen
-   - keine Windows-Systemdateien dauerhaft patchen
-   - vollständigen Bootstrap praktisch erfolgreich getestet
-3. [x] Zen-Custom-CSS vollständig entfernen und auf natives Zen-Standard-Theme zurückkehren; praktisch bestätigt
-4. [ ] Warp als Terminal-Frontend produktiv ausarbeiten und optisch in das macOS-26-Gesamtbild integrieren
-5. [ ] macOS-26-nahes Cursor-Theme systemweit als Ersatz für die Windows-Standardcursor evaluieren und reproduzierbar im Bootstrap verwalten
-   - vollständige Cursor-Rollen einschließlich Normal, Link, Text, Busy, Resize und Precision Select abdecken
-   - Quelle und Lizenz vor Übernahme prüfen
-   - keine manuelle Einmalinstallation als endgültigen Desired State verwenden
-   - Windows-Registry-/Cursor-Schema nur über dokumentierte bzw. stabile Windows-Mechanismen setzen
-   - Rückfall auf einen vollständigen funktionsfähigen Windows-Cursor-Satz muss jederzeit möglich bleiben
-6. [ ] VS-Code-Oberfläche auf macOS-/Glass-Design prüfen; Custom-CSS nur bei aktuell stabiler Unterstützung
+### Akzeptanzkriterien
 
-Zusätzlich offen:
-
-- [x] FluentFlyout LockWindow macOS-26-/Liquid-Glass-näher gestaltet
-- [x] macOS-Genie-/Trichteranimation für Minimieren/Wiederherstellen mit Seelen UI geprüft; Seelen bietet aktuell keinen geeigneten Animationspfad für native Fenster
-- [ ] systemweite macOS-nahe Fensteranimationen weiter untersuchen, insbesondere Genie-/Trichtereffekt beim Minimieren und Wiederherstellen
-  - Seelen UI muss dafür nicht zwingend die Implementierung liefern
-  - separate Software oder ein spezialisierter Windows-Compositor-/Animationslayer darf geprüft werden
-  - Lösung muss mit Seelen Dock, Multi-Monitor, Fullscreen/Gaming und normalen Win32-/UWP-Fenstern stabil funktionieren
-  - keine invasive Lösung übernehmen, die Windows-Integrität, Stabilität oder Performance merklich verschlechtert
-- [ ] WSL-Workflow mit wählbarer Distribution und Nix-Paketmanagement entwerfen und testen
-- [ ] weitere Anwendungen nur anpassen, wenn die Methode stabil, reproduzierbar und Windows-kompatibel ist
-- [ ] **Niedrige Priorität / erst nach Abschluss der übrigen Roadmap:** FluentFlyout-LockWindow mit echtem Liquid-Glass-/Refraction-Effekt analog zum Seelen Volume Flyout evaluieren
-  - aktueller `ACCENT_ENABLE_BLURBEHIND`-Pfad bleibt bis dahin unverändert produktiv
-  - eine 1:1-Übernahme des Seelen-CSS-/SVG-Displacement-Pfads ist in WPF technisch nicht möglich
-  - bei späterer Umsetzung einen GPU-/Windows-Composition-/Direct2D- bzw. Shader-basierten Refraction-Pfad prüfen
-  - bestehende Blur-Lösung als stabilen Fallback beibehalten
-  - nur übernehmen, wenn Darstellung, Performance, Multi-Monitor und allgemeine Stabilität praktisch überzeugen
+- [ ] vollständiger `just update-log` nach der Bereinigung erfolgreich
+- [ ] `just check` erfolgreich
+- [ ] zweiter `just update-log` ohne Drift-/Altbestandfehler erfolgreich
+- [ ] Vivaldi-Fullscreen-Video stabil
+- [ ] Alt+Tab aus Spiel und Rückkehr ins Spiel stabil
+- [ ] normale Fenster bleiben fokussierbar, verschiebbar und vollständig erreichbar
+- [ ] Windows Explorer ist wieder Standard für `Win + E`
+- [ ] entfernte Software ist auf dem System nicht mehr installiert
 
 ---
-## Nächste technische Prioritäten
-
-1. **Desktop-Polish:** Files, Systemicons und Zen sind abgeschlossen; als Nächstes verbindlich Warp als Terminal-Frontend bearbeiten.
-2. **Secrets:** projektweite verschlüsselte Secrets-Architektur für API-Keys und Zugangsdaten entwerfen; sie wird sowohl für macOSicons als auch später für Mail verwendet.
-3. **Mail:** geeigneten Mail-Client anhand der festgelegten Gmail-/IMAP-/Exchange-/Exchange-Online-Kriterien auswählen und anschließend mit der gemeinsamen Secrets-Architektur automatisieren.
-4. **Danach:** WSL/Nix und übrige offene Qualitäts-/Testpunkte.
-
 # 30. Phase 27 – Dokumentation
 
 ## README
@@ -1837,12 +1647,9 @@ Das README soll den **aktuellen produktiven Stand** erklären.
 - [x] `just ghub-backup`
 - [x] `just ghub-restore`
 - [x] störungsarme Zen-Mod-Prüfung dokumentiert
-- [x] Files-Desired-State und OneCommander-Ablösung dokumentiert
 - [x] G-HUB-Initialisierung/Backup/Restore dokumentiert
-- [x] Desktop-Neustart-Architektur dokumentiert
 - [x] Desktop-Zielbild
-- [x] README auf Seelen UI + FancyZones statt komorebi/masir/Zebar aktualisiert
-- [x] Files als produktiver Explorer-Ersatz
+- [x] Windows File Explorer als produktiver Dateimanager dokumentiert
 - [x] NanaZip
 - [x] Raycast als primärer Launcher inklusive Desired-State-/Backup-/Restore-Workflow
 - [x] generischer Standard-App-Initialisierungsworkflow
@@ -1870,7 +1677,6 @@ Die Roadmap ist ausführlicher als das README und enthält auch offene Ziele.
 - [x] Execution-Policy-Architektur
 - [x] Desktop-Neustart-Architektur
 - [x] Zen-Mod-Precheck
-- [x] Files-Desired-State und OneCommander-Ablösung
 - [x] G-HUB-Snapshot-Strategie
 - [x] Standard-App-Initialisierungsstrategie
 - [x] NanaZip-Default-App-Workflow
@@ -1888,6 +1694,17 @@ Die Roadmap ist ausführlicher als das README und enthält auch offene Ziele.
 # 31. Bewusst verworfene oder nicht weiter zu verfolgende Ansätze
 
 Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neuen technischen Grund.
+
+## Stabilitätsbereinigung 2026-08-19
+
+- [x] Seelen UI verworfen: Fokus-/Fullscreen-/Fensterprobleme und zusätzliche Shell-Komplexität
+- [x] FluentFlyout verworfen: kein ausreichender funktionaler Nutzen für eine zusätzliche OSD-Schicht
+- [x] Windhawk verworfen: systemweite Hook-/Resource-Redirect-Schicht für rein optische Änderungen nicht mehr gewünscht
+- [x] Files verworfen: Windows Explorer reicht als stabiler nativer Dateimanager
+- [x] Nushell verworfen: wird im tatsächlichen Workflow nicht genutzt
+- [x] Warp verworfen: kein ausreichender Vorteil gegenüber Windows Terminal
+- [x] Vivaldi-Custom-HTML/CSS/JS verworfen: Browser-Stabilität und Fullscreen-Verhalten haben Vorrang vor Safari-/Liquid-Glass-Styling
+- [x] macOS-/Liquid-Glass-Gesamtziel verworfen: Windows soll funktional, stabil und wartbar sein statt ein anderes Betriebssystem optisch nachzubauen
 
 - [x] Windows File Explorer vollständig mit Windhawk File Explorer Styler themen
   - Ergebnis war nicht ausreichend
@@ -1963,24 +1780,13 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
 
 # 32. Prioritäten / empfohlene nächste Schritte
 
-## Aktuelle Hauptpriorität – macOS 26 / Seelen UI
+## Aktuelle Hauptpriorität – Stabilität
 
-1. [x] Seelen UI als produktive Desktop-Shell integrieren und praktisch testen
-2. [x] komorebi / whkd / masir / Zebar / eigenes Volume-OSD aus dem produktiven Stack entfernen
-3. [x] Legacy-Desktop-Code nach erfolgreichem Test aus dem Repository entfernen
-4. [x] FancyZones aktivieren
-5. [x] FluentFlyout als Lock-Key-OSD integrieren und Windhawk aus dem OSD-/Shell-Styling entfernen
-6. [x] FluentFlyout LockWindow an macOS 26 / Liquid Glass angleichen
-7. [x] Seelen Top Bar und Dock an macOS 26 angleichen; verbleibende Tray-/Sonderfälle separat weiterführen
-8. [x] systemweite macOS-nahe Icon-Strategie über Windhawk icon-resource-redirect reproduzierbar umgesetzt
-9. [x] OneCommander vollständig durch Files ersetzen
-10. [x] Zen-Styling auf native Darstellung zurückführen; repositoryverwaltetes Custom-CSS vollständig entfernt und praktisch bestätigt
-11. [ ] Warp produktiv konfigurieren
-12. [ ] WSL + Nix Desired State implementieren
-13. [ ] VS Code auf macOS-/Liquid-Glass-Design prüfen
-
-Eine KI soll bei der Auswahl des nächsten Arbeitspakets grundsätzlich folgende Reihenfolge verwenden, sofern der Benutzer nichts anderes vorgibt.
-
+1. [ ] Desktop-Bereinigung praktisch testen
+2. [ ] Fullscreen-/Alt+Tab-/Fokus-Probleme nach Entfernung der zusätzlichen UI-Schichten erneut testen
+3. [ ] offene Windows-Snap-/FancyZones-Konfiguration abschließen
+4. [ ] Performance-Regression des Bootstrap lokalisieren
+5. [ ] Logging / Tests / Robustheit weiter ausbauen
 ## Kürzlich abgeschlossen – Home Office / Paketmanager
 
 - [x] `HomeOffice`-Paketgruppe angelegt
@@ -2004,20 +1810,15 @@ Noch offen aus dem Paketmanager-Umbau:
 
 ## Desktop-Stabilität
 
-- [x] Seelen UI als alleinige produktive Desktop-Shell etabliert
-- [x] konkurrierenden komorebi-/whkd-/masir-/Zebar-Stack entfernt
-- [x] `just desktop-restart` auf Seelen UI umgestellt
-- [x] vollständiger `just update-log` nach dem Wechsel erfolgreich
-- [x] Legacy-Code anschließend aus dem Repository entfernt
-- [ ] Fullscreen-/Borderless-Verhalten mit Seelen weiter praktisch prüfen
-- [ ] Multi-Monitor-Verhalten mit Seelen weiter praktisch prüfen
-- [ ] PowerToys `Find My Mouse` bei laufenden Spielen und anderen echten Vollbildanwendungen automatisch deaktivieren und nach Verlassen/Beenden der Vollbildanwendung automatisch wieder aktivieren
-  - vorhandenes `FindMyMouse.DoNotActivateOnGameMode = $true` bleibt als native PowerToys-Schutzschicht bestehen
-  - diese native Option deckt nur Windows Game Mode ab und reicht für beliebige Vollbildanwendungen nicht aus
-  - Runtime-Erkennung muss generisch über den tatsächlichen Vordergrund-/Vollbildzustand erfolgen; keine statische Spieleliste als alleinige Erkennung
-  - Umschaltung darf PowerToys nicht unnötig komplett neu starten und muss den vorherigen Desired State von `FindMyMouse = $true` zuverlässig wiederherstellen
-  - kein dauerhafter deaktivierter Zustand nach Crash, Abbruch, Benutzerwechsel oder Ende der Vollbildanwendung
-  - erst nach praktischem Test mit mindestens einem Spiel und einer Nicht-Spiel-Vollbildanwendung als `[x]` markieren
+- [x] zusätzliche Desktop-Shell entfernt
+- [x] zusätzliche OSD-/Hook-/Resource-Redirect-Schichten entfernt
+- [x] Windows File Explorer wieder als produktiven Dateimanager festgelegt
+- [x] Vivaldi-Custom-UI verworfen
+- [ ] vollständigen nativen Desktop-Workflow praktisch testen
+- [ ] Fullscreen-/Borderless-Verhalten praktisch testen
+- [ ] Alt+Tab und Fokuswechsel mit mindestens einem Spiel praktisch testen
+- [ ] Vivaldi-Fullscreen-Video praktisch testen
+- [ ] PowerToys `Find My Mouse` bei echten Vollbildanwendungen weiter prüfen, falls nach der Bereinigung noch Probleme bestehen
 ## Kürzlich abgeschlossen – CLI Tools / Shell UX
 
 - [x] `ripgrep` (`rg`) installiert
@@ -2150,6 +1951,8 @@ Wenn eine KI Änderungen an bestehenden Repository-Dateien für den Benutzer vor
 Ein Roadmap-Punkt darf nur `[x]` werden, wenn:
 
 - die Funktion implementiert ist,
+- die Änderung die Systemstabilität nicht verschlechtert,
+- bei Desktop-/Fenster-/Grafiknähe Fullscreen, Alt+Tab und Fokus praktisch geprüft wurden,
 - sie auf dem aktuellen System getestet wurde,
 - ein erneuter Lauf keinen unerwarteten Fehler erzeugt,
 - die Umsetzung in den bestehenden Bootstrap integriert ist, sofern sie Teil des automatischen Setups sein soll,
@@ -2178,7 +1981,7 @@ Nach Abschluss der Roadmap soll ein frisch installiertes Windows 11 nach möglic
 - sauber debloatetes Windows
 - vollständig eingerichtete Entwicklerumgebung
 - Dev Drive + Games Drive
-- Git/VS Code/Terminal/Nushell/Starship
+- Git/VS Code/Windows Terminal/PowerShell/Starship
 - Just als einheitliche manuelle Repository-Bedienoberfläche
 - `just update` für Wartungs-/Setup-Läufe
 - `just check` für statische Prüfung
@@ -2186,11 +1989,10 @@ Nach Abschluss der Roadmap soll ein frisch installiertes Windows 11 nach möglic
 - `just ghub-backup` / `just ghub-restore` für bewusste G-HUB-Snapshots
 - Browser
 - iCloud / Apple Passwords Voraussetzungen
-- Seelen UI + PowerToys FancyZones
-- Files als Finder-/macOS-orientierter Explorer-Ersatz
+- native Windows-11-Shell + PowerToys FancyZones
+- Windows File Explorer als produktiver Dateimanager
 - Raycast + Everything als primärer Launcher-/Suchworkflow
-- FluentFlyout für Caps-/Num-/Scroll-Lock-Hinweise
-- Seelen UI für Volume-/Media-OSD; Brightness nur bei künftig praktisch funktionierendem Hardware-/Softwarepfad
+- natives Windows-OSD für Volume/Media
 - NanaZip
 - generischer, interaktiver Standard-App-Initialisierungsworkflow für geschützte Windows-Dateizuordnungen
 - lokale Initialisierungsmarker unter `.generated/state/`

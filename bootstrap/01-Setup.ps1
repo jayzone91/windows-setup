@@ -134,12 +134,8 @@ $Browsers = Import-PowerShellDataFile "$Root\config\browsers.psd1"
 $PowerShell = Import-PowerShellDataFile "$Root\config\powershell.psd1"
 $PowerToys = Import-PowerShellDataFile "$Root\config\powertoys.psd1"
 $Raycast = Import-PowerShellDataFile "$Root\config\raycast.psd1"
-$FluentFlyout = Import-PowerShellDataFile "$Root\config\fluentflyout.psd1"
-$Files = Import-PowerShellDataFile "$Root\config\files.psd1"
-$Windhawk = Import-PowerShellDataFile "$Root\config\windhawk.psd1"
 $Theme = Import-PowerShellDataFile "$Root\config\theme.psd1"
 $Terminal = Import-PowerShellDataFile "$Root\config\terminal.psd1"
-$Warp = Import-PowerShellDataFile "$Root\config\warp.psd1"
 $Windows = Import-PowerShellDataFile "$Root\config\windows.psd1"
 $Debloat = Import-PowerShellDataFile "$Root\config\debloat.psd1"
 $Storage = Import-PowerShellDataFile `
@@ -180,7 +176,6 @@ try {
     Invoke-WingetQueuedChanges
 
     Update-MicrosoftStoreApps
-    Install-Files -Config $Files
 }
 finally {
     Clear-PackageManagerCaches
@@ -193,11 +188,6 @@ Protect-EMClientSettings `
 Restore-EMClientSettings `
     -RepositoryPath $Root
 
-Install-FluentFlyout -Config $FluentFlyout
-
-Initialize-Windhawk `
-    -Config $Windhawk `
-    -RepositoryPath $Root
 
 
 # Pfade neu einlesen
@@ -213,11 +203,6 @@ Initialize-RaycastConfiguration `
     -Config $Raycast `
     -RepositoryPath $Root
 
-$seelenConfigurationChanged = Set-SeelenConfiguration `
-    -RepositoryPath $Root
-
-
-Set-FilesConfiguration -Config $Files
 
 Initialize-NanaZipFileAssociations `
     -RepositoryPath $Root
@@ -293,15 +278,10 @@ Set-WindowsTerminalPreferences `
     -Theme $Theme `
     -RepositoryPath $Root
 
-Set-WarpConfiguration `
-    -Config $Warp `
-    -RepositoryPath $Root
 Install-PowerShellModules `
     -Modules $PowerShell.Modules
 
 Set-PowerShellPreferences
-
-Set-NushellPreferences
 
 Set-LanguageEnvironment
 
@@ -363,18 +343,6 @@ Install-WindowsUpdates
 # ------------------------------------------------------------
 
 
-if (
-    $seelenConfigurationChanged -or
-    $windowsThemeChanged -or
-    -not (Test-SeelenUiRunning)
-) {
-    Restart-WindowsDesktopEnvironment
-}
-else {
-    Write-Host ""
-    Write-Host "[SKIP] Seelen UI bereits aktiv und aktuell." `
-        -ForegroundColor Green
-}
 
 $null = Register-WindowsSetupScheduledTask `
     -BootstrapPath "$Root\bootstrap.ps1"
@@ -405,15 +373,6 @@ Get-PendingRebootStatus
 $script:rebootRequired =
 $rebootStatus.RebootRequired
 
-if ($script:warpRestartRequired) {
-    Write-Host ""
-    Write-Host "[ACTION] Warp neu starten." `
-        -ForegroundColor Yellow
-    Write-Host (
-        "Die versionierte Warp settings.toml wurde seit dem Start " +
-        "des laufenden Warp-Prozesses geändert."
-    ) -ForegroundColor Yellow
-}
 
 if ($rebootStatus.RebootRequired) {
 

@@ -28,19 +28,7 @@
             Update = $true
         },
 
-        @{
-            Name   = "Seelen UI"
-            Id     = "Seelen.SeelenUI"
-            Source = "winget"
-            Update = $true
-        },
 
-        @{
-            Name   = "Warp"
-            Id     = "warp-terminal"
-            Source = "chocolatey"
-            Update = $true
-        },
 
         @{
             Name    = "OpenVPN"

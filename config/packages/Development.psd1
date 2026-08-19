@@ -62,12 +62,6 @@
             Update = $true
         },
 
-        @{
-            Id     = "Nushell.Nushell"
-            Name   = "Nushell"
-            Source = "winget"
-            Update = $true
-        },
 
         @{
             Id     = "Starship.Starship"

@@ -22,9 +22,6 @@ update-performance:
 check:
     pwsh -NoProfile -ExecutionPolicy Bypass -Command ". ./modules/Helpers/index.ps1; . ./modules/PowerShell/index.ps1; Test-PowerShellCode -Path . -FailOnAnyIssue -UpdateFingerprint"
 
-# Seelen UI sauber neu starten
-desktop-restart:
-    pwsh -NoProfile -ExecutionPolicy Bypass -Command ". ./modules/index.ps1; Restart-WindowsDesktopEnvironment"
 
 # ASUS-/Drittanbieter-Treiber, Firmware und BIOS bewusst über Armoury Crate prüfen
 asus-updates:

@@ -143,8 +143,6 @@ $lastErrorPath = Get-WindowsSetupLogPath -Root $Root
 try {
     . "$Root\bootstrap\index.ps1"
 
-    Restart-WindowsDesktopEnvironment
-
     Remove-Item `
         -LiteralPath $lastErrorPath `
         -Force `
