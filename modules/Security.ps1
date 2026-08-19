@@ -370,9 +370,25 @@ function Test-ApplePasswordRequirements {
     $domainJoined = $helloStatus |
     Select-String "DomainJoined"
 
+    $workplaceJoined = $helloStatus |
+    Select-String "WorkplaceJoined"
+
+    $ngcSet = $helloStatus |
+    Select-String "NgcSet"
+
+    $azureAdJoinedValue = if ($azureAdJoined -match "YES") { "YES" } else { "NO" }
+    $domainJoinedValue = if ($domainJoined -match "YES") { "YES" } else { "NO" }
+    $workplaceJoinedValue = if ($workplaceJoined -match "YES") { "YES" } else { "NO" }
+    $ngcSetValue = if ($ngcSet -match "YES") { "YES" } else { "NO" }
+
+    Write-Host "[INFO] AzureAdJoined: $azureAdJoinedValue"
+    Write-Host "[INFO] DomainJoined: $domainJoinedValue"
+    Write-Host "[INFO] WorkplaceJoined: $workplaceJoinedValue"
+    Write-Host "[INFO] NgcSet: $ngcSetValue"
+
     $isJoinedAccount = (
-        $azureAdJoined -match "YES" -or
-        $domainJoined -match "YES"
+        $azureAdJoinedValue -eq "YES" -or
+        $domainJoinedValue -eq "YES"
     )
 
     if (-not $isJoinedAccount) {
@@ -387,22 +403,15 @@ function Test-ApplePasswordRequirements {
             "nicht zuverlässig nicht-interaktiv geprüft werden."
         )
     }
+    elseif ($ngcSetValue -eq "YES") {
+
+        Write-Host "[OK] Windows Hello ist eingerichtet."
+
+    }
     else {
 
-        $ngcSet = $helloStatus |
-        Select-String "NgcSet"
-
-        if ($ngcSet -match "YES") {
-
-            Write-Host "[OK] Windows Hello ist eingerichtet."
-
-        }
-        else {
-
-            Write-Warning `
-                "Windows Hello ist nicht eingerichtet."
-
-        }
+        Write-Warning `
+            "Windows Hello ist nicht eingerichtet."
 
     }
 

@@ -634,7 +634,10 @@ Diese Punkte werden vor weiterem größeren Komfort-/Mail-Ausbau umgesetzt:
   - alle Profile werden mit `On`/`Off` ausgegeben
   - sobald mindestens ein Profil deaktiviert ist, erzeugt der Bootstrap eine Warnung
   - praktisch auf dem aktuellen System bestätigt: `Domain`, `Private` und `Public` jeweils `On`
-- [ ] Windows-Hello-Status detaillierter ausgeben
+- [x] Windows-Hello-Status detaillierter ausgeben
+  - bestehende `dsregcmd /status`-Prüfung gibt `AzureAdJoined`, `DomainJoined`, `WorkplaceJoined` und `NgcSet` explizit aus
+  - bei lokalen Konten wird `NgcSet = NO` weiterhin nicht fälschlich als fehlende Windows-Hello-Einrichtung bewertet
+  - praktisch auf dem aktuellen lokalen Konto bestätigt: alle vier Werte `NO`; lokales Konto korrekt erkannt
 - [ ] optional Security-Baseline weiter ausbauen
 
 ---
