@@ -620,7 +620,6 @@ Diese Punkte werden vor weiterem größeren Komfort-/Mail-Ausbau umgesetzt:
 - [x] globale PowerShell Execution Policy nicht verändern
 - [x] interne Bootstrap-Skripte über prozesslokale Execution Policy ausführbar halten
 - [x] vor der eigentlichen Setup-Logik einen Windows-Systemwiederherstellungspunkt anlegen; Erstellung auf dem aktuellen System praktisch bestätigt
-- [ ] vorhandenen frischen Restore Point zuverlässig erkennen und wiederverwenden; aktuelle CIM-Abfrage liefert auf dem Testsystem `Zugriff verweigert`
 - [ ] BitLocker-Status prüfen
 - [ ] Secure-Boot-Status in Abschlussprüfung anzeigen
 - [ ] Firewall-Status in Abschlussprüfung anzeigen
