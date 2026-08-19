@@ -1,6 +1,7 @@
 {
   "activeIconPacks": [
-    "@system/icon-pack"
+    "@system/icon-pack",
+    "@user/custom-icons"
   ],
   "activeThemes": [
     "@default/theme",
