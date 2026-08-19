@@ -1838,7 +1838,16 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
    - Junction-Idempotenz beim zweiten Lauf testen
    - tatsächliche NTFS-/PowerShell-Linkzustände auf dem aktuellen System praktisch verifiziert
    - `just test` praktisch erfolgreich: 15 Tests, 15 bestanden, 0 fehlgeschlagen
-8. [ ] Tests für Reboot-Erkennung ergänzen
+8. [x] Tests für Reboot-Erkennung ergänzen
+   - Zustand ohne Reboot-Indikatoren testen
+   - CBS `RebootPending` erkennen
+   - Windows Update `RebootRequired` erkennen
+   - relevante `PendingFileRenameOperations` erkennen
+   - reine NSIS-/Installer-Temp-Cleanup-Renames weiterhin ignorieren
+   - gemischte Pending-Rename-Listen korrekt auf relevante Einträge reduzieren
+   - `Test-PendingReboot` als booleschen Wrapper testen
+   - Reboot-Tests vollständig isoliert mit Pester-Mocks gegen Registryzugriffe ausführen
+   - `just test` praktisch erfolgreich: 22 Tests, 22 bestanden, 0 fehlgeschlagen
 9. [ ] Logging / maschinenlesbare Abschluss- und Paket-Zusammenfassung weiter ausbauen
 10. [ ] GitHub Actions erst nach belastbarer lokaler Testbasis ergänzen
 ## Kürzlich abgeschlossen – Home Office / Paketmanager
@@ -1929,7 +1938,7 @@ Lock Keys bleiben beim bereits getesteten Windhawk `Lock Keys Notifier`; ein eig
 1. [x] Pester-Testbasis für kritische Helper
 2. [x] Paket-Versionserkennung testen
 3. [x] Hardlink-/Junction-Migration testen
-4. [ ] Reboot-Erkennung testen
+4. [x] Reboot-Erkennung testen
 5. [ ] Logging und maschinenlesbaren Abschlussreport ausbauen
 6. [ ] GitHub Actions auf Basis der lokalen Tests ergänzen
 7. [ ] Dry-Run / WhatIf erst nach den Kern-Tests bewerten
