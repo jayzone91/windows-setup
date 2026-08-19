@@ -81,6 +81,52 @@ $groupFiles = @(
     "Development.psd1"
 )
 
+function Test-PackageDefinition {
+    param(
+        [Parameter(Mandatory)]
+        [hashtable]$Package,
+
+        [Parameter(Mandatory)]
+        [string]$GroupName
+    )
+
+    foreach ($requiredKey in @("Id", "Name", "Source", "Update")) {
+        if (-not $Package.ContainsKey($requiredKey)) {
+            throw "Package '$GroupName' fehlt Pflichtfeld '$requiredKey'."
+        }
+    }
+
+    foreach ($stringKey in @("Id", "Name", "Source")) {
+        if ([string]::IsNullOrWhiteSpace([string]$Package[$stringKey])) {
+            throw "Package '$GroupName' enthält leeres Pflichtfeld '$stringKey'."
+        }
+    }
+
+    if ($Package.Update -isnot [bool]) {
+        throw "Package '$GroupName/$($Package.Name)' enthält ungültiges Update-Feld."
+    }
+
+    $supportedSources = @(
+        "winget"
+        "msstore"
+        "chocolatey"
+        "scoop"
+    )
+
+    if ($Package.Source -notin $supportedSources) {
+        throw "Package '$GroupName/$($Package.Name)' verwendet unbekannte Source '$($Package.Source)'."
+    }
+
+    if ($Package.Source -eq "scoop") {
+        if (
+            -not $Package.ContainsKey("Bucket") -or
+            [string]::IsNullOrWhiteSpace([string]$Package.Bucket)
+        ) {
+            throw "Scoop-Package '$GroupName/$($Package.Name)' benötigt Bucket."
+        }
+    }
+}
+
 $packages = @{}
 
 foreach ($groupFile in $groupFiles) {
@@ -95,6 +141,16 @@ foreach ($groupFile in $groupFiles) {
     foreach ($key in $data.Keys) {
         if ($packages.ContainsKey($key)) {
             throw "Doppelte Package-Gruppe: $key"
+        }
+
+        foreach ($package in @($data[$key])) {
+            if ($package -isnot [hashtable]) {
+                throw "Package-Gruppe '$key' enthält einen ungültigen Eintrag."
+            }
+
+            Test-PackageDefinition `
+                -Package $package `
+                -GroupName $key
         }
 
         $packages[$key] = $data[$key]

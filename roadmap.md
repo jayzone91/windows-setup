@@ -1958,7 +1958,15 @@ Lock Keys bleiben beim bereits getesteten Windhawk `Lock Keys Notifier`; ein eig
 4. [x] Reboot-Erkennung testen
 5. [x] Logging und maschinenlesbaren Abschlussreport ausbauen
 6. [x] GitHub Actions auf Basis der lokalen Tests ergänzen
-7. [ ] Dry-Run / WhatIf erst nach den Kern-Tests bewerten
+7. [x] Package-Konfigurationsschema validieren
+   - Pflichtfelder `Id`, `Name`, `Source` und `Update` beim Laden prüfen
+   - nur unterstützte Paketquellen `winget`, `msstore`, `chocolatey` und `scoop` akzeptieren
+   - Scoop-Pakete ohne expliziten `Bucket` ablehnen
+   - `GameLibrary`-Referenzen gegen `config/storage.psd1` prüfen
+   - reale Package-Konfiguration per Pester laden und validieren
+   - `just check` und `just test` praktisch erfolgreich
+   - Teststand nach Erweiterung: 27 Tests, 27 bestanden, 0 fehlgeschlagen
+8. [ ] Dry-Run / WhatIf erst nach den Kern-Tests bewerten
 
 # 33. Regeln für eine KI, die diese Roadmap bearbeitet
 
