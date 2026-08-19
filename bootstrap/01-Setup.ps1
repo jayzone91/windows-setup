@@ -49,6 +49,8 @@ if (Test-Path (Join-Path $Root ".git")) {
     }
 }
 
+Write-WindowsSetupPerformanceCheckpoint -Name "Repository Update"
+
 # ------------------------------------------------------------
 # Fingerprint-gesteuerter Code-Preflight
 # ------------------------------------------------------------
@@ -99,6 +101,8 @@ else {
     Write-Host "[OK] Strikter Code-Preflight bestanden." `
         -ForegroundColor Green
 }
+Write-WindowsSetupPerformanceCheckpoint -Name "Source Code Preflight"
+
 Write-Host ""
 Write-Host "========================================"
 Write-Host " Windows Setup"
@@ -111,6 +115,8 @@ Write-Host ""
 
 . "$Root\modules\index.ps1"
 
+Write-WindowsSetupPerformanceCheckpoint -Name "Module laden"
+
 # ------------------------------------------------------------
 # Wiederherstellungspunkt
 # ------------------------------------------------------------
@@ -122,6 +128,8 @@ New-WindowsSetupRestorePoint
 # ------------------------------------------------------------
 
 Clear-WindowsSetupTemp
+
+Write-WindowsSetupPerformanceCheckpoint -Name "Restore Point + Cleanup"
 
 
 # ------------------------------------------------------------
@@ -142,12 +150,16 @@ $Storage = Import-PowerShellDataFile `
     "$Root\config\storage.psd1"
 
 
+Write-WindowsSetupPerformanceCheckpoint -Name "Konfiguration laden"
+
 # ------------------------------------------------------------
 # Paketmanager
 # ------------------------------------------------------------
 
 Initialize-PackageManagers `
     -Packages $Packages
+
+Write-WindowsSetupPerformanceCheckpoint -Name "Package Managers"
 # ------------------------------------------------------------
 # Software
 # ------------------------------------------------------------
@@ -155,38 +167,54 @@ Initialize-PackageManagers `
 
 try {
     Install-PackageGroup -Packages $Packages.Base -GroupName "Basissoftware"
+    Write-WindowsSetupPerformanceCheckpoint -Name "Package Base"
 
     Install-PackageGroup `
         -Packages $Packages.Drivers `
         -GroupName "Treiber-Tools"
+    Write-WindowsSetupPerformanceCheckpoint -Name "Package Drivers"
 
     Install-PackageGroup -Packages $Packages.Tools -GroupName "System-Tools"
+    Write-WindowsSetupPerformanceCheckpoint -Name "Package Tools"
 
     Install-PackageGroup `
         -Packages $Packages.HomeOffice `
         -GroupName "Home Office"
+    Write-WindowsSetupPerformanceCheckpoint -Name "Package HomeOffice"
 
     Install-PackageGroup -Packages $Packages.Development -GroupName "Dev-Tools"
+    Write-WindowsSetupPerformanceCheckpoint -Name "Package Development"
 
     Install-PackageGroup `
         -Packages $Packages.Gaming `
         -GroupName "Gaming"
+    Write-WindowsSetupPerformanceCheckpoint -Name "Package Gaming"
     Install-PackageGroup -Packages $Packages.Browser -GroupName "Browser"
+    Write-WindowsSetupPerformanceCheckpoint -Name "Package Browser"
 
     Invoke-WingetQueuedChanges
+    Write-WindowsSetupPerformanceCheckpoint -Name "Winget Queue"
 
     Update-MicrosoftStoreApps
+    Write-WindowsSetupPerformanceCheckpoint -Name "Microsoft Store Updates"
 }
 finally {
     Clear-PackageManagerCaches
+    Write-WindowsSetupPerformanceCheckpoint -Name "Package Cache Cleanup"
 }
 Install-PcVisitSupporterModule
+Write-WindowsSetupPerformanceCheckpoint -Name "PCVisit"
 
 Protect-EMClientSettings `
     -RepositoryPath $Root
 
+Write-WindowsSetupPerformanceCheckpoint -Name "eM Client Protect"
+
 Restore-EMClientSettings `
     -RepositoryPath $Root
+
+Write-WindowsSetupPerformanceCheckpoint -Name "eM Client Restore"
+Write-WindowsSetupPerformanceCheckpoint -Name "Pakete + eM Client"
 
 
 
@@ -208,6 +236,8 @@ Initialize-NanaZipFileAssociations `
     -RepositoryPath $Root
 
 
+Write-WindowsSetupPerformanceCheckpoint -Name "App-Konfiguration"
+
 # ------------------------------------------------------------
 # Treiber
 # ------------------------------------------------------------
@@ -227,32 +257,44 @@ if ($script:DriverRebootRequired) {
     ) -ForegroundColor Yellow
 }
 
+Write-WindowsSetupPerformanceCheckpoint -Name "Treiber"
+
 # ------------------------------------------------------------
 # Windows
 # ------------------------------------------------------------
 
 Set-WindowsDebloat -Config $Debloat
+Write-WindowsSetupPerformanceCheckpoint -Name "Windows: Debloat"
 
 $null = Set-WindowsComputerName `
     -Config $Windows
+Write-WindowsSetupPerformanceCheckpoint -Name "Windows: Computername"
 
 $taskbarChanged = Set-TaskbarPreferences `
     -Config $Windows
+Write-WindowsSetupPerformanceCheckpoint -Name "Windows: Taskbar"
 
 $startMenuChanged = Set-StartMenuPreferences `
     -Config $Windows
+Write-WindowsSetupPerformanceCheckpoint -Name "Windows: Start"
 
 $windowsSnapChanged = Set-WindowsSnap `
     -Config $Windows
+Write-WindowsSetupPerformanceCheckpoint -Name "Windows: Snap"
 $windowsThemeChanged = Set-WindowsTheme `
     -Config $Windows
+Write-WindowsSetupPerformanceCheckpoint -Name "Windows: Theme"
 $null = Set-WindowsDeveloperPreferences `
     -Config $Windows
+Write-WindowsSetupPerformanceCheckpoint -Name "Windows: Developer"
 $null = Set-WindowsPowerPreferences
+Write-WindowsSetupPerformanceCheckpoint -Name "Windows: Power"
 
 Set-WindowsHDR
+Write-WindowsSetupPerformanceCheckpoint -Name "Windows: HDR"
 
 $null = Set-WindowsWallpaperSlideshow
+Write-WindowsSetupPerformanceCheckpoint -Name "Windows: Wallpaper"
 
 $windowsExplorerRestartRequired = (
     $taskbarChanged -or
@@ -261,43 +303,57 @@ $windowsExplorerRestartRequired = (
     $windowsThemeChanged
 )
 
+Write-WindowsSetupPerformanceCheckpoint -Name "Windows-Konfiguration"
+
 # ------------------------------------------------------------
 # Entwicklung
 # ------------------------------------------------------------
 
 Set-GitPreferences
+Write-WindowsSetupPerformanceCheckpoint -Name "Dev: Git"
 
 Update-NeovimConfiguration `
     -RepositoryPath $Root
+Write-WindowsSetupPerformanceCheckpoint -Name "Dev: Neovim Config"
 
 Set-NeovimCompilerEnvironment
+Write-WindowsSetupPerformanceCheckpoint -Name "Dev: Compiler"
 
 Test-NeovimRequirements
+Write-WindowsSetupPerformanceCheckpoint -Name "Dev: Requirements"
 Set-WindowsTerminalPreferences `
     -Config $Terminal `
     -Theme $Theme `
     -RepositoryPath $Root
+Write-WindowsSetupPerformanceCheckpoint -Name "Dev: Terminal"
 
 Install-PowerShellModules `
     -Modules $PowerShell.Modules
+Write-WindowsSetupPerformanceCheckpoint -Name "Dev: PS Modules"
 
 Set-PowerShellPreferences
+Write-WindowsSetupPerformanceCheckpoint -Name "Dev: PowerShell"
 
 Set-LanguageEnvironment
+Write-WindowsSetupPerformanceCheckpoint -Name "Dev: Languages"
 
 Initialize-DevelopmentStorage `
     -Config $Storage `
     -RepositoryPath $Root
+Write-WindowsSetupPerformanceCheckpoint -Name "Dev: Storage"
 
 Initialize-GamesDriveDirectories `
     -Config $Storage
+Write-WindowsSetupPerformanceCheckpoint -Name "Dev: Games dirs"
 
 Initialize-GamingLauncherInstallPaths `
     -Packages $Packages.Gaming `
     -StorageConfig $Storage `
     -RepositoryPath $Root
+Write-WindowsSetupPerformanceCheckpoint -Name "Dev: Launcher paths"
 
 Install-CodexCli
+Write-WindowsSetupPerformanceCheckpoint -Name "Dev: Codex"
 
 
 # ------------------------------------------------------------
@@ -305,9 +361,11 @@ Install-CodexCli
 # ------------------------------------------------------------
 
 Install-VSCodeExtensions -Extensions $VSCode.Extensions
+Write-WindowsSetupPerformanceCheckpoint -Name "Dev: VS Code Extensions"
 
 Set-VSCodeSettings `
     -Source "$Root\dotfiles\vscode\settings.json"
+Write-WindowsSetupPerformanceCheckpoint -Name "Dev: VS Code Settings"
 
 # ------------------------------------------------------------
 # Browser Config
@@ -315,6 +373,7 @@ Set-VSCodeSettings `
 
 $null = Set-BrowserConfiguration `
     -Config $Browsers
+Write-WindowsSetupPerformanceCheckpoint -Name "Dev: Browser"
 
 if ($windowsExplorerRestartRequired) {
     Restart-WindowsExplorer
@@ -324,6 +383,8 @@ else {
     Write-Host "[SKIP] Windows Explorer bleibt geöffnet; kein Shell-Drift."
 }
 
+Write-WindowsSetupPerformanceCheckpoint -Name "Entwicklung + VS Code + Browser"
+
 # ------------------------------------------------------------
 # Peripherie
 # ------------------------------------------------------------
@@ -331,12 +392,16 @@ else {
 Initialize-LogitechGHubConfiguration `
     -RepositoryPath "$Root\config\lghub"
 
+Write-WindowsSetupPerformanceCheckpoint -Name "Peripherie"
+
 # ------------------------------------------------------------
 # Windows Updates
 # ------------------------------------------------------------
 
 $script:windowsUpdateStatus =
 Install-WindowsUpdates
+
+Write-WindowsSetupPerformanceCheckpoint -Name "Windows Updates"
 
 # ------------------------------------------------------------
 # Scheduled Tasks
@@ -393,3 +458,4 @@ if ($rebootStatus.RebootRequired) {
         }
     }
 }
+Write-WindowsSetupPerformanceCheckpoint -Name "Scheduled Tasks + Abschlussprüfungen"

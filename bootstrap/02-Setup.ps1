@@ -21,10 +21,12 @@ if ($repositoryStatus.UnpushedCommits -gt 0) {
 
 Show-NeovimMaintenanceStatus
 
+Write-WindowsSetupPerformanceCheckpoint -Name "Repository-/Wartungsstatus"
+
 Send-WindowsSetupNotifications `
     -WindowsUpdateRebootRequired $script:windowsUpdateStatus.RebootRequired `
     -DriverRebootRequired $script:DriverRebootRequired `
     -PendingReboot $script:rebootRequired `
     -RepositoryStatus $repositoryStatus `
     -RepositoryPath $Root
-
+Write-WindowsSetupPerformanceCheckpoint -Name "Benachrichtigungen"

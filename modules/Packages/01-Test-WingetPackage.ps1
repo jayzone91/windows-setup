@@ -1,11 +1,94 @@
+$script:WingetInstalledPackageCache = @{
+    winget  = $null
+    msstore = $null
+}
+
+
+function Get-WingetInstalledPackageIds {
+    param(
+        [Parameter(Mandatory)]
+        [ValidateSet("winget", "msstore")]
+        [string]$Source
+    )
+
+    if ($null -ne $script:WingetInstalledPackageCache[$Source]) {
+        return $script:WingetInstalledPackageCache[$Source]
+    }
+
+    Write-Host "[CACHE] Winget-Inventar für Source '$Source' laden"
+
+    $output = @(
+        & winget list `
+            --source $Source `
+            --accept-source-agreements `
+            --disable-interactivity 2>&1
+    )
+
+    if ($LASTEXITCODE -ne 0) {
+        throw (
+            "Winget-Inventar für Source '{0}' konnte nicht geladen werden. " +
+            "ExitCode: {1}" `
+                -f $Source, $LASTEXITCODE
+        )
+    }
+
+    $ids = [Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::OrdinalIgnoreCase
+    )
+
+    foreach ($rawLine in $output) {
+        $line = [string]$rawLine
+
+        $line = [regex]::Replace(
+            $line,
+            "$([char]27)\[[0-?]*[ -/]*[@-~]",
+            ""
+        )
+
+        $idPattern = if ($Source -eq "msstore") {
+            '(?<!\S)([A-Z0-9]{12})(?!\S)'
+        }
+        else {
+            '(?<!\S)([A-Za-z0-9][A-Za-z0-9._+-]*\.[A-Za-z0-9][A-Za-z0-9._+-]*)(?!\S)'
+        }
+
+        foreach ($match in [regex]::Matches(
+                $line,
+                $idPattern
+            )) {
+            [void]$ids.Add($match.Groups[1].Value)
+        }
+    }
+
+    $script:WingetInstalledPackageCache[$Source] = $ids
+
+    return $ids
+}
+
+
 function Test-WingetPackage {
     param(
         [Parameter(Mandatory)]
-        [string]$Id
+        [string]$Id,
+
+        [string]$Name,
+
+        [ValidateSet("winget", "msstore")]
+        [string]$Source = "winget"
     )
 
-    winget list `
-        --id $Id `
+    $ids = Get-WingetInstalledPackageIds -Source $Source
+
+    if ($ids.Contains($Id)) {
+        return $true
+    }
+
+    if ($Source -ne "msstore" -or [string]::IsNullOrWhiteSpace($Name)) {
+        return $false
+    }
+
+    & winget list `
+        --name $Name `
         --exact `
         --accept-source-agreements `
         --disable-interactivity *> $null
@@ -29,6 +112,7 @@ function Reset-WingetPackageQueues {
     foreach ($source in @("winget", "msstore")) {
         $script:WingetInstallQueue[$source].Clear()
         $script:WingetUpgradeQueue[$source].Clear()
+        $script:WingetInstalledPackageCache[$source] = $null
     }
 }
 
@@ -55,18 +139,10 @@ function Install-WingetPackage {
     Write-Host ""
     Write-Host "[CHECK] $Name"
 
-    $listArguments = @(
-        "list"
-        "--id", $Id
-        "--exact"
-        "--source", $Source
-        "--accept-source-agreements"
-        "--disable-interactivity"
-    )
-
-    & winget @listArguments 2>&1
-
-    $isInstalled = ($LASTEXITCODE -eq 0)
+    $isInstalled = Test-WingetPackage `
+        -Id $Id `
+        -Name $Name `
+        -Source $Source
 
     if (-not $isInstalled) {
         if ($InstallLocation -or $Version) {
@@ -109,6 +185,10 @@ function Install-WingetPackage {
 
             Write-Host "[OK] $Name installiert." `
                 -ForegroundColor Green
+
+            if ($null -ne $script:WingetInstalledPackageCache[$Source]) {
+                [void]$script:WingetInstalledPackageCache[$Source].Add($Id)
+            }
 
             return
         }
@@ -226,16 +306,30 @@ function Invoke-WingetQueuedChanges {
 
         & winget @installArguments
 
-        if ($LASTEXITCODE -ne 0) {
-            throw (
-                "Gebündelte Winget-Installation für Source '{0}' " +
-                "ist fehlgeschlagen. ExitCode: {1}" `
-                    -f $source, $LASTEXITCODE
-            )
-        }
+        $installExitCode = $LASTEXITCODE
 
-        Write-Host "[OK] Winget-Installationsbatch abgeschlossen." `
-            -ForegroundColor Green
+        switch ($installExitCode) {
+            0 {
+                Write-Host "[OK] Winget-Installationsbatch abgeschlossen." `
+                    -ForegroundColor Green
+            }
+
+            -1978335189 {
+                Write-Host (
+                    "[CURRENT] Keine Winget-Installation erforderlich " +
+                    "für Source '{0}'." `
+                        -f $source
+                ) -ForegroundColor Green
+            }
+
+            default {
+                throw (
+                    "Gebündelte Winget-Installation für Source '{0}' " +
+                    "ist fehlgeschlagen. ExitCode: {1}" `
+                        -f $source, $installExitCode
+                )
+            }
+        }
     }
 
     foreach ($source in @("winget", "msstore")) {

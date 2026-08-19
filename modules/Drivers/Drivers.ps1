@@ -1,4 +1,4 @@
-﻿function Install-Drivers {
+function Install-Drivers {
     if (-not (Test-Administrator)) {
         throw "Das Treiber-Setup muss als Administrator ausgeführt werden."
     }
@@ -10,6 +10,7 @@
     Write-Step "Fehlende Geräte vor Installation"
 
     $missingBefore = Get-MissingDevices
+    Write-WindowsSetupPerformanceCheckpoint -Name "Driver: Missing Before"
 
     if ($missingBefore) {
         $missingBefore | Format-Table -AutoSize
@@ -20,17 +21,23 @@
     }
 
     Install-WindowsDriverUpdates
+    Write-WindowsSetupPerformanceCheckpoint -Name "Driver: Windows Update"
 
     Install-AsusArmouryCrate
+    Write-WindowsSetupPerformanceCheckpoint -Name "Driver: Armoury Crate"
 
     Install-IntelDriverSupport
+    Write-WindowsSetupPerformanceCheckpoint -Name "Driver: Intel Support"
     Install-IntelDsaUpdates
+    Write-WindowsSetupPerformanceCheckpoint -Name "Driver: Intel DSA"
 
     Show-AsusArmouryCrateUpdates
+    Write-WindowsSetupPerformanceCheckpoint -Name "Driver: ASUS Status"
 
     Write-Step "Fehlende Geräte nach Installation"
 
     $missingAfter = Get-MissingDevices
+    Write-WindowsSetupPerformanceCheckpoint -Name "Driver: Missing After"
 
     if ($missingAfter) {
         $missingAfter | Format-Table -AutoSize
@@ -41,6 +48,7 @@
     }
 
     Show-DriverInventory
+    Write-WindowsSetupPerformanceCheckpoint -Name "Driver: Inventory"
 
     if ($script:DriverRebootRequired) {
         Write-Host ""

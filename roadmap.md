@@ -125,6 +125,38 @@ Entfernt und nicht Teil des produktiven Zielbilds: Seelen UI, FluentFlyout, Wind
 - [x] Das `Justfile` enthält keine eigentliche Setup-Logik
 - [x] Neue wiederkehrende manuelle Aktionen dürfen als Recipes ergänzt werden, wenn die Implementierung in PowerShell verbleibt
 
+### Bootstrap-Performance – Stand 2026-08-19
+
+Die Performance des wiederholten Bootstrap-/Wartungslaufs wurde gezielt vermessen und optimiert. Ausgangspunkt waren reproduzierbare Laufzeiten um etwa 58–65 Sekunden; einzelne Läufe lagen durch Windows-Update-Varianz deutlich darüber. Nach den lokalen Optimierungen liegt ein normaler Lauf auf dem aktuellen System typischerweise bei ungefähr 40 Sekunden. Schwankungen darüber werden überwiegend durch externe Windows-/Microsoft-Update-Abfragen verursacht und sind kein sinnvoller Anlass für zusätzliche lokale Komplexität.
+
+Umgesetzte und praktisch getestete Optimierungen:
+
+- [x] `just update-performance` um detaillierte Bootstrap-Phasenmessung erweitert
+- [x] Performance-Trace nur für den aktuellen Messlauf aktivieren; normale Bootstrap-Läufe bleiben davon unbeeinflusst
+- [x] Paket-, Treiber-, Windows- und Development-Bereiche in ausreichend feine Messphasen zerlegt, um reale Bottlenecks statt Vermutungen zu optimieren
+- [x] Windows-Softwareupdates und Windows-Treiberupdates verwenden innerhalb eines Bootstrap-Laufs einen gemeinsamen WUA-/Microsoft-Update-Scan
+- [x] der spätere Windows-Softwareupdate-Schritt verwendet das bereits vorhandene Scan-Ergebnis und führt keinen zweiten vollständigen Update-Scan aus
+- [x] Winget-Installationsstatus pro Source über einen laufzeitlokalen Inventar-Cache prüfen statt für jedes Paket einen eigenen `winget list --id ...`-Prozess zu starten
+- [x] Winget-Inventarcache wird ausschließlich im aktuellen Bootstrap-Prozess gehalten und nicht zwischen Läufen persistiert
+- [x] `msstore`-Pakete erhalten bei einem Cache-Miss einen gezielten `winget list --name ... --exact`-Fallback, da Microsoft-Store-Produkt-IDs im allgemeinen Inventar nicht für alle Pakete zuverlässig als Paket-ID erkannt werden
+- [x] NVIDIA App wird über diesen Store-Fallback auf dem aktuellen System korrekt als installiert erkannt
+- [x] Winget-Installationsbatch behandelt ExitCode `-1978335189` als bestätigten No-Op statt als fatalen Bootstrap-Fehler; andere unbekannte ExitCodes bleiben Fehler
+- [x] Wallpaper-Repository verwendet bei einem normalen Wartungslauf keinen mehrstufigen Git-Retry mit festen 2-/4-Sekunden-Wartezeiten mehr; bei nicht erreichbarem Remote wird ohne künstliche Wartezeit mit dem vorhandenen lokalen Stand weitergearbeitet
+- [x] `fnm env` wird vor der Node-Versionsprüfung in die aktuelle PowerShell-Session geladen, damit eine bereits installierte aktive Node-LTS-Version nicht fälschlich als fehlend erkannt wird
+- [x] `just check`, `sudo just update-log` und `sudo just update-performance` nach den Performance-Änderungen erfolgreich ausgeführt
+- [x] wiederholte funktionale Bootstrap-Läufe nach den Optimierungen vollständig erfolgreich
+- [x] gemessener optimierter Lauf auf dem aktuellen System bei ungefähr 40 Sekunden bestätigt
+
+Feste Performance-Entscheidungen:
+
+- Ein persistenter Windows-Update-, Treiber- oder Winget-Inventarcache zwischen Bootstrap-Läufen wird **nicht** eingeführt.
+- Der reguläre Wartungs-Bootstrap läuft ungefähr einmal pro Woche. Ein persistenter Cache würde Aktualität, Invalidierungslogik und Fehlerpotenzial verschlechtern, während die eingesparte Laufzeit für diesen Ausführungsrhythmus keinen relevanten Nutzen bringt.
+- Laufzeitlokale Wiederverwendung innerhalb desselben Bootstrap-Prozesses ist erwünscht, wenn dadurch identische externe Scans oder Prozesse sicher vermieden werden können.
+- Windows-/Microsoft-Update-Laufzeiten sind extern variabel. Insbesondere der gemeinsame WUA-Scan kann je nach Zustand der Update-Dienste und Microsoft-Server mehrere Sekunden bis deutlich länger benötigen.
+- Diese externe Varianz wird akzeptiert und nicht durch persistente Cache-, Timeout- oder Skip-Logik kaschiert.
+- Weitere Mikrooptimierungen an lokalen Schritten im Bereich weniger Sekunden werden aktuell bewusst nicht verfolgt. Stabilität, Aktualität, Reproduzierbarkeit und Wartbarkeit haben Vorrang vor einer niedrigeren Benchmark-Zahl.
+- Weitere Performance-Arbeit wird erst wieder aufgenommen, wenn ein konkreter Schritt im realen Weekly-Workflow störend langsam wird oder eine reproduzierbare lokale Regression messbar ist.
+
 ## Konfigurationsdateien
 
 Projektweite Regel:

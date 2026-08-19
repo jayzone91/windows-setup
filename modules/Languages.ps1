@@ -51,6 +51,18 @@ function Set-LanguageEnvironment {
             )
         }
 
+        $fnmEnvironment = (
+            & $fnm.Source env --shell powershell |
+            Out-String
+        )
+
+        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($fnmEnvironment)) {
+            throw "fnm-PowerShell-Umgebung konnte nicht erzeugt werden."
+        }
+
+        $fnmScript = [scriptblock]::Create($fnmEnvironment)
+        & $fnmScript
+
         $currentNodeVersion = $null
         $node = Get-Command `
             -Name "node" `
@@ -96,18 +108,6 @@ function Set-LanguageEnvironment {
                 $currentNodeVersion
             ) -ForegroundColor Green
         }
-
-        $fnmEnvironment = (
-            & $fnm.Source env --shell powershell |
-            Out-String
-        )
-
-        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($fnmEnvironment)) {
-            throw "fnm-PowerShell-Umgebung konnte nicht erzeugt werden."
-        }
-
-        $fnmScript = [scriptblock]::Create($fnmEnvironment)
-        & $fnmScript
 
         if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
             throw "npm ist nach der fnm-Konfiguration nicht verfügbar."

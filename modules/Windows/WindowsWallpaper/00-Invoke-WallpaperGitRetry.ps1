@@ -8,9 +8,9 @@ function Invoke-WallpaperGitRetry {
         [Parameter(Mandatory)]
         [string[]] $Arguments,
 
-        [int] $Attempts = 3,
+        [int] $Attempts = 1,
 
-        [int] $InitialDelaySeconds = 2
+        [int] $InitialDelaySeconds = 0
     )
 
     $lastOutput = @()
@@ -36,13 +36,14 @@ function Invoke-WallpaperGitRetry {
 
             Write-Warning (
                 "Temporärer Git-Fehler beim Wallpaper-Repository. " +
-                "Versuch {0}/{1} fehlgeschlagen; neuer Versuch in {2}s." -f
+                "Versuch {0}/{1} fehlgeschlagen." -f
                 $attempt,
-                $Attempts,
-                $delaySeconds
+                $Attempts
             )
 
-            Start-Sleep -Seconds $delaySeconds
+            if ($delaySeconds -gt 0) {
+                Start-Sleep -Seconds $delaySeconds
+            }
         }
     }
 

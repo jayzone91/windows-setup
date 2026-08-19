@@ -9,6 +9,38 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+$script:WindowsSetupPerformanceStopwatch = $null
+$script:WindowsSetupPerformanceLastElapsed = [TimeSpan]::Zero
+
+if ($env:WINDOWS_SETUP_PERFORMANCE_TRACE -eq "1") {
+    if ([string]::IsNullOrWhiteSpace($env:WINDOWS_SETUP_PERFORMANCE_TRACE_PATH)) {
+        throw "WINDOWS_SETUP_PERFORMANCE_TRACE_PATH fehlt."
+    }
+
+    $script:WindowsSetupPerformanceStopwatch = [Diagnostics.Stopwatch]::StartNew()
+}
+
+function Write-WindowsSetupPerformanceCheckpoint {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Name
+    )
+
+    if ($null -eq $script:WindowsSetupPerformanceStopwatch) {
+        return
+    }
+
+    $elapsed = $script:WindowsSetupPerformanceStopwatch.Elapsed
+    $delta = $elapsed - $script:WindowsSetupPerformanceLastElapsed
+
+    Add-Content `
+        -LiteralPath $env:WINDOWS_SETUP_PERFORMANCE_TRACE_PATH `
+        -Value ("{0}`t{1:F3}`t{2:F3}" -f $Name, $delta.TotalSeconds, $elapsed.TotalSeconds) `
+        -Encoding utf8
+
+    $script:WindowsSetupPerformanceLastElapsed = $elapsed
+}
+
 if ($Warning -and $Log) {
     throw "Die Parameter -Warning und -Log können nicht gleichzeitig verwendet werden."
 }
