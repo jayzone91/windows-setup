@@ -11,36 +11,73 @@ function New-WindowsSetupRestorePoint {
     Write-Host " Systemwiederherstellungspunkt"
     Write-Host "========================================"
 
+    $windowsPowerShell = Join-Path `
+        $env:SystemRoot `
+        "System32\WindowsPowerShell\v1.0\powershell.exe"
+
+    if (-not (Test-Path -LiteralPath $windowsPowerShell -PathType Leaf)) {
+        throw "Windows PowerShell 5.1 für System Restore wurde nicht gefunden."
+    }
+
     $latestRestorePointTime = $null
 
-    try {
-        $restorePoints = @(
-            Get-CimInstance `
-                -Namespace "root/default" `
-                -ClassName "SystemRestore" `
-                -ErrorAction Stop
+    $restorePointCommand = (
+        '$ErrorActionPreference = "Stop"; ' +
+        '$restorePoint = Get-ComputerRestorePoint | ' +
+        'Sort-Object SequenceNumber -Descending | ' +
+        'Select-Object -First 1; ' +
+        'if ($restorePoint) { ' +
+        '[Management.ManagementDateTimeConverter]::ToDateTime(' +
+        '$restorePoint.CreationTime).ToString("o") }'
+    )
+
+    $restorePointOutput = @(
+        & $windowsPowerShell `
+            -NoProfile `
+            -NonInteractive `
+            -Command $restorePointCommand `
+            2>&1
+    )
+
+    if ($LASTEXITCODE -eq 0) {
+        $latestRestorePointValue = (
+            $restorePointOutput |
+            ForEach-Object { [string]$_ } |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+            Select-Object -Last 1
         )
 
-        $latestRestorePoint = $restorePoints |
-            Sort-Object {
-                [Management.ManagementDateTimeConverter]::ToDateTime(
-                    $_.CreationTime
-                )
-            } -Descending |
-            Select-Object -First 1
+        if ($latestRestorePointValue) {
+            $parsedRestorePointTime = [datetime]::MinValue
 
-        if ($latestRestorePoint) {
-            $latestRestorePointTime = (
-                [Management.ManagementDateTimeConverter]::ToDateTime(
-                    $latestRestorePoint.CreationTime
+            if (
+                [datetime]::TryParse(
+                    $latestRestorePointValue,
+                    [Globalization.CultureInfo]::InvariantCulture,
+                    [Globalization.DateTimeStyles]::RoundtripKind,
+                    [ref]$parsedRestorePointTime
                 )
-            )
+            ) {
+                $latestRestorePointTime = $parsedRestorePointTime
+            }
+            else {
+                Write-Host (
+                    "[INFO] Zeitstempel des letzten Wiederherstellungspunkts " +
+                    "konnte nicht ausgewertet werden: {0}" -f
+                    $latestRestorePointValue
+                )
+            }
         }
     }
-    catch {
+    else {
+        $message = (
+            $restorePointOutput |
+            ForEach-Object { [string]$_ }
+        ) -join " "
+
         Write-Host (
             "[INFO] Vorhandene Wiederherstellungspunkte konnten nicht " +
-            "vorab ermittelt werden: {0}" -f $_.Exception.Message
+            "vorab ermittelt werden: {0}" -f $message
         )
     }
 
@@ -54,14 +91,6 @@ function New-WindowsSetupRestorePoint {
         ) -ForegroundColor Green
 
         return
-    }
-
-    $windowsPowerShell = Join-Path `
-        $env:SystemRoot `
-        "System32\WindowsPowerShell\v1.0\powershell.exe"
-
-    if (-not (Test-Path -LiteralPath $windowsPowerShell -PathType Leaf)) {
-        throw "Windows PowerShell 5.1 für Checkpoint-Computer wurde nicht gefunden."
     }
 
     Write-Host "[CREATE] Wiederherstellungspunkt 'Windows Setup Bootstrap'"
