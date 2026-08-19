@@ -1,3 +1,50 @@
+function Invoke-PackageManagerCommandWithRetry {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        "PSAvoidUsingPositionalParameters",
+        "",
+        Justification = "Native Paketmanager-CLIs verwenden positionsbasierte Argumente."
+    )]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Command,
+
+        [Parameter(Mandatory)]
+        [string[]]$Arguments,
+
+        [Parameter(Mandatory)]
+        [int[]]$SuccessExitCodes,
+
+        [int]$MaxAttempts = 2,
+
+        [int]$RetryDelaySeconds = 2
+    )
+
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        & $Command @Arguments | Out-Host
+        $exitCode = $LASTEXITCODE
+
+        if ($exitCode -in $SuccessExitCodes) {
+            return $exitCode
+        }
+
+        if ($attempt -lt $MaxAttempts) {
+            Write-Warning (
+                "Paketmanager-Aufruf fehlgeschlagen. ExitCode: {0}. " +
+                "Wiederholung {1}/{2} in {3}s." -f
+                $exitCode,
+                ($attempt + 1),
+                $MaxAttempts,
+                $RetryDelaySeconds
+            )
+
+            Start-Sleep -Seconds $RetryDelaySeconds
+        }
+    }
+
+    return $exitCode
+}
+
+
 function Install-ChocolateyPackage {
     param(
         [Parameter(Mandatory)]
@@ -17,12 +64,12 @@ function Install-ChocolateyPackage {
     if (-not $isInstalled) {
         Write-Host "[INSTALL] $Name" -ForegroundColor Cyan
 
-        & choco install `
-            $Id `
-            --yes `
-            --no-progress
+        $exitCode = Invoke-PackageManagerCommandWithRetry `
+            -Command "choco" `
+            -Arguments @("install", $Id, "--yes", "--no-progress") `
+            -SuccessExitCodes @(0, 1641, 3010)
 
-        if ($LASTEXITCODE -notin @(0, 1641, 3010)) {
+        if ($exitCode -notin @(0, 1641, 3010)) {
             throw "Chocolatey-Installation fehlgeschlagen: $Name"
         }
 
@@ -42,12 +89,12 @@ function Install-ChocolateyPackage {
 
     Write-Host "[UPDATE] Prüfe auf Updates..."
 
-    & choco upgrade `
-        $Id `
-        --yes `
-        --no-progress
+    $exitCode = Invoke-PackageManagerCommandWithRetry `
+        -Command "choco" `
+        -Arguments @("upgrade", $Id, "--yes", "--no-progress") `
+        -SuccessExitCodes @(0, 2, 1641, 3010)
 
-    if ($LASTEXITCODE -notin @(0, 2, 1641, 3010)) {
+    if ($exitCode -notin @(0, 2, 1641, 3010)) {
         throw "Chocolatey-Update fehlgeschlagen: $Name"
     }
 
@@ -92,9 +139,12 @@ function Install-ScoopPackage {
 
         $packageReference = "{0}/{1}" -f $Bucket, $Id
 
-        & scoop install $packageReference
+        $exitCode = Invoke-PackageManagerCommandWithRetry `
+            -Command "scoop" `
+            -Arguments @("install", $packageReference) `
+            -SuccessExitCodes @(0)
 
-        if ($LASTEXITCODE -ne 0) {
+        if ($exitCode -ne 0) {
             throw "Scoop-Installation fehlgeschlagen: $Name"
         }
 
@@ -114,9 +164,12 @@ function Install-ScoopPackage {
 
     Write-Host "[UPDATE] Prüfe auf Updates..."
 
-    & scoop update $Id
+    $exitCode = Invoke-PackageManagerCommandWithRetry `
+        -Command "scoop" `
+        -Arguments @("update", $Id) `
+        -SuccessExitCodes @(0)
 
-    if ($LASTEXITCODE -ne 0) {
+    if ($exitCode -ne 0) {
         throw "Scoop-Update fehlgeschlagen: $Name"
     }
 
@@ -210,12 +263,12 @@ function Install-Chocolatey {
 
     Write-Host "[UPDATE] Chocolatey selbst aktualisieren..."
 
-    & $chocoExecutable upgrade `
-        chocolatey `
-        --yes `
-        --no-progress
+    $exitCode = Invoke-PackageManagerCommandWithRetry `
+        -Command $chocoExecutable `
+        -Arguments @("upgrade", "chocolatey", "--yes", "--no-progress") `
+        -SuccessExitCodes @(0, 2, 1641, 3010)
 
-    if ($LASTEXITCODE -notin @(0, 2, 1641, 3010)) {
+    if ($exitCode -notin @(0, 2, 1641, 3010)) {
         throw "Chocolatey konnte nicht aktualisiert werden."
     }
 
@@ -269,9 +322,12 @@ function Install-Scoop {
 
     Write-Host "[UPDATE] Scoop selbst und Manifeste aktualisieren..."
 
-    & scoop update
+    $exitCode = Invoke-PackageManagerCommandWithRetry `
+        -Command "scoop" `
+        -Arguments @("update") `
+        -SuccessExitCodes @(0)
 
-    if ($LASTEXITCODE -ne 0) {
+    if ($exitCode -ne 0) {
         throw "Scoop konnte nicht aktualisiert werden."
     }
 

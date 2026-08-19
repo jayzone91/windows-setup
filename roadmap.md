@@ -539,7 +539,12 @@ Der NanaZip-Workflow ist absichtlich generisch aufgebaut und soll für weitere P
 
 ## Noch offen in der Paketlogik
 
-- [ ] Retry-Mechanismus bei temporären Paketmanager-/Download-Fehlern
+- [x] Retry-Mechanismus bei temporären Paketmanager-/Download-Fehlern
+  - Chocolatey- und Scoop-Aufrufe verwenden einen gezielten Retry mit maximal zwei Versuchen und kurzer Wartezeit
+  - erfolgreiche paketmanagerspezifische ExitCodes werden weiterhin korrekt akzeptiert
+  - nach dem letzten fehlgeschlagenen Versuch bleibt der Fehler fatal
+  - Verhalten mit Pester für Soforterfolg, Retry-Erfolg, finalen Fehler und mehrere erfolgreiche ExitCodes abgedeckt
+  - vollständiger `sudo just update-log` nach Einführung des Retry-Mechanismus erfolgreich
 - [ ] bessere maschinenlesbare Update-Zusammenfassung
 - [ ] Paket-Fehler am Ende gesammelt ausgeben statt nur während des Laufs
 - [ ] optionale zentrale Paket-Logs
@@ -1902,7 +1907,7 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
 Noch offen aus dem Paketmanager-Umbau:
 
 - [x] Scoop-Bucket-Autobereitstellung mit `versions` + `neovim-nightly` praktisch getestet
-- [ ] Retry-Mechanismus für temporäre Download-/Paketmanagerfehler
+- [x] Retry-Mechanismus für temporäre Download-/Paketmanagerfehler
 - [ ] maschinenlesbare Paket-/Update-Zusammenfassung
 
 ## Desktop-Stabilität
