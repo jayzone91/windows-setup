@@ -629,7 +629,11 @@ Diese Punkte werden vor weiterem größeren Komfort-/Mail-Ausbau umgesetzt:
   - Status wird über `Confirm-SecureBootUEFI` ermittelt
   - aktiver Secure Boot wird als `[OK]` ausgegeben; deaktivierter oder nicht ermittelbarer Status erzeugt eine Warnung
   - praktisch auf dem aktuellen System getestet: zunächst korrekt als deaktiviert erkannt, anschließend im UEFI aktiviert und danach durch Bootstrap als aktiv bestätigt
-- [ ] Firewall-Status in Abschlussprüfung anzeigen
+- [x] Firewall-Status in Abschlussprüfung anzeigen
+  - Status der Profile `Domain`, `Private` und `Public` wird über `Get-NetFirewallProfile` ermittelt
+  - alle Profile werden mit `On`/`Off` ausgegeben
+  - sobald mindestens ein Profil deaktiviert ist, erzeugt der Bootstrap eine Warnung
+  - praktisch auf dem aktuellen System bestätigt: `Domain`, `Private` und `Public` jeweils `On`
 - [ ] Windows-Hello-Status detaillierter ausgeben
 - [ ] optional Security-Baseline weiter ausbauen
 

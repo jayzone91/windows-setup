@@ -252,6 +252,75 @@ function Show-WindowsSetupSecureBootStatus {
 }
 
 
+function Get-WindowsSetupFirewallStatus {
+    try {
+        $profiles = @(
+            Get-NetFirewallProfile -ErrorAction Stop
+        )
+
+        return [pscustomobject]@{
+            Available = $true
+            Profiles  = $profiles
+            Error     = $null
+        }
+    }
+    catch {
+        return [pscustomobject]@{
+            Available = $false
+            Profiles  = @()
+            Error     = $_.Exception.Message
+        }
+    }
+}
+
+
+function Show-WindowsSetupFirewallStatus {
+    Write-Host ""
+    Write-Host "========================================"
+    Write-Host " Windows Firewall"
+    Write-Host "========================================"
+
+    $status = Get-WindowsSetupFirewallStatus
+
+    if (-not $status.Available) {
+        Write-Warning (
+            "Firewall-Status konnte nicht ermittelt werden: {0}" -f
+            $status.Error
+        )
+
+        return $status
+    }
+
+    foreach ($firewallProfile in $status.Profiles) {
+        $state = if ($firewallProfile.Enabled) { "On" } else { "Off" }
+
+        Write-Host (
+            "[INFO] {0}: {1}" -f
+            $firewallProfile.Name,
+            $state
+        )
+    }
+
+    $disabledProfiles = @(
+        $status.Profiles |
+        Where-Object { -not $_.Enabled }
+    )
+
+    if ($disabledProfiles.Count -eq 0) {
+        Write-Host "[OK] Windows Firewall ist für alle Profile aktiv." `
+            -ForegroundColor Green
+    }
+    else {
+        Write-Warning (
+            "Windows Firewall ist für folgende Profile nicht aktiv: {0}" -f
+            (($disabledProfiles | ForEach-Object { $_.Name }) -join ", ")
+        )
+    }
+
+    return $status
+}
+
+
 function Test-ApplePasswordRequirements {
 
     Write-Host ""
