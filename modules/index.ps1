@@ -18,6 +18,7 @@ $modules = @(
     "Packages\index.ps1"
     "PowerToys\index.ps1"
     "Raycast.ps1"
+    "Reporting.ps1"
     "PowerShell\index.ps1"
     "ScheduledTasks\index.ps1"
     "Secrets\index.ps1"

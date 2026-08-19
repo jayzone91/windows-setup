@@ -23,6 +23,14 @@ Show-NeovimMaintenanceStatus
 
 Write-WindowsSetupPerformanceCheckpoint -Name "Repository-/Wartungsstatus"
 
+Write-WindowsSetupSummary `
+    -RepositoryPath $Root `
+    -Packages $Packages `
+    -WindowsUpdateStatus $script:windowsUpdateStatus `
+    -DriverRebootRequired $script:DriverRebootRequired `
+    -PendingRebootStatus $rebootStatus `
+    -RepositoryStatus $repositoryStatus
+
 Send-WindowsSetupNotifications `
     -WindowsUpdateRebootRequired $script:windowsUpdateStatus.RebootRequired `
     -DriverRebootRequired $script:DriverRebootRequired `

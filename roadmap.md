@@ -1848,7 +1848,17 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
    - `Test-PendingReboot` als booleschen Wrapper testen
    - Reboot-Tests vollständig isoliert mit Pester-Mocks gegen Registryzugriffe ausführen
    - `just test` praktisch erfolgreich: 22 Tests, 22 bestanden, 0 fehlgeschlagen
-9. [ ] Logging / maschinenlesbare Abschluss- und Paket-Zusammenfassung weiter ausbauen
+9. [x] Logging / maschinenlesbare Abschluss- und Paket-Zusammenfassung weiter ausbauen
+   - erfolgreichen Bootstrap-Lauf zusätzlich als `.generated/logs/bootstrap-last-summary.json` schreiben
+   - versioniertes JSON-Schema über `SchemaVersion = 1` kennzeichnen
+   - Status und ISO-8601-Zeitstempel erfassen
+   - verwaltete Pakete nach Gesamtzahl, Source und Paketgruppe zusammenfassen
+   - Pending-Reboot-, Windows-Update- und Treiber-Rebootstatus erfassen
+   - Repository-Änderungen, geänderte Dateien und ungepushte Commits erfassen
+   - Report ausschließlich unter `.generated/` erzeugen und nicht versionieren
+   - Report-Erzeugung mit Pester auf Paketaggregation und parsebares JSON testen
+   - `just check`, `just test` und vollständiger `sudo just update-log` praktisch erfolgreich
+   - erzeugten Realreport praktisch geprüft: 47 verwaltete Pakete, konsistente Gruppen-/Source-Summen, kein Reboot erforderlich
 10. [ ] GitHub Actions erst nach belastbarer lokaler Testbasis ergänzen
 ## Kürzlich abgeschlossen – Home Office / Paketmanager
 
@@ -1939,7 +1949,7 @@ Lock Keys bleiben beim bereits getesteten Windhawk `Lock Keys Notifier`; ein eig
 2. [x] Paket-Versionserkennung testen
 3. [x] Hardlink-/Junction-Migration testen
 4. [x] Reboot-Erkennung testen
-5. [ ] Logging und maschinenlesbaren Abschlussreport ausbauen
+5. [x] Logging und maschinenlesbaren Abschlussreport ausbauen
 6. [ ] GitHub Actions auf Basis der lokalen Tests ergänzen
 7. [ ] Dry-Run / WhatIf erst nach den Kern-Tests bewerten
 
