@@ -1859,7 +1859,14 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
    - Report-Erzeugung mit Pester auf Paketaggregation und parsebares JSON testen
    - `just check`, `just test` und vollständiger `sudo just update-log` praktisch erfolgreich
    - erzeugten Realreport praktisch geprüft: 47 verwaltete Pakete, konsistente Gruppen-/Source-Summen, kein Reboot erforderlich
-10. [ ] GitHub Actions erst nach belastbarer lokaler Testbasis ergänzen
+10. [x] GitHub Actions erst nach belastbarer lokaler Testbasis ergänzen
+    - CI läuft auf `windows-latest`
+    - bestehende PowerShell-Codechecks werden ohne Fingerprint-Schreibzugriff ausgeführt
+    - Pester-Tests laufen reproduzierbar mit der lokal verwendeten Pester-Version 3.4.0
+    - kein Bootstrap-/System-Setup in CI
+    - Workflow läuft bei Push und Pull Request auf `master`
+    - lokaler `just check` und `just test` vor Aktivierung erfolgreich
+    - realer GitHub-Actions-Push-Lauf auf `master` praktisch erfolgreich bestätigt
 ## Kürzlich abgeschlossen – Home Office / Paketmanager
 
 - [x] `HomeOffice`-Paketgruppe angelegt
@@ -1950,7 +1957,7 @@ Lock Keys bleiben beim bereits getesteten Windhawk `Lock Keys Notifier`; ein eig
 3. [x] Hardlink-/Junction-Migration testen
 4. [x] Reboot-Erkennung testen
 5. [x] Logging und maschinenlesbaren Abschlussreport ausbauen
-6. [ ] GitHub Actions auf Basis der lokalen Tests ergänzen
+6. [x] GitHub Actions auf Basis der lokalen Tests ergänzen
 7. [ ] Dry-Run / WhatIf erst nach den Kern-Tests bewerten
 
 # 33. Regeln für eine KI, die diese Roadmap bearbeitet
