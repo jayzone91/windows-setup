@@ -620,7 +620,11 @@ Diese Punkte werden vor weiterem größeren Komfort-/Mail-Ausbau umgesetzt:
 - [x] globale PowerShell Execution Policy nicht verändern
 - [x] interne Bootstrap-Skripte über prozesslokale Execution Policy ausführbar halten
 - [x] vor der eigentlichen Setup-Logik einen Windows-Systemwiederherstellungspunkt anlegen; Erstellung auf dem aktuellen System praktisch bestätigt
-- [ ] BitLocker-Status prüfen
+- [x] BitLocker-Status prüfen
+  - Status des Systemlaufwerks wird in der Abschlussphase über `Get-BitLockerVolume` ermittelt
+  - `VolumeStatus`, `ProtectionStatus` und `EncryptionMethod` werden ausgegeben
+  - deaktivierter Schutz erzeugt eine Warnung, wird aber nicht automatisch aktiviert
+  - praktisch auf dem aktuellen System bestätigt: `C:` ist `FullyDecrypted`, `ProtectionStatus = Off`, `EncryptionMethod = None`
 - [ ] Secure-Boot-Status in Abschlussprüfung anzeigen
 - [ ] Firewall-Status in Abschlussprüfung anzeigen
 - [ ] Windows-Hello-Status detaillierter ausgeben

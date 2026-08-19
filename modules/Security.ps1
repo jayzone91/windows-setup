@@ -127,6 +127,82 @@ function New-WindowsSetupRestorePoint {
         -ForegroundColor Green
 }
 
+function Get-WindowsSetupBitLockerStatus {
+    $systemDrive = [string]$env:SystemDrive
+
+    try {
+        $volume = Get-BitLockerVolume `
+            -MountPoint $systemDrive `
+            -ErrorAction Stop
+
+        return [pscustomobject]@{
+            Available        = $true
+            MountPoint       = $systemDrive
+            VolumeStatus     = [string]$volume.VolumeStatus
+            ProtectionStatus = [string]$volume.ProtectionStatus
+            EncryptionMethod = [string]$volume.EncryptionMethod
+        }
+    }
+    catch {
+        return [pscustomobject]@{
+            Available        = $false
+            MountPoint       = $systemDrive
+            VolumeStatus     = $null
+            ProtectionStatus = $null
+            EncryptionMethod = $null
+            Error            = $_.Exception.Message
+        }
+    }
+}
+
+
+function Show-WindowsSetupBitLockerStatus {
+    Write-Host ""
+    Write-Host "========================================"
+    Write-Host " BitLocker"
+    Write-Host "========================================"
+
+    $status = Get-WindowsSetupBitLockerStatus
+
+    if (-not $status.Available) {
+        Write-Warning (
+            "BitLocker-Status für {0} konnte nicht ermittelt werden: {1}" -f
+            $status.MountPoint,
+            $status.Error
+        )
+
+        return $status
+    }
+
+    Write-Host (
+        "[INFO] Systemlaufwerk: {0}" -f
+        $status.MountPoint
+    )
+    Write-Host (
+        "[INFO] VolumeStatus: {0}" -f
+        $status.VolumeStatus
+    )
+    Write-Host (
+        "[INFO] ProtectionStatus: {0}" -f
+        $status.ProtectionStatus
+    )
+    Write-Host (
+        "[INFO] EncryptionMethod: {0}" -f
+        $status.EncryptionMethod
+    )
+
+    if ($status.ProtectionStatus -eq "On") {
+        Write-Host "[OK] BitLocker-Schutz ist aktiv." `
+            -ForegroundColor Green
+    }
+    else {
+        Write-Warning "BitLocker-Schutz ist nicht aktiv."
+    }
+
+    return $status
+}
+
+
 function Test-ApplePasswordRequirements {
 
     Write-Host ""
