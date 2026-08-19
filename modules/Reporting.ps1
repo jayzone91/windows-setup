@@ -91,6 +91,23 @@ function Write-WindowsSetupSummary {
         Timestamp     = (Get-Date).ToString("o")
         Status        = "Success"
         Packages      = Get-WindowsSetupPackageSummary -Packages $Packages
+        Updates       = [ordered]@{
+            Windows = [ordered]@{
+                InstalledCount = @(
+                    $WindowsUpdateStatus.InstalledUpdates
+                ).Count
+                Installed = @(
+                    foreach ($update in @(
+                        $WindowsUpdateStatus.InstalledUpdates
+                    )) {
+                        [ordered]@{
+                            Title = [string]$update.Title
+                        }
+                    }
+                )
+                RebootRequired = [bool]$WindowsUpdateStatus.RebootRequired
+            }
+        }
         Reboot        = [ordered]@{
             Required             = [bool]$PendingRebootStatus.RebootRequired
             Reasons              = @($PendingRebootStatus.Reasons)

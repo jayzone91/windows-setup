@@ -29,8 +29,10 @@ function Invoke-PackageManagerCommandWithRetry {
 
         if ($attempt -lt $MaxAttempts) {
             Write-Warning (
-                "Paketmanager-Aufruf fehlgeschlagen. ExitCode: {0}. " +
-                "Wiederholung {1}/{2} in {3}s." -f
+                (
+                    "Paketmanager-Aufruf fehlgeschlagen. ExitCode: {0}. " +
+                    "Wiederholung {1}/{2} in {3}s."
+                ) -f
                 $exitCode,
                 ($attempt + 1),
                 $MaxAttempts,

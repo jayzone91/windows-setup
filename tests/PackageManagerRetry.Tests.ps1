@@ -11,7 +11,7 @@ Describe "Paketmanager-Retry" {
         $script:RetryTestExitCodes = @()
         $script:RetryTestArguments = @()
 
-        function global:retry-test-command {
+        function global:Invoke-RetryTestCommand {
             $script:RetryTestAttempts++
             $script:RetryTestArguments = @($args)
 
@@ -26,7 +26,7 @@ Describe "Paketmanager-Retry" {
 
     AfterEach {
         Remove-Item `
-            -Path Function:\global:retry-test-command `
+            -Path Function:\global:Invoke-RetryTestCommand `
             -ErrorAction SilentlyContinue
     }
 
@@ -34,7 +34,7 @@ Describe "Paketmanager-Retry" {
         $script:RetryTestExitCodes = @(0)
 
         $result = Invoke-PackageManagerCommandWithRetry `
-            -Command "retry-test-command" `
+            -Command "Invoke-RetryTestCommand" `
             -Arguments @("update", "test") `
             -SuccessExitCodes @(0) `
             -RetryDelaySeconds 0
@@ -50,7 +50,7 @@ Describe "Paketmanager-Retry" {
         $script:RetryTestExitCodes = @(1, 0)
 
         $result = Invoke-PackageManagerCommandWithRetry `
-            -Command "retry-test-command" `
+            -Command "Invoke-RetryTestCommand" `
             -Arguments @("update") `
             -SuccessExitCodes @(0) `
             -RetryDelaySeconds 0
@@ -63,7 +63,7 @@ Describe "Paketmanager-Retry" {
         $script:RetryTestExitCodes = @(1, 2)
 
         $result = Invoke-PackageManagerCommandWithRetry `
-            -Command "retry-test-command" `
+            -Command "Invoke-RetryTestCommand" `
             -Arguments @("update") `
             -SuccessExitCodes @(0) `
             -RetryDelaySeconds 0
@@ -76,7 +76,7 @@ Describe "Paketmanager-Retry" {
         $script:RetryTestExitCodes = @(3010)
 
         $result = Invoke-PackageManagerCommandWithRetry `
-            -Command "retry-test-command" `
+            -Command "Invoke-RetryTestCommand" `
             -Arguments @("upgrade") `
             -SuccessExitCodes @(0, 1641, 3010) `
             -RetryDelaySeconds 0

@@ -54,6 +54,11 @@ Describe "Maschinenlesbarer Abschlussreport" {
                 -RepositoryPath $tempRoot `
                 -Packages $packages `
                 -WindowsUpdateStatus ([pscustomobject]@{
+                    InstalledUpdates = @(
+                        [pscustomobject]@{
+                            Title = "Example Update"
+                        }
+                    )
                     RebootRequired = $false
                 }) `
                 -DriverRebootRequired $false `
@@ -76,6 +81,10 @@ Describe "Maschinenlesbarer Abschlussreport" {
             $report.SchemaVersion | Should Be 1
             $report.Status | Should Be "Success"
             $report.Packages.Total | Should Be 1
+            $report.Updates.Windows.InstalledCount | Should Be 1
+            $report.Updates.Windows.Installed[0].Title |
+                Should Be "Example Update"
+            $report.Updates.Windows.RebootRequired | Should Be $false
             $report.Reboot.Required | Should Be $false
             $report.Repository.HasChanges | Should Be $false
         }
