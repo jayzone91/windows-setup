@@ -1827,7 +1827,17 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
    - fehlgeschlagenes `winget list` liefert `$null`
    - nicht vorhandene Paket-ID liefert `$null`
    - `just test` praktisch erfolgreich: 8 Tests, 8 bestanden, 0 fehlgeschlagen
-7. [ ] Tests für Hardlink-/Junction-Migration ergänzen
+7. [x] Tests für Hardlink-/Junction-Migration ergänzen
+   - Hardlink-Erstellung und Zielerkennung testen
+   - normale Dateien ohne `-ReplaceExistingFile` nicht überschreiben
+   - explizite Migration normaler Dateien auf Hardlinks testen
+   - Hardlink-Idempotenz beim zweiten Lauf testen
+   - Junction-Erstellung und Zielerkennung testen
+   - Junctions mit falschem Ziel auf den gewünschten Zielzustand migrieren
+   - echte Verzeichnisse nicht durch Junctions überschreiben
+   - Junction-Idempotenz beim zweiten Lauf testen
+   - tatsächliche NTFS-/PowerShell-Linkzustände auf dem aktuellen System praktisch verifiziert
+   - `just test` praktisch erfolgreich: 15 Tests, 15 bestanden, 0 fehlgeschlagen
 8. [ ] Tests für Reboot-Erkennung ergänzen
 9. [ ] Logging / maschinenlesbare Abschluss- und Paket-Zusammenfassung weiter ausbauen
 10. [ ] GitHub Actions erst nach belastbarer lokaler Testbasis ergänzen
@@ -1918,7 +1928,7 @@ Lock Keys bleiben beim bereits getesteten Windhawk `Lock Keys Notifier`; ein eig
 
 1. [x] Pester-Testbasis für kritische Helper
 2. [x] Paket-Versionserkennung testen
-3. [ ] Hardlink-/Junction-Migration testen
+3. [x] Hardlink-/Junction-Migration testen
 4. [ ] Reboot-Erkennung testen
 5. [ ] Logging und maschinenlesbaren Abschlussreport ausbauen
 6. [ ] GitHub Actions auf Basis der lokalen Tests ergänzen
