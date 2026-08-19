@@ -1966,7 +1966,12 @@ Lock Keys bleiben beim bereits getesteten Windhawk `Lock Keys Notifier`; ein eig
    - reale Package-Konfiguration per Pester laden und validieren
    - `just check` und `just test` praktisch erfolgreich
    - Teststand nach Erweiterung: 27 Tests, 27 bestanden, 0 fehlgeschlagen
-8. [ ] Dry-Run / WhatIf erst nach den Kern-Tests bewerten
+8. [x] Dry-Run / WhatIf nach den Kern-Tests bewertet
+   - aktuell bewusst nicht implementiert
+   - der Bootstrap orchestriert viele unterschiedliche mutierende Helper; ein belastbarer Dry-Run müsste Paketmanager, Updates, Treiber, Links, Registry, App-Konfiguration, Git und Initialisierungen vollständig abdecken
+   - ein nur teilweise unterstütztes `-WhatIf` würde einen irreführenden Sicherheitszustand erzeugen und wird daher nicht eingeführt
+   - die bestehende Prüfschicht aus `just check`, Pester-Tests und GitHub Actions ist für den aktuellen Projektstand die reproduzierbarere und wartbarere Absicherung
+   - erneute Bewertung nur bei einem konkreten Bedarf für eine vollständige, durchgängige `ShouldProcess`-/`WhatIf`-Architektur
 
 # 33. Regeln für eine KI, die diese Roadmap bearbeitet
 
