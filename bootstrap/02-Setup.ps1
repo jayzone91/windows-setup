@@ -24,6 +24,7 @@ Show-NeovimMaintenanceStatus
 Show-WindowsSetupBitLockerStatus | Out-Null
 Show-WindowsSetupSecureBootStatus | Out-Null
 Show-WindowsSetupFirewallStatus | Out-Null
+Show-WindowsSetupDefenderStatus | Out-Null
 
 Write-WindowsSetupPerformanceCheckpoint -Name "Repository-/Wartungsstatus"
 

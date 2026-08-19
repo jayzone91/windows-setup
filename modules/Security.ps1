@@ -321,6 +321,73 @@ function Show-WindowsSetupFirewallStatus {
 }
 
 
+function Get-WindowsSetupDefenderStatus {
+    try {
+        $status = Get-MpComputerStatus -ErrorAction Stop
+
+        return [pscustomobject]@{
+            Available                 = $true
+            AntivirusEnabled          = [bool]$status.AntivirusEnabled
+            AntispywareEnabled        = [bool]$status.AntispywareEnabled
+            RealTimeProtectionEnabled = [bool]$status.RealTimeProtectionEnabled
+            BehaviorMonitorEnabled    = [bool]$status.BehaviorMonitorEnabled
+            Error                     = $null
+        }
+    }
+    catch {
+        return [pscustomobject]@{
+            Available                 = $false
+            AntivirusEnabled          = $null
+            AntispywareEnabled        = $null
+            RealTimeProtectionEnabled = $null
+            BehaviorMonitorEnabled    = $null
+            Error                     = $_.Exception.Message
+        }
+    }
+}
+
+
+function Show-WindowsSetupDefenderStatus {
+    Write-Host ""
+    Write-Host "========================================"
+    Write-Host " Microsoft Defender"
+    Write-Host "========================================"
+
+    $status = Get-WindowsSetupDefenderStatus
+
+    if (-not $status.Available) {
+        Write-Warning (
+            "Defender-Status konnte nicht ermittelt werden: {0}" -f
+            $status.Error
+        )
+
+        return $status
+    }
+
+    Write-Host "[INFO] AntivirusEnabled: $($status.AntivirusEnabled)"
+    Write-Host "[INFO] AntispywareEnabled: $($status.AntispywareEnabled)"
+    Write-Host "[INFO] RealTimeProtectionEnabled: $($status.RealTimeProtectionEnabled)"
+    Write-Host "[INFO] BehaviorMonitorEnabled: $($status.BehaviorMonitorEnabled)"
+
+    $healthy = (
+        $status.AntivirusEnabled -and
+        $status.AntispywareEnabled -and
+        $status.RealTimeProtectionEnabled -and
+        $status.BehaviorMonitorEnabled
+    )
+
+    if ($healthy) {
+        Write-Host "[OK] Microsoft Defender ist aktiv." `
+            -ForegroundColor Green
+    }
+    else {
+        Write-Warning "Microsoft Defender ist nicht vollständig aktiv."
+    }
+
+    return $status
+}
+
+
 function Test-ApplePasswordRequirements {
 
     Write-Host ""

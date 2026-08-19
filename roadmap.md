@@ -638,7 +638,11 @@ Diese Punkte werden vor weiterem größeren Komfort-/Mail-Ausbau umgesetzt:
   - bestehende `dsregcmd /status`-Prüfung gibt `AzureAdJoined`, `DomainJoined`, `WorkplaceJoined` und `NgcSet` explizit aus
   - bei lokalen Konten wird `NgcSet = NO` weiterhin nicht fälschlich als fehlende Windows-Hello-Einrichtung bewertet
   - praktisch auf dem aktuellen lokalen Konto bestätigt: alle vier Werte `NO`; lokales Konto korrekt erkannt
-- [ ] optional Security-Baseline weiter ausbauen
+- [x] Security-Baseline um Microsoft-Defender-Status erweitert
+  - Status wird über `Get-MpComputerStatus` ermittelt
+  - `AntivirusEnabled`, `AntispywareEnabled`, `RealTimeProtectionEnabled` und `BehaviorMonitorEnabled` werden explizit ausgegeben
+  - sobald mindestens eine dieser Schutzkomponenten deaktiviert ist, erzeugt der Bootstrap eine Warnung
+  - praktisch auf dem aktuellen System bestätigt: alle vier Schutzkomponenten aktiv
 
 ---
 
