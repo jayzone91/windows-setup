@@ -1819,7 +1819,14 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
    - initiale Smoke-Tests laden die zentralen Helper und prüfen die Verfügbarkeit kritischer Helper-Funktionen
    - `just check`, vollständiger `sudo just update-log` und `just test` praktisch erfolgreich
    - initialer Teststand: 3 Tests, 3 bestanden, 0 fehlgeschlagen
-6. [ ] Tests für Paket-Versionserkennung ergänzen
+6. [x] Tests für Paket-Versionserkennung ergänzen
+   - `Get-WingetInstalledVersion` isoliert mit gemocktem `winget` testen
+   - exakte Paket-ID korrekt erkennen
+   - ähnlich benannte Paket-IDs nicht verwechseln
+   - ANSI-Terminalsequenzen vor der Auswertung korrekt entfernen
+   - fehlgeschlagenes `winget list` liefert `$null`
+   - nicht vorhandene Paket-ID liefert `$null`
+   - `just test` praktisch erfolgreich: 8 Tests, 8 bestanden, 0 fehlgeschlagen
 7. [ ] Tests für Hardlink-/Junction-Migration ergänzen
 8. [ ] Tests für Reboot-Erkennung ergänzen
 9. [ ] Logging / maschinenlesbare Abschluss- und Paket-Zusammenfassung weiter ausbauen
@@ -1910,7 +1917,7 @@ Lock Keys bleiben beim bereits getesteten Windhawk `Lock Keys Notifier`; ein eig
 ## Priorität 5 – Qualität
 
 1. [x] Pester-Testbasis für kritische Helper
-2. [ ] Paket-Versionserkennung testen
+2. [x] Paket-Versionserkennung testen
 3. [ ] Hardlink-/Junction-Migration testen
 4. [ ] Reboot-Erkennung testen
 5. [ ] Logging und maschinenlesbaren Abschlussreport ausbauen
