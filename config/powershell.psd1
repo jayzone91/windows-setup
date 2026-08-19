@@ -3,5 +3,6 @@
         "PSScriptAnalyzer"
         "BurntToast"
         "PSWindowsUpdate"
+        "Pester"
     )
 }

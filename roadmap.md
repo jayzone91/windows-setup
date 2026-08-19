@@ -1812,7 +1812,13 @@ Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neu
 2. [x] Fullscreen-/Alt+Tab-/Fokus-Probleme nach Entfernung der zusätzlichen UI-Schichten erneut testen
 3. [x] Windows-Snap-/FancyZones-Konfiguration abschließen und praktisch bestätigen
 4. [x] Bootstrap-Performance-Regression lokalisieren, beheben und dokumentieren
-5. [ ] lokale Testbasis mit Pester für kritische Helper aufbauen
+5. [x] lokale Testbasis mit Pester für kritische Helper aufbauen
+   - Pester über den bestehenden PowerShell-Modulworkflow (`Install-PowerShellModules`) verwalten
+   - `tests/` als zentrale lokale Teststruktur verwenden
+   - `just test` als einheitlichen lokalen Test-Einstieg verwenden
+   - initiale Smoke-Tests laden die zentralen Helper und prüfen die Verfügbarkeit kritischer Helper-Funktionen
+   - `just check`, vollständiger `sudo just update-log` und `just test` praktisch erfolgreich
+   - initialer Teststand: 3 Tests, 3 bestanden, 0 fehlgeschlagen
 6. [ ] Tests für Paket-Versionserkennung ergänzen
 7. [ ] Tests für Hardlink-/Junction-Migration ergänzen
 8. [ ] Tests für Reboot-Erkennung ergänzen
@@ -1903,7 +1909,7 @@ Lock Keys bleiben beim bereits getesteten Windhawk `Lock Keys Notifier`; ein eig
 4. [ ] sinnvolle Windows-Gaming-Einstellungen
 ## Priorität 5 – Qualität
 
-1. [ ] Pester-Testbasis für kritische Helper
+1. [x] Pester-Testbasis für kritische Helper
 2. [ ] Paket-Versionserkennung testen
 3. [ ] Hardlink-/Junction-Migration testen
 4. [ ] Reboot-Erkennung testen

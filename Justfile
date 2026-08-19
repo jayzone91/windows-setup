@@ -22,6 +22,10 @@ update-performance:
 check:
     pwsh -NoProfile -ExecutionPolicy Bypass -Command ". ./modules/Helpers/index.ps1; . ./modules/PowerShell/index.ps1; Test-PowerShellCode -Path . -FailOnAnyIssue -UpdateFingerprint"
 
+# Lokale Pester-Testbasis
+test:
+    pwsh -NoProfile -ExecutionPolicy Bypass -Command "Invoke-Pester -Path ./tests"
+
 
 # ASUS-/Drittanbieter-Treiber, Firmware und BIOS bewusst über Armoury Crate prüfen
 asus-updates:
