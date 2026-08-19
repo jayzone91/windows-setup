@@ -22,6 +22,7 @@ if ($repositoryStatus.UnpushedCommits -gt 0) {
 Show-NeovimMaintenanceStatus
 
 Show-WindowsSetupBitLockerStatus | Out-Null
+Show-WindowsSetupSecureBootStatus | Out-Null
 
 Write-WindowsSetupPerformanceCheckpoint -Name "Repository-/Wartungsstatus"
 

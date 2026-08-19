@@ -625,7 +625,10 @@ Diese Punkte werden vor weiterem größeren Komfort-/Mail-Ausbau umgesetzt:
   - `VolumeStatus`, `ProtectionStatus` und `EncryptionMethod` werden ausgegeben
   - deaktivierter Schutz erzeugt eine Warnung, wird aber nicht automatisch aktiviert
   - praktisch auf dem aktuellen System bestätigt: `C:` ist `FullyDecrypted`, `ProtectionStatus = Off`, `EncryptionMethod = None`
-- [ ] Secure-Boot-Status in Abschlussprüfung anzeigen
+- [x] Secure-Boot-Status in Abschlussprüfung anzeigen
+  - Status wird über `Confirm-SecureBootUEFI` ermittelt
+  - aktiver Secure Boot wird als `[OK]` ausgegeben; deaktivierter oder nicht ermittelbarer Status erzeugt eine Warnung
+  - praktisch auf dem aktuellen System getestet: zunächst korrekt als deaktiviert erkannt, anschließend im UEFI aktiviert und danach durch Bootstrap als aktiv bestätigt
 - [ ] Firewall-Status in Abschlussprüfung anzeigen
 - [ ] Windows-Hello-Status detaillierter ausgeben
 - [ ] optional Security-Baseline weiter ausbauen

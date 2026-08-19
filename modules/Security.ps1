@@ -203,6 +203,55 @@ function Show-WindowsSetupBitLockerStatus {
 }
 
 
+function Get-WindowsSetupSecureBootStatus {
+    try {
+        $enabled = Confirm-SecureBootUEFI -ErrorAction Stop
+
+        return [pscustomobject]@{
+            Available = $true
+            Enabled   = [bool]$enabled
+            Error     = $null
+        }
+    }
+    catch {
+        return [pscustomobject]@{
+            Available = $false
+            Enabled   = $null
+            Error     = $_.Exception.Message
+        }
+    }
+}
+
+
+function Show-WindowsSetupSecureBootStatus {
+    Write-Host ""
+    Write-Host "========================================"
+    Write-Host " Secure Boot"
+    Write-Host "========================================"
+
+    $status = Get-WindowsSetupSecureBootStatus
+
+    if (-not $status.Available) {
+        Write-Warning (
+            "Secure-Boot-Status konnte nicht ermittelt werden: {0}" -f
+            $status.Error
+        )
+
+        return $status
+    }
+
+    if ($status.Enabled) {
+        Write-Host "[OK] Secure Boot ist aktiv." `
+            -ForegroundColor Green
+    }
+    else {
+        Write-Warning "Secure Boot ist nicht aktiv."
+    }
+
+    return $status
+}
+
+
 function Test-ApplePasswordRequirements {
 
     Write-Host ""
