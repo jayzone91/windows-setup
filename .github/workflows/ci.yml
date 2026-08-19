@@ -47,6 +47,13 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
+
+          Import-Module `
+            Pester `
+            -RequiredVersion 3.4.0 `
+            -Force `
+            -ErrorAction Stop
+
           $result = Invoke-Pester `
             -Path ./tests `
             -PassThru

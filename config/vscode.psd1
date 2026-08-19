@@ -10,5 +10,6 @@
         "esbenp.prettier-vscode"
         "yzhang.markdown-all-in-one"
         "ms-dotnettools.csdevkit"
+        "github.vscode-github-actions"
     )
 }
