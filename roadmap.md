@@ -580,7 +580,7 @@ Weitere Apple-/iCloud-Automatisierung nur über offiziell unterstützte Schnitts
 - [x] Zentrale persistente Logging-Strategie für komplette Bootstrap-Läufe über eindeutige Transcript-Dateien unter `.generated/logs/runs/`.
 - [ ] Warnungen und Fehler vollständig mit Timestamp persistieren.
 - [x] Log-Dateien mit Datum/Uhrzeit und Ergebnisstatus.
-- [ ] Log-Retention/Bereinigung.
+- [x] Bootstrap-Run-Logs werden beim Start automatisch nach 30 Tagen bereinigt.
 - [ ] Paket- und Windows-Update-Zusammenfassungen in diese Logging-Strategie integrieren.
 - [ ] Optional erfolgreiche Wartungszusammenfassung.
 - [ ] Optional nichtfatale Fehlerzusammenfassung.
@@ -646,7 +646,7 @@ Priorisierung erfolgt nach Nutzen, Stabilität und Abhängigkeiten. Ereignisabh�
 
 - [x] Zentrale persistente Logging-Strategie für komplette Bootstrap-Läufe definieren und praktisch bestätigen.
 - [ ] Warnungen/Fehler mit Timestamp und Laufstatus persistieren.
-- [ ] Log-Retention implementieren.
+- [x] 30-Tage-Retention für Bootstrap-Run-Logs implementieren und praktisch bestätigen.
 - [ ] Paket- und Windows-Update-Zusammenfassungen integrieren.
 - [ ] Paketfehler am Laufende gesammelt ausgeben.
 
