@@ -109,6 +109,11 @@ Entfernt und nicht Teil des produktiven Zielbilds: Seelen UI, FluentFlyout, Wind
   - der Offline-Zustand gilt beim manuellen und automatischen Wartungslauf als sauberer No-Op und nicht als Bootstrap-Fehler
   - externe Einzeldienste wie GitHub bleiben davon getrennt; ist das Internet grundsätzlich verfügbar, greifen weiterhin die vorhandenen dienstspezifischen Fallbacks
   - Offline-No-Op, ExitCode `0` und sichtbare Desktop-Benachrichtigung auf dem aktuellen System praktisch getestet
+- [x] Ausfall einzelner GitHub-Dienste bleibt bei vorhandener allgemeiner Internetverbindung nichtfatal
+  - GitHub-Zugriff wurde bei weiterhin vorhandener Internetverbindung gezielt blockiert und praktisch getestet
+  - Scoop-Self-Update verwendet bei GitHub-Ausfall den vorhandenen lokalen Stand weiter
+  - Neovim-Remote-Update und weitere GitHub-abhängige nichtkritische Schritte werden sauber übersprungen
+  - vollständiger `sudo just update-log` lief unter simuliertem GitHub-Ausfall erfolgreich bis zum Ende durch
 
 ## Just / manueller Workflow
 

@@ -330,6 +330,17 @@ function Install-Scoop {
         -SuccessExitCodes @(0)
 
     if ($exitCode -ne 0) {
+        if (-not (Test-GitHubAvailability)) {
+            Write-Warning (
+                "GitHub ist aktuell nicht erreichbar. " +
+                "Scoop-Self-Update wird übersprungen; " +
+                "der vorhandene lokale Stand wird weiterverwendet."
+            )
+
+            Update-SessionPath
+            return
+        }
+
         throw "Scoop konnte nicht aktualisiert werden."
     }
 
