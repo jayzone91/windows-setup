@@ -1,233 +1,110 @@
 # Windows Setup Roadmap
 
-> **Zweck dieses Dokuments**
+> **Source of Truth:** Diese Roadmap ist Arbeits- und Entscheidungsgrundlage für die Weiterentwicklung von `windows-setup`.
 >
-> Diese Roadmap ist nicht nur eine Checkliste, sondern die **Arbeits- und Entscheidungsgrundlage für eine KI**, die das Repository weiterentwickelt.
->
-> Eine KI soll nach dem Einlesen dieses Dokuments verstehen:
->
-> 1. welches Zielbild für das Windows-System verfolgt wird,
-> 2. welche Komponenten bereits umgesetzt und getestet sind,
-> 3. welche Entscheidungen bereits bewusst getroffen wurden,
-> 4. welche Ansätze verworfen wurden und nicht erneut verfolgt werden sollen,
-> 5. welche Arbeiten noch offen sind,
-> 6. welche Abhängigkeiten zwischen den Arbeitspaketen bestehen,
-> 7. wie aus dem aktuellen Stand selbstständig die sinnvollsten nächsten Schritte abzuleiten sind,
-> 8. welche Akzeptanzkriterien erfüllt sein müssen, bevor ein Punkt als abgeschlossen gilt.
->
-> **Wichtig:** Bestehende, als `[x]` markierte Entscheidungen sollen nicht ohne konkreten technischen Grund zurückgebaut oder durch alternative Ansätze ersetzt werden.
+> `[x]` bedeutet implementiert und praktisch bestätigt. `[ ]` bedeutet offen. Bereits getroffene Architekturentscheidungen werden nur bei einem konkreten technischen Grund geändert.
 
 ---
 
-# 1. Gesamtziel
+# 1. Zielbild
 
-Ein vollständig automatisiertes, reproduzierbares und wartbares Windows-11-Setup für:
+Ein automatisiertes, reproduzierbares und wartbares Windows-11-Setup für Entwicklung, Gaming, privaten Alltag und Home Office.
 
-- Entwicklung
-- Gaming
-- privaten Alltag
-- Home Office / Firmenzugriff
-- einen stark angepassten Desktop-Workflow
+Der zentrale `bootstrap.ps1` bedient:
 
-Der gleiche zentrale `bootstrap.ps1` soll für drei Fälle funktionieren:
+1. Neuinstallation über `init.ps1`
+2. manuelle Setup-/Wartungsläufe
+3. automatische wöchentliche Wartung
 
-1. Neuinstallation eines frisch installierten Windows-11-Systems
-2. manueller erneuter Setup-/Wartungsdurchlauf
-3. automatische regelmäßige Wartung
+Das Repository ist die Source of Truth für versionierbare Einstellungen. `just` ist ausschließlich Bedienoberfläche und enthält keine eigene Setup-Architektur.
 
-Das Repository ist die **Source of Truth** für alle sinnvoll versionierbaren Einstellungen.
+## Produktiver Desktop
 
-Für wiederkehrende manuelle Aktionen dient `just` als einheitliche Bedienoberfläche. Das `Justfile` darf dabei keine zweite Setup-Architektur aufbauen, sondern ruft ausschließlich bestehende PowerShell-Einstiegspunkte auf.
+| Bereich | Lösung |
+| --- | --- |
+| Desktop / Taskleiste | Windows 11 |
+| Window Management | Windows Snap + PowerToys FancyZones |
+| Launcher / Suche | Raycast + Everything |
+| Dateimanager | Windows File Explorer |
+| Archivmanager | NanaZip |
+| Volume / Media / System-OSD | Windows 11 |
+| Browser | Vivaldi nativ; Zen als Firefox-WebDev-Testbrowser |
+| Terminal | Windows Terminal + PowerShell 7 + Starship |
 
----
-
-# 2. Desktop-Zielbild
-
-Das Hauptziel ist ein **stabiles, wartbares und reproduzierbares Windows-11-System**.
-
-Optische Anpassungen sind nachrangig. Native Windows-Komponenten werden bevorzugt, wenn Drittsoftware in Shell, Fensterverwaltung, Fullscreen, Fokus, Grafikdarstellung oder Updates eingreift.
-
-## Verbindliche Stabilitätsregel
-
-- Systemstabilität hat immer Vorrang vor Design.
-- Rein optische Vorteile rechtfertigen keine zusätzliche Shell-, Hook-, Compositor-, Resource-Redirect- oder Browser-UI-Schicht.
-- Neue tief in die Desktop-/Fenster-/Grafikpipeline eingreifende Software wird nur übernommen, wenn ein klarer funktionaler Nutzen besteht.
-- Fullscreen, Borderless, Alt+Tab, Fokuswechsel, Gaming und normale Fensterbedienung gehören zu den Pflicht-Akzeptanztests jeder Desktop-nahen Änderung.
-- Bei wiederkehrenden Stabilitätsproblemen wird auf native Windows-Funktionalität zurückgefallen.
-
-## Aktueller Desktop
-
-| Bereich                     | Lösung                                                     |
-| --------------------------- | ---------------------------------------------------------- |
-| Desktop / Taskleiste        | Windows 11                                                 |
-| Window Management           | Windows Snap + PowerToys FancyZones                        |
-| Launcher / Search           | Raycast + Everything                                       |
-| Dateimanager                | Windows File Explorer                                      |
-| Archivmanager               | NanaZip                                                    |
-| Volume / Media / System-OSD | Windows 11                                                 |
-| Browser                     | Vivaldi ohne Custom-UI; Zen als Firefox-WebDev-Testbrowser |
-| Terminal                    | Windows Terminal + PowerShell 7 + Starship                 |
-
-Entfernt und nicht Teil des produktiven Zielbilds: Seelen UI, FluentFlyout, Windhawk, Files, Nushell, Warp sowie repositoryverwaltetes Vivaldi-Custom-HTML/CSS/JS.
+Nicht Teil des Zielbilds: Seelen UI, FluentFlyout, Windhawk, Files, Nushell, Warp, eigenes System-/Media-OSD und repositoryverwaltetes Vivaldi-Custom-HTML/CSS/JS.
 
 ---
-# 3. Grundprinzipien und feste Architekturentscheidungen
+
+# 2. Verbindliche Architekturentscheidungen
 
 ## Stabilität
 
-- [x] **Systemstabilität ist die oberste Architekturvorgabe**
-- [x] native Windows-Komponenten werden gegenüber rein optisch motivierten Drittanbieter-Schichten bevorzugt
-- [x] Fullscreen, Borderless, Alt+Tab und Fokusverhalten sind Pflichtkriterien für Desktop-nahe Software
-- [x] Seelen UI, FluentFlyout, Windhawk, Files, Nushell und Warp nach wiederkehrenden Stabilitäts-/Nutzenproblemen aus dem Zielbild entfernt
-- [x] Vivaldi-Custom-HTML/CSS/JS vollständig verworfen; Vivaldi bleibt im nativen UI-Zustand
-- [x] Bereinigten nativen Desktop nach Deinstallation und vollständigem `just update-log` praktisch getestet
-- [x] Fullscreen-Video in Vivaldi nach Rückkehr zum nativen UI praktisch getestet
-- [x] Alt+Tab aus mindestens einem Spiel sowie Rückkehr ins Spiel praktisch getestet
-- [x] normalen Fensterfokus, Maximieren, Verschieben und Windows Snap praktisch getestet
+- [x] Systemstabilität hat Vorrang vor Design.
+- [x] Native Windows-Komponenten werden gegenüber rein optischen Shell-, Hook-, Compositor-, Resource-Redirect- oder Browser-UI-Schichten bevorzugt.
+- [x] Desktop-nahe Änderungen müssen Fullscreen, Borderless, Alt+Tab, Fokuswechsel, Gaming und normale Fensterbedienung berücksichtigen.
+- [x] Bei wiederkehrenden Stabilitätsproblemen wird auf native Windows-Funktionalität zurückgefallen.
+- [x] Der aktuelle native Desktop wurde einschließlich Fullscreen, Alt+Tab, Fokus, Maximieren, Verschieben und Windows Snap praktisch bestätigt.
+
 ## Bootstrap
 
-- [x] Ein zentraler `bootstrap.ps1`
-- [x] Kein separater Wartungs-Workflow
-- [x] `init.ps1` als minimaler Erstinstallations-Einstieg
-- [x] Repository wird nach `%USERPROFILE%\windows-setup` geklont
-- [x] `bootstrap.ps1` wird nach der Erstinstallation automatisch gestartet
-- [x] Der Bootstrap kann wiederholt ausgeführt werden
-- [x] Lokale Git-Änderungen verhindern ein automatisches `git pull`
-- [x] Keine automatischen Git-Commits
-- [x] Keine automatischen Git-Pushes
-- [x] Kein automatischer Windows-Neustart
-- [x] Bootstrap wird aus `init.ps1` in einem eigenen PowerShell-Prozess gestartet
-- [x] Bootstrap-Prozesse verwenden `ExecutionPolicy Bypass` ausschließlich auf Prozessebene
-- [x] frühere Bootstrap-Self-Elevation nach praktisch bestätigtem Windows-`sudo`-Workflow entfernt
-- [x] nicht erhöhte direkte Bootstrap-Aufrufe brechen verständlich ab statt selbstständig UAC anzufordern
-- [x] Globale Benutzer-/System-Execution-Policy wird nicht verändert
-- [x] Execution-Policy-Fix auf dem aktuellen Windows-System erfolgreich getestet
-- [x] laufende Anwendungen werden bei wiederholten Läufen nur geschlossen, wenn eine tatsächliche Änderung dies erfordert
-- [x] Bootstrap prüft vor der eigentlichen Arbeit die allgemeine Internetverbindung
-  - bei fehlender Verbindung erfolgt nach 5 Sekunden genau ein erneuter Verbindungsversuch
-  - bleibt das System offline, wird eine BurntToast-Desktop-Benachrichtigung angezeigt und der Lauf ohne Änderungen mit ExitCode `0` beendet
-  - der Offline-Zustand gilt beim manuellen und automatischen Wartungslauf als sauberer No-Op und nicht als Bootstrap-Fehler
-  - externe Einzeldienste wie GitHub bleiben davon getrennt; ist das Internet grundsätzlich verfügbar, greifen weiterhin die vorhandenen dienstspezifischen Fallbacks
-  - Offline-No-Op, ExitCode `0` und sichtbare Desktop-Benachrichtigung auf dem aktuellen System praktisch getestet
-- [x] Ausfall einzelner GitHub-Dienste bleibt bei vorhandener allgemeiner Internetverbindung nichtfatal
-  - GitHub-Zugriff wurde bei weiterhin vorhandener Internetverbindung gezielt blockiert und praktisch getestet
-  - Scoop-Self-Update verwendet bei GitHub-Ausfall den vorhandenen lokalen Stand weiter
-  - Neovim-Remote-Update und weitere GitHub-abhängige nichtkritische Schritte werden sauber übersprungen
-  - vollständiger `sudo just update-log` lief unter simuliertem GitHub-Ausfall erfolgreich bis zum Ende durch
+- [x] `bootstrap.ps1` ist der einzige zentrale Setup-/Wartungsworkflow.
+- [x] `init.ps1` ist der minimale Erstinstallations-Einstieg und klont nach `%USERPROFILE%\windows-setup`.
+- [x] Bootstrap ist wiederholbar und idempotent.
+- [x] Keine automatischen Git-Commits oder Pushes.
+- [x] Lokale Git-Änderungen verhindern automatisches `git pull`.
+- [x] Kein automatischer Windows-Neustart.
+- [x] Keine dauerhafte Änderung der globalen PowerShell Execution Policy.
+- [x] Bootstrap-Prozesse verwenden `ExecutionPolicy Bypass` ausschließlich prozesslokal.
+- [x] Manuelle Bootstrap-Läufe werden über Windows `sudo` erhöht gestartet; der Bootstrap führt keine Self-Elevation aus.
+- [x] Laufende Anwendungen werden nur bei tatsächlichem Änderungsbedarf beendet oder neu gestartet.
+- [x] Offline-Zustand ist ein sauberer No-Op mit ExitCode `0` und BurntToast-Benachrichtigung.
+- [x] Ausfall einzelner GitHub-Dienste bleibt bei vorhandener Internetverbindung nichtfatal; vorhandener lokaler Stand wird soweit möglich weiterverwendet.
 
-## Just / manueller Workflow
+## Just / Tests
 
-- [x] `Justfile` als einheitliche Bedienoberfläche
-- [x] `just` als Base-Abhängigkeit über `Casey.Just`
-- [x] manuelle Bootstrap-Läufe werden über `sudo just update`, `sudo just update-warning`, `sudo just update-log` und `sudo just update-performance` erhöht gestartet
-- [x] die Recipes selbst verwenden weiterhin `-NoProfile -ExecutionPolicy Bypass`; `sudo` liefert ausschließlich den erhöhten Prozesskontext
-- [x] `just update` ist der normale stille Lauf ohne reguläre Konsolenausgabe
-- [x] `just update-warning` zeigt ausschließlich Warnungen und Fehler; fehlerfreier Lauf auf dem aktuellen System praktisch ohne Ausgabe bestätigt
-- [x] `just update-log` zeigt die vollständige Bootstrap-Ausgabe und ist der verbindliche Modus für funktionale Bootstrap-Tests
-- [x] `just update-performance` führt über `scripts/Measure-BootstrapPerformance.ps1` denselben parameterlosen/stillen Bootstrap aus und misst reproduzierbar die Laufzeit
-- [x] Performance-Tests werden ohne reguläre Bootstrap-Ausgabe durchgeführt; funktionale Tests verwenden `-Log`
-- [x] `just check` und Bootstrap verwenden denselben zentralen `Test-PowerShellCode`-Workflow; `just check` führt PSScriptAnalyzer für PowerShell und den Compilecheck für verwaltete C#-Dateien aus und aktualisiert danach den Git-basierten Source-Codezustand, während der Bootstrap den vollständigen Check nur bei geändertem Source-Code ausführt
-- [x] interaktive Bootstrap-Kommunikation wird zentral über `Write-WindowsSetupInteractive` und `Read-WindowsSetupPrompt` geführt, wenn sie unabhängig vom gewählten Ausgabemodus sichtbar bleiben muss
-- [x] interne PSScriptAnalyzer-Runtimefehler einzelner Dateien werden einmal in einem frischen `pwsh -NoProfile`-Prozess erneut geprüft
-- [x] `just ghub-backup` sichert die G-HUB-Konfiguration bewusst ins Repository
-- [x] `just ghub-restore` stellt die G-HUB-Konfiguration bewusst wieder her
-- [x] `just update` auf dem aktuellen System erfolgreich getestet
-- [x] `just check` auf dem aktuellen System erfolgreich getestet
-- [x] Das `Justfile` enthält keine eigentliche Setup-Logik
-- [x] Neue wiederkehrende manuelle Aktionen dürfen als Recipes ergänzt werden, wenn die Implementierung in PowerShell verbleibt
+- [x] `Justfile` ist die einheitliche Bedienoberfläche.
+- [x] `just update`: normaler stiller Bootstrap.
+- [x] `just update-warning`: nur Warnungen und Fehler.
+- [x] `just update-log`: vollständige Ausgabe und verbindlicher funktionaler Bootstrap-Test.
+- [x] `just update-performance`: stiller reproduzierbarer Performance-Lauf.
+- [x] `just check`: zentraler PSScriptAnalyzer- und C#-Compilecheck.
+- [x] `just test`: Pester-Tests.
+- [x] `just ghub-backup` / `just ghub-restore`: bewusste G-HUB-Snapshots.
+- [x] Neue wiederkehrende Aktionen dürfen als Recipes ergänzt werden; Implementierung bleibt in PowerShell.
 
-### Bootstrap-Performance – Stand 2026-08-19
+## Dateien und lokaler Zustand
 
-Die Performance des wiederholten Bootstrap-/Wartungslaufs wurde gezielt vermessen und optimiert. Ausgangspunkt waren reproduzierbare Laufzeiten um etwa 58–65 Sekunden; einzelne Läufe lagen durch Windows-Update-Varianz deutlich darüber. Nach den lokalen Optimierungen liegt ein normaler Lauf auf dem aktuellen System typischerweise bei ungefähr 40 Sekunden. Schwankungen darüber werden überwiegend durch externe Windows-/Microsoft-Update-Abfragen verursacht und sind kein sinnvoller Anlass für zusätzliche lokale Komplexität.
+- [x] Einzeldateien werden standardmäßig per NTFS-Hardlink eingebunden.
+- [x] Verzeichnisse werden per NTFS-Junction eingebunden.
+- [x] Symbolic Links sind nur dokumentierter Kompatibilitätsfallback.
+- [x] VS Code `settings.json` und Windows Terminal `settings.json` verwenden Symlinks, da beide Anwendungen Hardlinks beim Speichern praktisch auftrennen.
+- [x] Zentrale Helper: `Set-FileHardLink`, `Set-FileSymbolicLink`, `Set-DirectoryJunction`.
+- [x] Generierte Daten liegen unter `.generated/` und werden nicht committed.
+- [x] Lokale State-Marker liegen unter `.generated/state/`.
+- [x] State-Marker werden erst nach erfolgreich abgeschlossener Initialisierung/Interaktion erzeugt.
 
-Umgesetzte und praktisch getestete Optimierungen:
+## Performance
 
-- [x] `just update-performance` um detaillierte Bootstrap-Phasenmessung erweitert
-- [x] Performance-Trace nur für den aktuellen Messlauf aktivieren; normale Bootstrap-Läufe bleiben davon unbeeinflusst
-- [x] Paket-, Treiber-, Windows- und Development-Bereiche in ausreichend feine Messphasen zerlegt, um reale Bottlenecks statt Vermutungen zu optimieren
-- [x] Windows-Softwareupdates und Windows-Treiberupdates verwenden innerhalb eines Bootstrap-Laufs einen gemeinsamen WUA-/Microsoft-Update-Scan
-- [x] der spätere Windows-Softwareupdate-Schritt verwendet das bereits vorhandene Scan-Ergebnis und führt keinen zweiten vollständigen Update-Scan aus
-- [x] Winget-Installationsstatus pro Source über einen laufzeitlokalen Inventar-Cache prüfen statt für jedes Paket einen eigenen `winget list --id ...`-Prozess zu starten
-- [x] Winget-Inventarcache wird ausschließlich im aktuellen Bootstrap-Prozess gehalten und nicht zwischen Läufen persistiert
-- [x] `msstore`-Pakete erhalten bei einem Cache-Miss einen gezielten `winget list --name ... --exact`-Fallback, da Microsoft-Store-Produkt-IDs im allgemeinen Inventar nicht für alle Pakete zuverlässig als Paket-ID erkannt werden
-- [x] NVIDIA App wird über diesen Store-Fallback auf dem aktuellen System korrekt als installiert erkannt
-- [x] Winget-Installationsbatch behandelt ExitCode `-1978335189` als bestätigten No-Op statt als fatalen Bootstrap-Fehler; andere unbekannte ExitCodes bleiben Fehler
-- [x] Wallpaper-Repository verwendet bei einem normalen Wartungslauf keinen mehrstufigen Git-Retry mit festen 2-/4-Sekunden-Wartezeiten mehr; bei nicht erreichbarem Remote wird ohne künstliche Wartezeit mit dem vorhandenen lokalen Stand weitergearbeitet
-- [x] `fnm env` wird vor der Node-Versionsprüfung in die aktuelle PowerShell-Session geladen, damit eine bereits installierte aktive Node-LTS-Version nicht fälschlich als fehlend erkannt wird
-- [x] `just check`, `sudo just update-log` und `sudo just update-performance` nach den Performance-Änderungen erfolgreich ausgeführt
-- [x] wiederholte funktionale Bootstrap-Läufe nach den Optimierungen vollständig erfolgreich
-- [x] gemessener optimierter Lauf auf dem aktuellen System bei ungefähr 40 Sekunden bestätigt
-
-Feste Performance-Entscheidungen:
-
-- Ein persistenter Windows-Update-, Treiber- oder Winget-Inventarcache zwischen Bootstrap-Läufen wird **nicht** eingeführt.
-- Der reguläre Wartungs-Bootstrap läuft ungefähr einmal pro Woche. Ein persistenter Cache würde Aktualität, Invalidierungslogik und Fehlerpotenzial verschlechtern, während die eingesparte Laufzeit für diesen Ausführungsrhythmus keinen relevanten Nutzen bringt.
-- Laufzeitlokale Wiederverwendung innerhalb desselben Bootstrap-Prozesses ist erwünscht, wenn dadurch identische externe Scans oder Prozesse sicher vermieden werden können.
-- Windows-/Microsoft-Update-Laufzeiten sind extern variabel. Insbesondere der gemeinsame WUA-Scan kann je nach Zustand der Update-Dienste und Microsoft-Server mehrere Sekunden bis deutlich länger benötigen.
-- Diese externe Varianz wird akzeptiert und nicht durch persistente Cache-, Timeout- oder Skip-Logik kaschiert.
-- Weitere Mikrooptimierungen an lokalen Schritten im Bereich weniger Sekunden werden aktuell bewusst nicht verfolgt. Stabilität, Aktualität, Reproduzierbarkeit und Wartbarkeit haben Vorrang vor einer niedrigeren Benchmark-Zahl.
-- Weitere Performance-Arbeit wird erst wieder aufgenommen, wenn ein konkreter Schritt im realen Weekly-Workflow störend langsam wird oder eine reproduzierbare lokale Regression messbar ist.
-
-## Konfigurationsdateien
-
-Projektweite Regel:
-
-- [x] **Dateien werden standardmäßig als NTFS-Hardlinks eingebunden**
-- [x] **Verzeichnisse werden als NTFS-Junctions eingebunden**
-- [x] Symbolic Links sind ausschließlich als expliziter Kompatibilitäts-Fallback erlaubt, wenn eine Anwendung Hardlinks technisch nicht zuverlässig unterstützt
-- [x] VS Code `settings.json` verwendet einen Symbolic Link, da VS Code beim Speichern die Datei ersetzt und dadurch einen NTFS-Hardlink auftrennt
-- [x] Windows Terminal `settings.json` verwendet ebenfalls den Symbolic-Link-Kompatibilitätsfallback; ein Hardlink wurde beim Speichern über die Settings-GUI praktisch als ungeeignet bestätigt
-- [x] `Set-FileHardLink` zentral als Standard-Helper
-- [x] korrekte NTFS-Hardlinks vor Änderungen auf ihr tatsächliches Ziel prüfen und bei unverändertem Desired State nicht löschen oder neu erzeugen
-- [x] `Set-FileSymbolicLink` zentral als Kompatibilitäts-Helper
-- [x] `Set-DirectoryJunction` zentral als Helper
-
-Begründung:
-
-- Änderungen auf beiden Seiten wirken sofort auf dieselben Dateidaten.
-- Das Repository liegt durch `init.ps1` immer unter dem Benutzerprofil auf `C:`.
-- Verzeichnis-Hardlinks existieren unter NTFS nicht; dafür werden Junctions verwendet.
-- Hardlinks bleiben der Standard für einzelne Dateien.
-- Symbolic Links werden nur verwendet, wenn das Verhalten einer Anwendung praktisch als inkompatibel mit Hardlinks bestätigt wurde.
-- VS Code ersetzt `settings.json` beim Speichern und trennt dadurch einen Hardlink auf; ein Symbolic Link bleibt dagegen erhalten und Änderungen landen direkt in der Repository-Datei.
-- Windows Terminal trennt einen Hardlink beim Speichern über die Settings-GUI ebenfalls auf. Mit dem Symbolic Link landen GUI-Änderungen direkt in `dotfiles/terminal/settings.json`; ein vollständiger Neustart von Windows Terminal ist erforderlich, damit geänderte Einstellungen zuverlässig neu eingelesen werden.
-
-## Generierte Inhalte und lokaler Zustand
-
-- [x] Generierte Daten gehören nicht zwischen manuell gepflegte Dotfiles
-- [x] Generierte Daten liegen unter `.generated/`
-- [x] `.generated/` wird nicht committed
-- [x] Generator-Code selbst wird committed
-- [x] Generierte Inhalte müssen auf einer Neuinstallation reproduzierbar erzeugt werden können
-- [x] lokaler Initialisierungsstatus darf unter `.generated/state/` gespeichert werden
-- [x] State-Marker werden nicht committed
-- [x] State-Marker dürfen einmalige oder bewusst interaktive Schritte bei späteren `just update`-Läufen überspringen
-- [x] State-Marker dürfen erst nach erfolgreich abgeschlossener Benutzerinteraktion erzeugt werden
-
-## Desktop-/Design-Entscheidung
-
-- [x] kein globales macOS-/Liquid-Glass-Ziel mehr
-- [x] keine zusätzliche Desktop-Shell
-- [x] keine zusätzlichen Lock-Key-/Volume-/Media-OSD-Schichten
-- [x] keine systemweiten Resource-Redirects für rein optische Icons
-- [x] Windows File Explorer ist der produktive Dateimanager
-- [x] Windows Terminal ist das produktive Terminal-Frontend
-- [x] Vivaldi bleibt Hauptbrowser, verwendet aber ausschließlich sein natives UI
-- [x] Zen bleibt Firefox-basierter Testbrowser für Webentwicklung
-- [x] VS Code und Windows Terminal dürfen weiterhin anwendungseigene, stabile Themes verwenden
-- [x] Funktionalität, Windows-Integrität, Stabilität und Wartbarkeit haben Vorrang vor Styling
+- [x] Bootstrap-Performance phasenweise messbar.
+- [x] Wiederholter Lauf auf dem aktuellen System typischerweise ungefähr 40 Sekunden.
+- [x] Windows-Software- und Treiberupdates teilen sich innerhalb eines Laufs einen WUA-/Microsoft-Update-Scan.
+- [x] Winget verwendet einen laufzeitlokalen Inventar-Cache; kein persistenter Paket-/Updatecache zwischen Läufen.
+- [x] `msstore` verwendet bei Bedarf einen gezielten Name-Fallback.
+- [x] Externe Windows-/Microsoft-Update-Laufzeitvarianz wird akzeptiert.
+- [x] Weitere Mikrooptimierung erfolgt nur bei einer reproduzierbaren realen Regression oder störendem Weekly-Workflow.
 
 ---
-# 4. Phase 1 – Repository, Bootstrap und Projektstruktur
 
-## Bestehende Struktur
+# 3. Repository und Qualität
+
+## Struktur
 
 - [x] `init.ps1`
-- [x] `bootstrap.ps1`
+- [x] `bootstrap.ps1` mit gesplitteter Implementierung über `bootstrap/index.ps1`
 - [x] `Justfile`
 - [x] `config/`
-- [x] `modules/`
-- [x] `modules/index.ps1`
+- [x] `config/packages/` mit zentralem `index.ps1`
+- [x] `modules/` mit fachlichen Unterordnern und lokalen `index.ps1`
 - [x] `dotfiles/`
 - [x] `assets/`
 - [x] `scripts/`
@@ -235,149 +112,29 @@ Begründung:
 - [x] `README.md`
 - [x] `roadmap.md`
 - [x] `PSScriptAnalyzerSettings.psd1`
-- [x] größere PowerShell-Bereiche fachlich in Unterordner mit lokalem `index.ps1` aufgeteilt; übergeordnete Loader importieren nur den jeweiligen Index
-- [x] keine manuell gepflegte Repository-Source-Datei überschreitet 500 Zeilen; generierte Build-Artefakte und externe/vendorisierte Inhalte sind von dieser Source-Regel ausgenommen
-- [x] `bootstrap.ps1` bleibt der zentrale Einstiegspunkt und lädt die gesplittete Bootstrap-Implementierung über `bootstrap/index.ps1`
-- [x] Paketkonfiguration unter `config/packages/` nach Paketgruppen aufgeteilt und zentral über `config/packages/index.ps1` geladen
-- [x] ehemaliges eigenes Volume-OSD nach erfolgreichem Wechsel auf Seelen vollständig entfernt
-- [x] verwaiste Funktionen und Dateien nach repositoryweiter Prüfung einschließlich `Justfile`, `scripts/` und indirekter Nutzung entfernt
-- [x] Refactor mit `just check` und vollständigen `just update-log`-Läufen praktisch bestätigt
+- [x] Manuell gepflegte Repository-Source-Dateien bleiben unter 500 Zeilen; generierte/vendorisierte Inhalte sind ausgenommen.
+- [x] Verwaiste Funktionen und Dateien wurden repositoryweit bereinigt.
 
-## Erstinstallation
+## Codequalität
 
-- [x] `winget` prüfen
-- [x] Git bei Bedarf installieren
-- [x] Repository klonen
-- [x] bereits vorhandenes Repository aktualisieren
-- [x] `bootstrap.ps1` starten
-- [x] Bootstrap in definiertem PowerShell-Prozess starten
-- [x] `ExecutionPolicy Bypass` nur für Bootstrap-Prozess verwenden
-- [x] PATH der laufenden PowerShell-Session nach Installationen aktualisieren
+- [x] PowerShell 7.
+- [x] PSScriptAnalyzer.
+- [x] Verwaltete C#-Quelldateien werden kompiliert; Compilerwarnungen gelten als Fehler.
+- [x] Git-basierter Source-Fingerprint umfasst PowerShell und C#.
+- [x] Unveränderter Source-Code überspringt den vollständigen Preflight; geänderter Code muss ihn bestehen.
+- [x] GitHub Actions für statische Prüfung.
+- [x] Pester-Testbasis für kritische Helper.
+- [x] Tests für Paket-Versionserkennung.
+- [x] Tests für Hardlink-/Junction-Migration.
+- [x] Tests für Reboot-Erkennung.
+- [x] Package-Konfigurationsschema wird validiert.
+- [x] Dry-Run / WhatIf bewusst nicht implementiert: Eine nur teilweise `ShouldProcess`-Abdeckung wäre irreführend. Neu bewerten nur bei Bedarf für eine vollständige Architektur.
 
-## Manueller Workflow
-
-- [x] `just update`
-- [x] `just update-warning`
-- [x] `just update-log`
-- [x] `just update-performance`
-- [x] `just check`
-- [x] `just ghub-backup`
-- [x] `just ghub-restore`
-- [x] direkter Bootstrap-Fallback dokumentiert
-- [x] Just als Base-Paket
-- [x] Just-Workflow im README dokumentiert
-
-## Ausgabe / Logging
-
-- [x] parameterloser Bootstrap läuft ohne reguläre Konsolenausgabe
-- [x] `-Warning` zeigt nur Warnungen und Fehler
-- [x] `-Log` zeigt die vollständige Konsolenausgabe
-- [x] Weekly-Maintenance-Task ruft den Bootstrap weiterhin ohne Ausgabeparameter auf
-- [x] interaktive Hinweise und Benutzerabfragen werden über zentrale Always-Output-Helper unabhängig von `silent` / `-Warning` / `-Log` sichtbar ausgegeben
-- [x] Always-Output-Verhalten praktisch mit `just update`, `just update-warning` und `just update-log` getestet
-- [x] funktionale Bootstrap-Tests verwenden `-Log`
-- [x] Performance-Tests verwenden den stillen `just update-performance`-Pfad
-- [ ] zentrale persistente Logging-Strategie für komplette Bootstrap-Läufe
-- [x] fatalen Bootstrap-Fehler strukturiert mit Timestamp unter `.generated/logs/bootstrap-last-error.log` speichern; Fehlerpfad praktisch zur Diagnose des Raycast-Problems bestätigt
-- [ ] Warnungen und Fehler vollständig mit Timestamp in Log-Dateien speichern
-- [ ] automatische Log-Retention bzw. Bereinigung, damit Logs nicht unbegrenzt wachsen
-- [ ] Log-Dateien mit Datum/Uhrzeit und Ergebnisstatus
-- [ ] optionaler `-Verbose`-Modus für detailliertere Diagnose
-- [ ] optionaler `-DryRun` / `-WhatIf`-Modus
-- [x] ein maschinenlesbarer Abschlussstatus des Bootstrap-Laufs
-- [ ] optional eine Zusammenfassung der Änderungen eines Durchlaufs
-
-### Akzeptanzkriterien
-
-Ein frisches Windows-System soll mit möglichst wenigen manuellen Schritten über `init.ps1` bis zu einer arbeitsfähigen Umgebung gelangen.
-
-Nach der Erstinstallation sollen wiederkehrende manuelle Aktionen über kurze, dokumentierte `just`-Recipes möglich sein.
-
-## Bootstrap-Performance / Desired-State-Optimierung
-
-Ausgangsmessung auf dem vollständig eingerichteten System vor dieser Optimierungsrunde:
-
-```text
-03:41.67
-221,67 Sekunden
-```
-
-Praktisch bestätigter Stand nach der ersten Optimierungsrunde:
-
-```text
-01:10.73
-70,73 Sekunden
-```
-
-Praktisch bestätigter Stand nach der zweiten Desired-State-/Idempotenz-Runde:
-
-```text
-00:58.36
-58,36 Sekunden
-```
-
-Aktueller offener Performance-Befund nach dem großen Strukturrefactor:
-
-```text
-01:33.23
-93,24 Sekunden
-```
-
-Die `93,24 Sekunden` sind **keine neue akzeptierte Baseline**, sondern eine zu untersuchende Regression von `34,88 Sekunden` bzw. rund `59,8 %` gegenüber dem zuletzt bestätigten Stand von `58,36 Sekunden`.
-
-- [x] Performance-Regression nach dem Strukturrefactor mit phasenweiser Messung lokalisieren und auf Basis realer Laufzeitdaten optimieren
-
-Damit wurde die gemessene Laufzeit gegenüber dem ursprünglichen Stand von 221,67 Sekunden um rund **73,7 %** reduziert. Gegenüber dem 70,73-Sekunden-Zwischenstand reduziert die zweite Runde die Laufzeit nochmals um rund **17,5 %**.
-
-Feste Architekturentscheidungen:
-
-- [x] teure Prüfungen und externe CLI-Schreiboperationen nur wiederholen, wenn Input oder Desired State dies erfordern
-- [x] lokaler Performance-/Initialisierungszustand darf unter `.generated/state/` liegen und wird nicht committed
-- [x] Source-Codezustand basiert im Git-Repository auf HEAD plus tatsächlich geänderten/gestagten/untracked PowerShell- und C#-Dateien; saubere getrackte Dateien werden für den schnellen Preflight nicht vollständig neu gehasht
-- [x] unveränderter Source-Code überspringt den vollständigen Qualitätscheck; geänderter PowerShell-Code muss weiterhin PSScriptAnalyzer bestehen und verwaltete C#-Dateien müssen den Compilecheck bestehen
-- [x] `just check` aktualisiert nach erfolgreichem vollständigem Analyzer-Lauf denselben Codezustand
-- [x] normale WinGet-Installationen und Updates werden pro Source gebündelt; verarbeitet werden ausschließlich in `config/packages/` deklarierte Pakete
-- [x] `Update = $false` und versionsgepinnte Pakete werden nicht in den normalen Winget-Upgrade-Batch aufgenommen
-- [x] korrekte Hardlinks werden bei wiederholten Läufen nicht neu erzeugt
-- [x] Dev-Drive-Paketcache-Konfiguration wird nur bei geändertem Desired State erneut geschrieben
-- [x] Zebar führt `npm ci` nur bei Dependency-Drift bzw. fehlendem `node_modules` aus
-- [x] VS Code ermittelt die installierten Extensions pro Bootstrap nur einmal
-- [x] Node.js wird über fnm gegen die aktuelle LTS-Version geprüft
-- [x] npm, pnpm und Yarn werden gegen ihre aktuellen Registry-Versionen geprüft und bei unverändertem Stand nicht neu installiert
-- [ ] tatsächlichen Updatepfad von npm/pnpm/Yarn bei zukünftig vorhandener neuer Version praktisch bestätigen
-- [x] Bun-Updates bleiben im zentralen deklarativen Winget-Paketpfad
-- [x] Neovim ruft `origin/main` per Fetch ab und führt bei identischem lokalen/Remote-HEAD keinen Stash, Checkout oder Pull aus
-- [ ] optimierten Neovim-Pfad bei einem zukünftig tatsächlich vorhandenen neuen Remote-Commit einschließlich lokaler Änderungen erneut praktisch bestätigen
-- [x] Wiederherstellungspunkt wird vor der eigentlichen Setup-Logik erstellt; Erstellung auf dem aktuellen System praktisch bestätigt
-- [x] Erkennung eines bereits frischen Wiederherstellungspunkts korrigiert; Abfrage erfolgt über Windows PowerShell 5.1 / `Get-ComputerRestorePoint`, vorhandener Restore Point innerhalb des 24h-Fensters wurde auf dem aktuellen System praktisch erkannt und kein neuer Restore Point angelegt
-
-Zweite Performance-/Desired-State-Runde:
-
-- [x] Windhawk-Mod-Settings vor dem Schreiben gegen den tatsächlichen Runtime-Zustand vergleichen
-  - Boolean-Settings werden entsprechend Windhawks Runtime-Repräsentation semantisch normalisiert
-  - wiederholter `just update-log` bestätigt für alle verwalteten Mods unveränderte Settings und Enable-Zustände als `CURRENT`
-- [x] Scheduled Tasks nur bei tatsächlichem Drift von Action, Trigger, Principal oder Settings neu registrieren
-  - Weekly Maintenance normalisiert Weekly-Trigger vor dem Vergleich auf lokale Wall-Clock-Zeit, damit UTC-/Offset-Darstellungen desselben Zeitpunkts keinen False Positive erzeugen
-  - Benutzeridentitäten in Principal und Logon-Trigger werden für den Vergleich auf stabile SIDs normalisiert; nach einer Computerumbenennung wird ein gespeicherter alter `COMPUTER\Benutzer`-Wert für dasselbe lokale Konto über die lokale Benutzer-SID kanonisiert
-- [x] Windows-Shell-/Theme-/Power-/Wallpaper-Konfiguration nur bei Drift schreiben; Debloat bleibt bewusst bei jedem Bootstrap aktiv
-- [x] Explorer-Neustart auf tatsächliche Shell-Änderungen begrenzen
-  - der bisherige Restart diente der zuverlässigen Übernahme von Shell-/Taskleistenänderungen; bei unverändertem Shell-Desired-State bleibt Explorer nun geöffnet
-- [x] Zig-`cc`-/`c++`-Shims vor dem Neuschreiben auf den gewünschten Zustand prüfen
-  - gewünschtes Zig-Ziel/Argumente und tatsächlicher Shim-Zustand werden verglichen
-  - wiederholter `just update-log` bestätigt beide Shims als `CURRENT`
-- [x] Browser-Policies nur bei tatsächlichem Drift neu schreiben
-  - Chromium-Extension-Policies und Zen-`policies.json` bleiben bei identischem Desired State unangetastet
-- [x] zweiter unmittelbar folgender `just update-log` bestätigt die Desired-State-Runde ohne unnötige Task-/Explorer-/Zig-/Browser-Schreiboperationen bzw. Neustarts
-- [x] finaler strikter `just check` mit 68 PowerShell-Dateien ohne PSScriptAnalyzer-Probleme
-- [x] finaler stiller Performance-Lauf mit `58,36 Sekunden` praktisch bestätigt
 ---
 
-# 5. Phase 2 – Paketverwaltung
+# 4. Paketverwaltung
 
-
-## Gemeinsame Paketarchitektur
-
-`config/packages/` bleibt die zentrale deklarative Paketliste. Paketgruppen sind weiterhin fachlich organisiert; die Eigenschaft `Source` entscheidet über den Installationsweg.
+`config/packages/` ist die zentrale deklarative Paketliste. `Source` bestimmt den Installationsweg.
 
 Unterstützte Quellen:
 
@@ -386,1773 +143,636 @@ Unterstützte Quellen:
 - `chocolatey`
 - `scoop`
 
-Für Scoop muss zusätzlich der gewünschte `Bucket` direkt am Paket angegeben werden. Für eigene Buckets kann optional `BucketUrl` hinterlegt werden.
+Für Scoop ist `Bucket` Pflicht; `BucketUrl` ist optional.
 
-- [x] `Source` als zentraler Dispatcher für mehrere Paketmanager
-- [x] Winget-Pakete nur für `Source = winget` oder `Source = msstore` an Winget übergeben
-- [x] Chocolatey als generisches Paket-Backend
-- [x] Scoop als generisches Paket-Backend
-- [x] Chocolatey bei Bedarf automatisch installieren
-- [x] Chocolatey bei jedem Bootstrap selbst aktualisieren
-- [x] Scoop bei Bedarf automatisch installieren
-- [x] Scoop bei jedem Bootstrap selbst und seine Manifeste aktualisieren
-- [x] Scoop-Pakete verlangen einen expliziten Bucket
-- [x] optionale `BucketUrl` für eigene Scoop-Buckets unterstützen
-- [x] benötigte Scoop-Buckets aus allen Paketgruppen ableiten
-- [x] automatisches Hinzufügen/Erkennen eines zusätzlichen Scoop-Buckets praktisch mit `versions` + `neovim-nightly` getestet
-- [x] Chocolatey-Cache-Cleanup in den Bootstrap integrieren
-- [x] Scoop-Download-Cache nur bereinigen, wenn der Cache existiert
-- [x] alte Scoop-App-Versionen per Cleanup entfernen
-- [x] Paketmanager-Cleanup auch bei Fehlern innerhalb der Paketphase über `finally` ausführen
-- [x] Winget-Cache nicht durch inoffizielles Löschen interner Verzeichnisse manipulieren
-- [x] Paketkonfiguration in `config/packages/` mit Beispielen und unterstützten Quellen dokumentieren
-- [x] `just check` nach dem Paketmanager-Umbau ohne relevante Analyzer-Warnungen
-- [x] wiederholter `just update` mit Chocolatey/Scoop ohne erneute Installation der Paketmanager
+## Implementierter Stand
 
-## Generische Winget-Logik
+- [x] Generischer Dispatcher für alle vier Paketquellen.
+- [x] Chocolatey und Scoop werden bei Bedarf installiert und gepflegt.
+- [x] Scoop-Buckets werden aus der Paketkonfiguration abgeleitet.
+- [x] Paketmanager-Cleanup läuft auch bei Fehlern der Paketphase.
+- [x] Winget-/MS-Store-Pakete werden sourceweise gebündelt aktualisiert.
+- [x] Nur deklarierte Pakete werden aktualisiert; kein unkontrolliertes `winget upgrade --all`.
+- [x] `Update = $false` und gepinnte Versionen werden respektiert.
+- [x] OpenVPN dient als praktisch bestätigter Pinning-Fall.
+- [x] Temporäre Chocolatey-/Scoop-Fehler verwenden gezielte Retries.
+- [x] Maschinenlesbare Update-Zusammenfassung vorhanden.
+- [x] NVIDIA App wird trotz MS-Store-ID-Besonderheit korrekt erkannt.
 
-- [x] Paketgruppen über `config/packages/`
-- [x] Installation über `winget`
-- [x] Microsoft-Store-Quelle unterstützen
-- [x] zusätzlich alle über die `msstore`-Source angebotenen App-Updates sourceweit per `winget upgrade --all --source msstore` installieren
-- [x] Microsoft-Store-Quelle vor dem sourceweiten Update-Lauf aktualisieren
-- [x] ExitCode für bereits aktuellen Store-Zustand störungsarm behandeln
-- [x] Microsoft-Store-Update-Lauf im vollständigen `just update-log` praktisch bestätigt- [x] installierte Pakete erkennen
-- [x] Updates durchführen
-- [x] normale Winget-/MS-Store-Pakete pro Source gesammelt aktualisieren statt einen Updateprozess pro Paket zu starten
-- [x] ausschließlich deklarierte Pakete aktualisieren; kein unkontrolliertes `winget upgrade --all`
-- [x] Updates pro Paket deaktivieren
-- [x] feste Versionen definieren
-- [x] installierte Version gepinnter Pakete prüfen
-- [x] Winget-Ausgabe robust anhand der Paket-ID auswerten
-- [x] gepinnte Version gezielt installieren
-- [x] OpenVPN als realer Test für Versions-Pinning
-- [x] direkte Winget-Aufrufe außerhalb der Paketgruppen müssen `Source` explizit angeben
-- [x] Intel Driver & Support Assistant an die explizite Winget-Source angepasst
-
-## Aktuelle Paketgruppen
+## Paketgruppen
 
 ### Base
 
-- [x] JetBrainsMono Nerd Font
-- [x] Just (`Casey.Just`)
+- JetBrainsMono Nerd Font
+- Just (`Casey.Just`)
 
 ### Tools
 
-- [x] Windows HDR Calibration
-- [x] iCloud
-- [x] ChatGPT Desktop-App (`9PLM9XGG6VKS`) über Microsoft Store
-- [x] Raycast (`9PFXXSHC64H3`) über Microsoft Store
-- [x] OpenVPN
-- [x] Logitech G HUB
-- [x] **NanaZip**
-- [x] PowerToys
-- [x] Everything
-
-#### ChatGPT Desktop-App
-
-- [x] neue ChatGPT Desktop-App über den bestehenden generischen `msstore`-Paketworkflow installieren
-- [x] Microsoft-Store-ID `9PLM9XGG6VKS` verwenden
-- [x] Paketupdates über `Update = $true` verwalten
-- [x] ChatGPT Classic (`9NT1R1C2HH7J`) wird bewusst nicht verwendet
-- [x] `winget show --id 9PLM9XGG6VKS --exact --source msstore` praktisch verifiziert: Publisher OpenAI, Installer-Typ `msstore`
-- [x] Installation über `just update` praktisch erfolgreich getestet
-- [x] `just check` nach der Integration erfolgreich getestet
-- [x] Anwendung praktisch gestartet und als funktionsfähig bestätigt
+- Windows HDR Calibration
+- iCloud
+- ChatGPT Desktop-App (`9PLM9XGG6VKS`, Microsoft Store)
+- Raycast (`9PFXXSHC64H3`, Microsoft Store)
+- OpenVPN
+- Logitech G HUB
+- NanaZip
+- PowerToys
+- Everything
 
 ### HomeOffice
 
-- [x] Remote Desktop Manager über Winget
-- [x] FileZilla Client über Chocolatey
-- [x] PCVisit Supporter Modul über eigenen Installationsworkflow
-- [x] OpenVPN als vorhandene Abhängigkeit verfügbar
+- Remote Desktop Manager
+- FileZilla Client
+- PCVisit Supporter Modul
+- OpenVPN
 
 ### Development
 
-- [x] fnm
-- [x] Go
-- [x] Bun
-- [x] Git
-- [x] GitHub CLI
-- [x] GitHub Desktop
-- [x] Visual Studio Code
-- [x] PowerShell 7
-- [x] Starship
-- [x] Neovim Nightly über Scoop `versions`
-- [x] ripgrep (`rg`)
-- [x] eza
-- [x] fd
-- [x] bat
-- [x] fzf
-- [x] jq
-- [x] zoxide
+- fnm
+- Go
+- Bun
+- Git
+- GitHub CLI
+- GitHub Desktop
+- Visual Studio Code
+- PowerShell 7
+- Starship
+- Neovim Nightly
+- ripgrep
+- eza
+- fd
+- bat
+- fzf
+- jq
+- zoxide
 
 ### Browser
 
-- [x] Zen Browser
-- [x] Google Chrome Beta
+- Zen Browser
+- Google Chrome Beta
 
-## NanaZip
+## NanaZip / Standard-Apps
 
-Ziel:
+- [x] NanaZip über `M2Team.NanaZip`.
+- [x] Standard-App-Konfiguration verwendet den generischen interaktiven Windows-Settings-Workflow.
+- [x] Keine Manipulation geschützter `UserChoice`-Hashes.
+- [x] Direkte App-Seite wird verwendet, wenn eine Windows-App-ID ermittelbar ist; sonst allgemeine Standard-App-Seite.
+- [x] Bootstrap wartet auf das Schließen der Settings-App.
+- [x] Erfolgreiche Initialisierung wird unter `.generated/state/default-apps/<app>.initialized` gespeichert.
+- [x] ISO, VHD/VHDX und WIM werden nicht pauschal NanaZip zugeordnet.
+- [ ] NanaZip-Kontextmenü explizit praktisch prüfen und dokumentieren.
+- [ ] Catppuccin-Anpassung nur verfolgen, falls stabil unterstützt.
 
-- NanaZip als moderner Archivmanager
-- möglichst native Windows-11-Integration
-- Nutzung für ZIP, 7z und weitere klassische Archivformate
-- Installation über Winget
-- Standard-App-Konfiguration ohne unsichere Manipulation geschützter `UserChoice`-Einträge
+## Offen
 
-Umgesetzt:
-
-- [x] passende Winget-Paket-ID `M2Team.NanaZip` verifiziert
-- [x] NanaZip in `config/packages/` aufgenommen
-- [x] Installation im Bootstrap integriert
-- [x] Installation über `just update` auf dem aktuellen System getestet
-- [x] Update-/Wiederholungspfad über `just update` getestet
-- [x] NanaZip-AppX-Paket dynamisch ermitteln
-- [x] NanaZip-ProgID dynamisch aus der tatsächlichen Windows-Registrierung ermitteln
-- [x] `AppUserModelID` dynamisch ermitteln
-- [x] direkte NanaZip-Seite unter **Einstellungen → Apps → Standard-Apps** öffnen
-- [x] Fallback auf die allgemeine Standard-App-Seite, wenn keine direkte ID ermittelt werden kann
-- [x] Bootstrap wartet, bis das sichtbare Windows-Einstellungsfenster tatsächlich geschlossen wurde
-- [x] gehostete `SystemSettings`-Child-Windows bei der Fenstererkennung berücksichtigen
-- [x] generischen Default-App-Initialisierungsworkflow statt NanaZip-Sonderlogik verwenden
-- [x] lokalen Marker `.generated/state/default-apps/nanazip.initialized` erst nach dem Schließen von Settings erzeugen
-- [x] spätere `just update`-Läufe öffnen die Standard-App-Konfiguration nicht erneut, wenn der Marker vorhanden ist
-- [x] erneute manuelle Konfiguration durch Löschen des Markers ermöglichen
-- [x] PSScriptAnalyzer für die neue File-Association-Logik ohne relevante Warnungen
-- [x] zweiter `just update`-Lauf auf dem aktuellen System erfolgreich und ohne erneutes Öffnen der Settings-Seite
-- [x] README um NanaZip und den generischen Standard-App-Workflow ergänzt
-
-Bewusste Auswahl:
-
-- NanaZip soll klassische Archivformate übernehmen.
-- Windows-Image- und Datenträgerformate wie ISO, VHD/VHDX und WIM sollen nicht pauschal NanaZip zugeordnet werden, da Windows dafür eigene Mount- und Image-Funktionen bereitstellt.
-- Die eigentliche Auswahl der Standard-App bleibt eine Benutzerinteraktion, weil Windows benutzerspezifische Standard-App-Zuordnungen schützt.
-
-Noch offen:
-
-- [ ] Kontextmenü-Integration explizit als eigenen Akzeptanztest dokumentieren, falls noch nicht separat geprüft
-- [ ] Catppuccin-Anpassung nur verfolgen, falls stabil unterstützt
-
-### Generischer Standard-App-Workflow
-
-Der NanaZip-Workflow ist absichtlich generisch aufgebaut und soll für weitere Programme wiederverwendet werden.
-
-- [x] direkte App-Seite über `ms-settings:defaultapps` verwenden, wenn eine passende Windows-App-ID vorhanden ist
-- [x] allgemeine Standard-App-Seite als Fallback verwenden
-- [x] Benutzer klar auffordern, die gewünschte Anwendung manuell zu suchen, wenn keine direkte ID ermittelt werden kann
-- [x] Bootstrap während der Benutzerinteraktion pausieren
-- [x] erst nach tatsächlichem Schließen der Windows-Einstellungen fortfahren
-- [x] erfolgreichen Abschluss über lokalen State-Marker merken
-- [x] Marker pro Anwendung unter `.generated/state/default-apps/<app>.initialized`
-- [x] wiederholte Wartungsläufe störungsarm und ohne erneute Benutzerinteraktion halten
-
-## Noch offen in der Paketlogik
-
-- [x] Retry-Mechanismus bei temporären Paketmanager-/Download-Fehlern
-  - Chocolatey- und Scoop-Aufrufe verwenden einen gezielten Retry mit maximal zwei Versuchen und kurzer Wartezeit
-  - erfolgreiche paketmanagerspezifische ExitCodes werden weiterhin korrekt akzeptiert
-  - nach dem letzten fehlgeschlagenen Versuch bleibt der Fehler fatal
-  - Verhalten mit Pester für Soforterfolg, Retry-Erfolg, finalen Fehler und mehrere erfolgreiche ExitCodes abgedeckt
-  - vollständiger `sudo just update-log` nach Einführung des Retry-Mechanismus erfolgreich
-- [x] bessere maschinenlesbare Update-Zusammenfassung
-- [ ] Paket-Fehler am Ende gesammelt ausgeben statt nur während des Laufs
-- [ ] optionale zentrale Paket-Logs
-- [x] Scoop-Bucket-Autobereitstellung mit `versions` + `neovim-nightly` praktisch getestet
-
-# 6. Phase 3 – Windows Debloat und Grundkonfiguration
-
-## Debloat
-
-- [x] provisionierte AppX-Pakete ermitteln
-- [x] definierte unerwünschte Apps entfernen
-- [x] systemweites Provisioning berücksichtigen
-- [x] Consumer Features deaktivieren
-- [x] wiederholbaren Ablauf sicherstellen
-- [x] Gaming-Funktionen nicht unnötig beschädigen
-- [x] Entwicklungsfunktionen erhalten
-- [x] Windows Hello erhalten
-
-## Windows-Konfiguration
-
-- [x] Taskbar-Grundeinstellungen
-- [x] Startmenü-Grundeinstellungen
-- [x] Windows Theme
-- [x] systemweite Akzentfarbe `#0A84FF` deklarativ über `config/windows.psd1` verwalten
-- [x] DWM-/Explorer-Akzentwerte nur bei Drift setzen; wiederholter `just update-log` bleibt idempotent
-- [x] Power-Einstellungen
-- [x] HDR
-- [x] Wallpaper Slideshow
-- [x] Windows Snap war während des früheren Tiling-Manager-Workflows deaktiviert; diese Entscheidung wird nach Entfernung des Tiling Managers bewusst revidiert
-- [x] Windows Snap wieder deklarativ/idempotent aktivieren und praktisch testen
-- [x] native Windows-Snap-Funktionen und FancyZones so konfigurieren, dass beide ohne konkurrierendes Verhalten sinnvoll zusammenarbeiten
-- [x] PowerToys FancyZones als produktiven Window-Management-Workflow vollständig konfigurieren
-  - [x] eigenes zum aktuellen Desktop-Workflow passendes FancyZones-Layout erstellen und reproduzierbar als Desired State verwalten
-  - [x] mindestens ein alternatives Layout für unterschiedliche Arbeitsmodi definieren
-  - [x] schnellen Wechsel zwischen den vorgesehenen Layouts per Tastenkombination implementieren
-  - [x] Layout-/Hotkey-Konfiguration nur bei tatsächlichem Drift ändern
-  - [x] Verhalten gemeinsam mit wieder aktiviertem Windows Snap praktisch testen
-  - [x] wiederholten `just update-log` ohne unnötige PowerToys-Neustarts oder Settings-Schreiboperationen bestätigen
-- [x] geschützte Registry-Werte dürfen Bootstrap nicht abbrechen
-- [x] Computername deklarativ über `config/windows.psd1` verwalten
-- [x] Computername nur bei tatsächlichem Drift über `Rename-Computer` setzen
-- [x] nach einer Computerumbenennung keinen automatischen Neustart auslösen; Wirksamkeit nach bewusstem Benutzer-Neustart
-- [x] Computerumbenennung auf dem aktuellen System praktisch getestet und nach Neustart als Desired State erkannt
-- [x] wiederholter `just update-log` nach der Computerumbenennung ohne erneute Umbenennung erfolgreich
-- [x] finaler `just check` nach der Computername-Integration erfolgreich
-- [x] Windows-Taskbar-AutoHide für den Seelen-Workflow deaktiviert
-
-### Priorität 1 – Windows-Entwickler-/Terminal-Grundzustand
-
-Diese Punkte werden vor weiterem größeren Komfort-/Mail-Ausbau umgesetzt:
-
-- [x] Warp als Windows-Standardterminal geprüft: kein offiziell unterstützter Registrierungspfad für Warp vorhanden; deshalb bewusst nicht als systemweite Standard-Terminalanwendung verwalten
-- [x] Windows `sudo` deklarativ/idempotent über die offizielle Policy `HKLM\SOFTWARE\Policies\Microsoft\Windows\Sudo\EnableSudo = 3` im Inline-Modus (`normal`) aktivieren
-- [x] Windows-`sudo` praktisch mit erhöhtem PowerShell-Prozess bestätigt
-- [x] manuelle Projektläufe auf `sudo just update`, `sudo just update-warning`, `sudo just update-log` und `sudo just update-performance` umgestellt
-- [x] Bootstrap-Self-Elevation nach bestätigtem `sudo`-Workflow entfernt
-- [x] Negativtest eines nicht erhöhten `just update-log` bestätigt den definierten Abbruch
-- [x] Windows-Entwicklermodus deklarativ/idempotent aktiviert
-- [x] lange Win32-Pfade (`LongPathsEnabled`) deklarativ/idempotent aktiviert
-- [x] erster erhöhter `sudo just update-log`, praktischer Sudo-Test, wiederholter Drift-freier Lauf und `just check` erfolgreich
-- [ ] Lock-Screen optisch angleichen
-- [ ] weitere Datenschutz-/Telemetry-Einstellungen nur gezielt ergänzen
-- [ ] keine aggressive pauschale Service-Deaktivierung
+- [ ] Paketfehler am Ende eines Laufs gesammelt ausgeben.
+- [ ] Zentrale Paket-Logs nur im Rahmen der allgemeinen Logging-Strategie ergänzen.
+- [ ] npm-/pnpm-/Yarn-Updatepfad bei einer zukünftig tatsächlich verfügbaren neuen Version praktisch bestätigen.
 
 ---
 
-# 7. Phase 4 – Sicherheit und Systemstatus
+# 5. Windows-Grundkonfiguration und Sicherheit
 
-- [x] Windows-Hello-Voraussetzungen für Apple Passwords prüfen
-- [x] Microsoft Defender aktiv lassen
-- [x] Defender Dev Drive Performance Mode
-- [x] Rebootbedarf prüfen
-- [x] Component Based Servicing als Rebootgrund erkennen
-- [x] Windows Update als Rebootgrund erkennen
-- [x] `PendingFileRenameOperations` auswerten
-- [x] konkrete Ursachen diagnostisch anzeigen
-- [x] reine NSIS-/Temp-Cleanup-Einträge nicht als relevanten Rebootbedarf melden
-- [x] globale PowerShell Execution Policy nicht verändern
-- [x] interne Bootstrap-Skripte über prozesslokale Execution Policy ausführbar halten
-- [x] vor der eigentlichen Setup-Logik einen Windows-Systemwiederherstellungspunkt anlegen; Erstellung auf dem aktuellen System praktisch bestätigt
-- [x] BitLocker-Status prüfen
-  - Status des Systemlaufwerks wird in der Abschlussphase über `Get-BitLockerVolume` ermittelt
-  - `VolumeStatus`, `ProtectionStatus` und `EncryptionMethod` werden ausgegeben
-  - deaktivierter Schutz erzeugt eine Warnung, wird aber nicht automatisch aktiviert
-  - praktisch auf dem aktuellen System bestätigt: `C:` ist `FullyDecrypted`, `ProtectionStatus = Off`, `EncryptionMethod = None`
-- [x] Secure-Boot-Status in Abschlussprüfung anzeigen
-  - Status wird über `Confirm-SecureBootUEFI` ermittelt
-  - aktiver Secure Boot wird als `[OK]` ausgegeben; deaktivierter oder nicht ermittelbarer Status erzeugt eine Warnung
-  - praktisch auf dem aktuellen System getestet: zunächst korrekt als deaktiviert erkannt, anschließend im UEFI aktiviert und danach durch Bootstrap als aktiv bestätigt
-- [x] Firewall-Status in Abschlussprüfung anzeigen
-  - Status der Profile `Domain`, `Private` und `Public` wird über `Get-NetFirewallProfile` ermittelt
-  - alle Profile werden mit `On`/`Off` ausgegeben
-  - sobald mindestens ein Profil deaktiviert ist, erzeugt der Bootstrap eine Warnung
-  - praktisch auf dem aktuellen System bestätigt: `Domain`, `Private` und `Public` jeweils `On`
-- [x] Windows-Hello-Status detaillierter ausgeben
-  - bestehende `dsregcmd /status`-Prüfung gibt `AzureAdJoined`, `DomainJoined`, `WorkplaceJoined` und `NgcSet` explizit aus
-  - bei lokalen Konten wird `NgcSet = NO` weiterhin nicht fälschlich als fehlende Windows-Hello-Einrichtung bewertet
-  - praktisch auf dem aktuellen lokalen Konto bestätigt: alle vier Werte `NO`; lokales Konto korrekt erkannt
-- [x] Security-Baseline um Microsoft-Defender-Status erweitert
-  - Status wird über `Get-MpComputerStatus` ermittelt
-  - `AntivirusEnabled`, `AntispywareEnabled`, `RealTimeProtectionEnabled` und `BehaviorMonitorEnabled` werden explizit ausgegeben
-  - sobald mindestens eine dieser Schutzkomponenten deaktiviert ist, erzeugt der Bootstrap eine Warnung
-  - praktisch auf dem aktuellen System bestätigt: alle vier Schutzkomponenten aktiv
+## Windows
+
+- [x] Debloat wiederholbar und ohne Beschädigung von Gaming, Entwicklung oder Windows Hello.
+- [x] Consumer Features deaktiviert.
+- [x] Taskbar-/Startmenü-Grundeinstellungen.
+- [x] Theme und Akzentfarbe `#0A84FF` über `config/windows.psd1`.
+- [x] Power-Einstellungen und HDR.
+- [x] Wallpaper Slideshow.
+- [x] Windows Snap aktiv.
+- [x] PowerToys FancyZones mit mindestens zwei Layouts und Hotkey-Wechsel; koexistiert praktisch mit Windows Snap.
+- [x] Computername deklarativ über `config/windows.psd1`; Änderung löst keinen automatischen Neustart aus.
+- [x] Windows `sudo` per offizieller Policy im Inline-Modus aktiviert.
+- [x] Windows-Entwicklermodus aktiviert.
+- [x] Long Paths aktiviert.
+- [ ] Lock-Screen optisch angleichen.
+- [ ] Datenschutz-/Telemetry-Einstellungen nur bei konkretem Bedarf gezielt ergänzen.
+- [x] Keine aggressive pauschale Service-Deaktivierung.
+
+## Sicherheit / Systemstatus
+
+- [x] Microsoft Defender bleibt aktiv.
+- [x] Defender Dev Drive Performance Mode.
+- [x] Rebootbedarf aus CBS, Windows Update und `PendingFileRenameOperations`; irrelevante Temp-/NSIS-Einträge werden gefiltert.
+- [x] Vor der Setup-Logik wird ein Systemwiederherstellungspunkt angelegt, sofern kein ausreichend frischer vorhanden ist.
+- [x] BitLocker-Status wird geprüft und bei deaktiviertem Schutz gewarnt; keine automatische Aktivierung.
+- [x] Secure-Boot-Status wird geprüft.
+- [x] Firewall-Status aller Profile wird geprüft.
+- [x] Windows-Hello-/Join-Status wird ausgegeben und lokale Konten werden korrekt behandelt.
+- [x] Defender-Schutzkomponenten werden geprüft.
 
 ---
 
-# 8. Phase 5 – Treiber
+# 6. Treiber und Firmware
 
-- [x] modulare Treiberstruktur unter `modules/Drivers/`
-- [x] gemeinsame Treiber-Helfer
-- [x] NVIDIA App installieren
-- [x] NVIDIA Update-Workflow
-- [x] Intel-Treiberlogik
-- [x] Neustartbedarf aus Treiberinstallationen erkennen
-- [x] Treiber nicht unkontrolliert über normalen Windows-Update-Pfad behandeln
-- [ ] kompakte Hardware-Zusammenfassung am Ende des Setup-Laufs
-- [x] BIOS-/Firmware-Update-Konzept für ASUS festgelegt: erkennen und melden, nicht automatisch über den ASUS-Statuspfad installieren
-- [ ] Monitor-/Peripherie-Firmware nur automatisieren, wenn zuverlässig möglich
+- [x] Modulare Treiberstruktur unter `modules/Drivers/`.
+- [x] NVIDIA App und NVIDIA-Updateworkflow.
+- [x] Intel Driver & Support Assistant bleibt zuständige Quelle für verifizierte Intel-Treiber.
+- [x] ASUS-/Mainboard- und Drittanbieter-Treiber werden über Armoury Crate bewertet.
+- [x] Intel-Angebote werden aus dem ASUS-Statuspfad gefiltert.
+- [x] BIOS-/UEFI-/Firmware wird erkannt und gemeldet, aber nicht automatisch installiert.
+- [x] Kein konkurrierender direkter ASUS-`file.idx`-Installationspfad.
+- [x] Armoury Crate wird unabhängig von Winget über AppX/Registry/Start-Apps/Service erkannt.
+- [x] Fehlt Armoury Crate, ist Winget `Asus.ArmouryCrate` der einzige vorgesehene Installationsweg.
+- [x] Vorhandenes Armoury Crate wird nicht durch ein älteres Winget-Manifest ersetzt.
+- [x] Normaler `just update` öffnet Armoury Crate nicht interaktiv.
+- [x] RLS-Metadaten werden read-only ausgewertet; nur der letzte vollständige Snapshot zählt.
+- [x] Firmware-Markierungen werden separat von Softwareupdates behandelt.
 
-## ASUS / Armoury Crate
+## Offen / ereignisabhängig
 
-Feste Zuständigkeit:
-
-- Intel Driver & Support Assistant bleibt die zuständige Quelle für Intel-Treiber. Der Intel-Autoinstallationspfad bleibt absichtlich auf bereits verifizierte Installationsregeln beschränkt; weitere Intel-Pakete werden erst automatisiert, wenn deren Installationsverhalten verifiziert wurde.
-- ASUS-/Mainboard-spezifische Komponenten sowie Drittanbieter-Treiber wie Realtek werden über den offiziellen ASUS-Pfad in Armoury Crate bewertet.
-- Intel-Angebote werden im automatischen ASUS-Statuspfad bewusst herausgefiltert und nicht über ASUS installiert.
-- Der vorhandene direkte ASUS-`file.idx`-Download-/Installationscode wird nicht zusätzlich in `Install-Drivers` aktiviert. Damit existiert kein konkurrierender zweiter Updatepfad neben Armoury Crate.
-- BIOS-/UEFI-/Firmware wird separat erkannt und gemeldet, aber nicht automatisch über den ASUS-Statuspfad installiert oder geflasht.
-- Ein offizieller Übergang zu ASUS DriverHub bleibt grundsätzlich zulässig; bei der bisherigen praktischen Prüfung blieb der Workflow jedoch vollständig in Armoury Crate.
-
-Armoury-Crate-Installation und -Updates:
-
-- Armoury Crate wird nicht über die generische `Drivers`-Paketgruppe verwaltet, weil eine von ASUS selbst aktualisierte Installation nicht zuverlässig der Winget-Paket-ID `Asus.ArmouryCrate` zugeordnet wird.
-- Bestehende Installationen werden unabhängig von Winget über AppX, Registry, Start-Apps und als letzten Fallback den Armoury-Crate-Service erkannt.
-- Wenn Armoury Crate fehlt, bleibt Winget mit `Asus.ArmouryCrate` der ausschließlich vorgesehene Installationsweg. Es gibt bewusst keinen direkten ASUS-Installer-Fallback.
-- Scheitert die Winget-Erstinstallation, wird dies als Warnung ausgegeben und der restliche Bootstrap darf weiterlaufen; ein späterer `just update` versucht die Installation erneut.
-- Updates der Armoury-Crate-Anwendung selbst werden über deren nativen Update-Mechanismus verwaltet.
-- Ein normaler `just update` öffnet die interaktive Armoury-Crate-Oberfläche nicht ungefragt.
-- Der normale `just update` wertet den lokal von Armoury Crate / ROG Live Service gepflegten Update-Zustand read-only aus.
-- Für Softwarezustände zählt ausschließlich der zuletzt beobachtete vollständige RLS-Komponenten-Snapshot; historische Vor-Update-Snapshots dürfen keine False Positives erzeugen.
-- Die Aktualität der ausgewerteten ASUS-/RLS-Daten wird mit Zeitstempel ausgegeben; alte Metadaten werden als möglicherweise veraltet kenntlich gemacht.
-- Nicht-Intel-Softwareupdates werden erkannt und gemeldet. Eine automatische Installation wird erst ergänzt, wenn ein offizieller ASUS-/RLS-Installationsweg praktisch verifiziert ist und BIOS/Firmware sicher ausgeschlossen werden kann.
-
-Praktisch festgestellter Upstream-Zustand am 2026-08-10:
-
-- [x] Auf dem aktuellen System ist Armoury Crate `6.5.7.0` bereits installiert.
-- [x] `winget list --id Asus.ArmouryCrate --exact` erkennt diese vorhandene Installation nicht.
-- [x] Winget bietet aktuell nur Manifest-Version `6.2.11.0` an.
-- [x] Die Installation dieses Manifests scheitert aktuell mit `Installer hash does not match`, weil der ASUS-Download nicht mehr zum im Winget-Manifest hinterlegten SHA256 passt.
-- [x] Der generische Winget-Paketworkflow ist damit für Armoury Crate als Desired-State-Erkennung ungeeignet.
-
-Praktisch bestätigt:
-
-- [x] AppX-/Registry-Erkennung erkennt die vorhandene Armoury-Crate-Version `6.5.7.0`.
-- [x] `just update` versucht bei vorhandener Armoury-Crate-Installation keine erneute Winget-Installation und kein Downgrade.
-- [x] Armoury Crate Update Center einschließlich Geräte-/Komponentenbereich auf ASUS-/Drittanbieter-Treiber und Firmware geprüft.
-- [x] Intel-Angebote werden im automatischen ASUS-Statuspfad herausgefiltert.
-- [x] aktuell keine Realtek-Updates angeboten.
-- [x] aktuell keine BIOS-/Firmware-Updates angeboten.
-- [x] bei der bisherigen Prüfung keine Weiterleitung zu ASUS DriverHub; der Workflow blieb in Armoury Crate.
-- [x] ASUS-RLS-Metadaten und Logs als read-only Quelle für den Update-Status praktisch verifiziert.
-- [x] historische Vor-Update-Snapshots als False-Positive-Quelle erkannt und die Auswertung auf den letzten vollständigen Komponenten-Snapshot beschränkt.
-- [x] Firmware-Markierungen werden separat erkannt und nicht als Softwareupdate behandelt.
-- [x] `just update` meldet auf dem aktuellen Stand korrekt keine Nicht-Intel-ASUS-Softwareupdates.
-- [x] `just update` meldet auf dem aktuellen Stand korrekt keine aktive Firmware-Markierung.
-- [x] wiederholter `just update` auf störungsarme Wiederholung des Armoury-Crate-/ASUS-Statuspfads getestet.
-- [x] finaler `just check` erfolgreich.
-- [x] finaler kompletter `just update` erfolgreich.
-
-Offen / zu testen:
-
-- [ ] Verhalten einer Winget-Erstinstallation auf einem System ohne Armoury Crate testen, sobald das Upstream-Manifest wieder funktionsfähig ist.
-- [ ] automatische Installation erkannter Nicht-Intel-ASUS-Softwareupdates nur ergänzen, wenn der offizielle ASUS-/RLS-Installationsweg zuverlässig und firmwarefrei angesteuert werden kann.
-- [ ] Verhalten bei einem zukünftig tatsächlich angebotenen BIOS-/Firmware-Update erneut praktisch prüfen; weiterhin nur melden, nicht automatisch installieren.
-- [ ] Verhalten bei einer zukünftig tatsächlich auftretenden Weiterleitung zu ASUS DriverHub erneut praktisch prüfen.
-- [ ] `just asus-updates` als manuellen Armoury-Crate-Einstieg separat praktisch testen und nur beibehalten, wenn er neben dem automatischen read-only Statuscheck weiterhin echten Nutzen hat.
+- [ ] Kompakte Hardware-Zusammenfassung am Ende des Setup-Laufs.
+- [ ] Monitor-/Peripherie-Firmware nur automatisieren, wenn ein zuverlässiger Weg existiert.
+- [ ] Winget-Erstinstallation von Armoury Crate auf einem System ohne Installation testen, sobald das Upstream-Manifest wieder funktioniert.
+- [ ] Automatische Nicht-Intel-ASUS-Softwareupdates nur ergänzen, wenn ein offizieller firmwarefreier Installationsweg verifiziert ist.
+- [ ] Zukünftiges reales BIOS-/Firmware-Angebot erneut prüfen; weiterhin nur melden.
+- [ ] Zukünftige Weiterleitung zu ASUS DriverHub praktisch prüfen.
+- [ ] `just asus-updates` praktisch testen und nur bei echtem Zusatznutzen behalten.
 
 ---
 
-# 9. Phase 6 – Windows und Microsoft Updates
+# 7. Windows- und Microsoft-Updates
 
-- [x] `PSWindowsUpdate`
-- [x] Microsoft Update
-- [x] Software-Updates installieren
-- [x] kumulative Windows-Updates
-- [x] .NET-Updates
-- [x] Defender Security Intelligence
-- [x] `AcceptAll`
-- [x] `IgnoreReboot`
-- [x] Neustart nie automatisch ausführen
-- [x] Neustartstatus nach Updates erneut prüfen
-- [ ] verständliche Update-Zusammenfassung für Wartungs-Logs
+- [x] `PSWindowsUpdate` / Microsoft Update.
+- [x] Windows-, .NET- und Defender-Updates.
+- [x] `AcceptAll`, `IgnoreReboot`.
+- [x] Kein automatischer Neustart.
+- [x] Rebootstatus wird nach Updates erneut geprüft.
+- [ ] Verständliche Update-Zusammenfassung in die zentrale Wartungs-/Logging-Ausgabe integrieren.
 
 ---
 
-# 10. Phase 7 – Netzwerk und VPN
+# 8. Netzwerk, VPN und Home Office
 
 ## OpenVPN
 
-- [x] `OpenVPNTechnologies.OpenVPN`
-- [x] feste Version `2.7.101`
-- [x] Update für dieses Paket deaktiviert
-- [x] Version-Pinning funktioniert
-- [x] installierte Version robust ermitteln
+- [x] `OpenVPNTechnologies.OpenVPN`.
+- [x] Version `2.7.101` gepinnt; automatisches Paketupdate deaktiviert.
+- [x] Installierte Version wird robust erkannt.
 
-## VPN-Konfiguration
+## VPN / Verbindungsdaten
 
-- [ ] VPN-Profile automatisiert bereitstellen
-- [ ] Firmen- und Privatprofile sauber trennen
-- [ ] Zertifikate bei Bedarf automatisiert importieren
-- [ ] sensible Daten nicht im öffentlichen Repository speichern
-- [ ] Konzept für Secrets/Zertifikate festlegen
-- [ ] prüfen, welche Home-Office-Komponenten zwingend VPN benötigen
+- [x] Keine eigene VPN-Profilverwaltung im Repository erforderlich.
+- [x] Keine Trennung von Firmen-/Privatprofilen durch dieses Setup erforderlich.
+- [x] Keine eigene Zertifikatsverwaltung durch dieses Setup erforderlich.
+- [x] Remote Desktop Manager verwendet eine externe Datenbank als zentrale Quelle für RDP-, VPN-, FTP-/SFTP- und weitere Verbindungsziele.
+- [x] RDM-/FileZilla-Verbindungsdaten und Credentials bleiben vollständig außerhalb des öffentlichen Repositories.
+
+## Home-Office-Werkzeuge
+
+- [x] Eigene Paketgruppe `HomeOffice`.
+- [x] Remote Desktop Manager.
+- [x] FileZilla über Chocolatey.
+- [x] PCVisit Supporter Modul über eigenen Installationsworkflow.
+- [ ] Agfeo Dashboard / Softphone nur bei tatsächlichem Bedarf ergänzen.
+- [ ] Weitere interne Tools nur bei konkretem Bedarf ergänzen.
+
+## eM Client
+
+- [x] eM Client über `eMClient.eMClient` installieren und aktualisieren.
+- [x] Exchange/EWS sowie klassische IMAP-/SMTP-Konten praktisch bestätigt.
+- [x] Vollständige Konfiguration einschließlich gespeicherter Account-Credentials ausschließlich über den offiziellen eM-Client-Settings-Export/-Import sichern.
+- [x] Keine interne Credential-Erzeugung und kein Reverse Engineering von eM-Client-Datenbanken oder Assemblies.
+- [x] Export zusätzlich mit SOPS als `secrets/emclient-settings.sops.xml` verschlüsseln.
+- [x] Importpasswort verschlüsselt unter `emclient.import_password` in `secrets/mail.sops.json`.
+- [x] Neuer manueller Export wird unter `.generated/emclient/settings.xml` abgelegt; der Bootstrap verschlüsselt ihn atomar und löscht Klartext erst nach erfolgreicher SOPS-Verschlüsselung.
+- [x] Restore entschlüsselt nur temporär nach `%TEMP%\emclient-settings.xml`.
+- [x] Importpasswort wird nicht als CLI-Argument oder Logausgabe verwendet, sondern nur temporär über die Zwischenablage an den eM-Client-Passwortdialog übergeben.
+- [x] Zwischenablage, Passwortvariablen und temporäre Klartextdatei werden danach bereinigt.
+- [x] Unveränderter Import wird per SHA-256-State unter `.generated/state/emclient/settings.sha256` übersprungen.
+- [x] Vollständiger Backup-/Restore- und Bootstrap-Workflow praktisch bestätigt.
+
+Verworfen: Thunderbird-Provisionierungsprototyp, Outlook-Classic-COM/UI-Automation, Canary Mail für den vorhandenen Exchange sowie Reverse Engineering der eM-Client-Credentials.
 
 ---
 
-# 11. Phase 8 – Entwicklerumgebung
+# 9. Entwicklerumgebung
 
 ## C# / .NET / WPF
 
-Feste Entscheidung:
+- [x] Visual Studio Code + Microsoft C# Dev Kit.
+- [x] `.NET 10` LTS als produktiver SDK-Track.
+- [x] Moderne SDK-Style-WPF-Projekte.
+- [x] `.NET Framework` nur bei konkretem Legacy-Bedarf.
+- [x] Console- und WPF-Projekt einschließlich Build/Run/Debug praktisch bestätigt.
+- [x] Repository-C#-Compilecheck bleibt unabhängig von Projekt-Builds bestehen.
 
-- moderne C#-Entwicklung erfolgt in Visual Studio Code mit dem Microsoft `C# Dev Kit`
-- produktiver SDK-Track ist `.NET 10` LTS
-- WPF-Entwicklung verwendet moderne SDK-Style-Projekte mit `Microsoft.NET.Sdk`, Windows-TFM und `UseWPF = true`
-- klassisches `.NET Framework` ist nicht Teil des Standard-Workflows und wird nur bei einem konkreten Legacy-Projekt ergänzt
-- der vorhandene Repository-Compilecheck für lose verwaltete `.cs`-Dateien bleibt als eigener Qualitätscheck bestehen und wird nicht durch Projekt-Builds ersetzt
-
-Umsetzung / Teststatus:
-
-- [x] `.NET 10 SDK` über den bestehenden deklarativen Development-Paketworkflow installieren und aktualisieren
-- [x] vorhandenes `ms-dotnettools.csdevkit` als VS-Code-C#-Workflow praktisch mit installiertem System-SDK bestätigen
-- [x] `dotnet --info` nach dem Bootstrap prüfen
-- [x] neues C#-Console-Projekt mit `dotnet new console`, `dotnet build` und `dotnet run` praktisch testen
-- [x] neues WPF-Projekt mit `dotnet new wpf`, `dotnet build` und Start der Anwendung praktisch testen
-- [x] WPF-Projekt in VS Code öffnen und C#-Bearbeitung, Solution Explorer und Debugging praktisch bestätigen
-- [x] `just check` und vollständigen `just update-log` nach der Integration erfolgreich ausführen
 ## Node.js
 
-- [x] fnm installieren
-- [x] Node immer gegen die aktuelle LTS-Version prüfen und nur bei Versions-Drift über fnm aktualisieren
-- [x] npm separat gegen `npm@latest` prüfen und bei unverändertem Stand nicht neu installieren
-- [x] pnpm separat gegen `pnpm@latest` prüfen und bei unverändertem Stand nicht neu installieren
-- [x] Yarn separat gegen `yarn@latest` prüfen und bei unverändertem Stand nicht neu installieren
-- [ ] tatsächliche npm-/pnpm-/Yarn-Updateinstallation bei einer zukünftig vorhandenen neueren Version erneut praktisch bestätigen
-- [x] PATH / `PNPM_HOME`
-- [x] npm während desselben Bootstrap-Laufs verfügbar machen
+- [x] fnm.
+- [x] Aktuelle Node-LTS wird geprüft und nur bei Drift aktualisiert.
+- [x] npm, pnpm und Yarn werden gegen ihre aktuellen Registry-Versionen geprüft.
+- [x] `PNPM_HOME` / PATH und Verfügbarkeit innerhalb desselben Bootstrap-Laufs.
+- [ ] Tatsächliche npm-/pnpm-/Yarn-Updateinstallation bei einer zukünftig neueren Version praktisch bestätigen.
 
-## Bun
+## Bun / Go
 
-- [x] installieren
-- [x] aktualisieren
-- [x] Cache auf Dev Drive
-
-## Go
-
-- [x] installieren
-- [x] aktualisieren
-- [x] `GOCACHE` auf Dev Drive
-- [x] `GOMODCACHE` auf Dev Drive
+- [x] Bun installieren/aktualisieren; Cache auf Dev Drive.
+- [x] Go installieren/aktualisieren; `GOCACHE` und `GOMODCACHE` auf Dev Drive.
 
 ## Git
 
-- [x] Benutzername
-- [x] E-Mail
-- [x] globale Git-Konfiguration
-- [x] globale Gitignore
-- [x] Editor
-- [x] Git LFS
-- [x] sinnvolle Defaults
-- [x] Repository-Status auswerten
-- [x] lokale Änderungen erkennen
-- [x] ungepushte Commits erkennen
+- [x] Benutzername, E-Mail, globale Konfiguration, globale Gitignore, Editor und Git LFS.
+- [x] Repository-Status, lokale Änderungen und ungepushte Commits werden erkannt.
 
 ## Neovim
 
-### Installation und Konfiguration
+- [x] Neovim Nightly über Scoop `versions`, mindestens `0.12.0`.
+- [x] Extern gepflegtes `jayzone91/nvim` als Submodule unter `external/nvim`, Branch `main`.
+- [x] `%LOCALAPPDATA%\nvim` per Junction auf `external/nvim`.
+- [x] Remote wird per Fetch geprüft; Pull nur bei tatsächlichem Fast-Forward.
+- [x] Lokale Änderungen werden nur bei einem real nötigen Remote-Update temporär gestasht.
+- [x] Stash-Konflikte werden nicht automatisch zurückgesetzt; Diagnose bleibt erhalten.
+- [x] Laufende externe Submodule-Commits werden nicht automatisch in `windows-setup` übernommen.
+- [ ] Remote-Update mit neuem Commit und gleichzeitig vorhandenen lokalen Änderungen erneut praktisch bestätigen.
 
-- [x] Neovim Nightly über Scoop-Bucket `versions`
-- [x] Neovim `0.12.0` oder neuer erzwingen
-- [x] extern gepflegtes Repository `jayzone91/nvim` als Git-Submodule unter `external/nvim`
-- [x] Submodule auf Branch `main`
-- [x] `%LOCALAPPDATA%\nvim` per Junction auf `external/nvim`
-- [x] Submodule bei jedem Bootstrap synchronisieren und bei Bedarf initialisieren
-- [x] `origin/main` bei jedem Bootstrap per Fetch prüfen
-- [x] `git pull --ff-only origin main` nur ausführen, wenn der Remote-Commit tatsächlich neuer ist und ein Fast-Forward möglich ist
-- [x] bei identischem lokalen/Remote-HEAD ohne Stash, Checkout oder Pull fortfahren
-- [x] neue Commits des extern verwalteten Submodules durch `ignore = all` nicht als lokale Änderung von `windows-setup` behandeln
-- [x] Änderungen am extern verwalteten Neovim-Repository nicht automatisch in die Git-History von `windows-setup` übernehmen
+### Tree-sitter
 
-### Lokale Änderungen im Neovim-Submodule
-
-- [x] lokale Änderungen einschließlich untracked Dateien nur dann vorübergehend sichern, wenn ein tatsächliches Remote-Update einen Pull erfordert
-- [x] Bootstrap-Stash mit eindeutiger Nachricht erzeugen
-- [ ] optimierten Updatepfad mit neuem Remote-Commit und vorhandenen lokalen Änderungen erneut praktisch bestätigen
-- [x] Stash nach erfolgreichem Pull per `stash pop --index` wiederherstellen
-- [x] fehlgeschlagene Stash-Wiederherstellung nicht automatisch zurücksetzen
-- [x] bei Stash-Konflikten den Stash erhalten
-- [x] bei Stash-Konflikten am Ende des Bootstrap Repository-Pfad, Stash-Referenz, Stash-Commit, Nachricht, ursprünglichen und aktuellen Git-Status sowie Diagnosebefehle ausgeben
-
-### Tree-sitter Toolchain
-
-- [x] `tree-sitter-cli` über Scoop-Bucket `main`
-- [x] mindestens `tree-sitter-cli 0.26.1`
-- [x] kein npm-Installationsweg für `tree-sitter-cli`
-- [x] Zig über Scoop-Bucket `main` als C/C++-Toolchain
-- [x] Scoop-Shim `cc` auf `zig cc`
-- [x] Scoop-Shim `c++` auf `zig c++`
-- [x] `CC=cc` als persistente Benutzer-Umgebungsvariable und im Bootstrap-Prozess
-- [x] `CXX=c++` als persistente Benutzer-Umgebungsvariable und im Bootstrap-Prozess
-- [x] `CRATE_CC_NO_DEFAULTS=1`, damit `cc-rs` Zig nicht automatisch das inkompatible Target `x86_64-pc-windows-msvc` übergibt
-- [x] `tar`, `curl`, `tree-sitter`, `zig`, `cc` und `c++` im Bootstrap prüfen
-
-### Praktisch bestätigt
-
-- [x] `just check` nach der Neovim-Integration fehlerfrei
-- [x] vollständiger `just update` nach der Neovim-Integration fehlerfrei
-- [x] `external/nvim` auf `main` und aktuell zu `origin/main`
-- [x] `cc.exe` wird aus dem Scoop-Shim-Verzeichnis aufgelöst
-- [x] Zig/Clang über `cc --version` praktisch verifiziert
-- [x] alle in der Neovim-Konfiguration angeforderten Tree-sitter-Parser erfolgreich kompiliert
-
-### Feste Entscheidung
-
-Das Repository `jayzone91/nvim` wird **extern** gepflegt. `windows-setup` stellt lediglich Installation, Aktualisierung, Toolchain und Junction bereit.
-
-Der Gitlink des Submodules gehört zur initialen Repository-Struktur von `windows-setup`. Laufende neue Commits und lokale Änderungen innerhalb von `external/nvim` sollen dagegen nicht als normale Änderungen des Superprojekts auftauchen oder automatisch in dessen Git-History übernommen werden.
-
-Für Tree-sitter unter Windows bleibt Zig die vorgesehene Compiler-Toolchain. Der getestete Pfad verwendet reale `cc`-/`c++`-Scoop-Shims und die Umgebungsvariablen `CC=cc`, `CXX=c++` sowie `CRATE_CC_NO_DEFAULTS=1`. Ein zusätzlicher Visual-Studio-/MSVC-Compiler ist für diesen Workflow nicht erforderlich.
-
----
+- [x] `tree-sitter-cli` über Scoop.
+- [x] Zig als C/C++-Toolchain.
+- [x] Scoop-Shims `cc` → `zig cc`, `c++` → `zig c++`.
+- [x] `CC=cc`, `CXX=c++`, `CRATE_CC_NO_DEFAULTS=1`.
+- [x] Parser-Kompilierung praktisch bestätigt.
+- [x] Kein zusätzlicher MSVC-Compiler für diesen Workflow erforderlich.
 
 ## Codex
 
-- [x] Codex CLI installieren
-- [ ] zusätzliche Codex-Konfiguration nur bei echtem Bedarf
-- [ ] optional VS-Code-/Terminal-Workflow dokumentieren
+- [x] Codex CLI installiert.
+- [ ] Zusätzliche Konfiguration nur bei echtem Bedarf.
+- [ ] VS-Code-/Terminal-Workflow nur dokumentieren, wenn daraus ein dauerhafter Projektworkflow entsteht.
 
 ---
 
-# 12. Phase 9 – Development Storage
+# 10. Development Storage
 
-## Ziel
+- [x] Zusätzliche interne Disk sicher erkennen; Boot-/Systemdisk und ungeeignete Datenträger ausschließen.
+- [x] Destruktive Änderungen erfordern explizite Bestätigung.
+- [x] Erwartetes vorhandenes Layout wird erkannt und nicht neu formatiert.
 
-Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games vorbereiten.
+| Laufwerk | Größe | Dateisystem | Label | Zweck |
+| --- | ---: | --- | --- | --- |
+| `D:` | 100 GB | ReFS Dev Drive | `Dev` | Entwicklung |
+| `G:` | Rest | NTFS | `Games` | Spiele |
 
-- [x] leere interne Disk erkennen
-- [x] Boot-/Systemdisk ausschließen
-- [x] ungeeignete Datenträger ausschließen
-- [x] destruktive Änderungen explizit bestätigen
-- [x] vorhandenes erwartetes Layout erkennen und nicht neu formatieren
+Verwaltete Entwicklungsziele:
 
-## Layout
+- `D:\Projects`
+- `D:\Build`
+- `D:\Cache\npm`
+- `D:\Cache\pnpm`
+- `D:\Cache\yarn`
+- `D:\Cache\bun`
+- `D:\Cache\go\build`
+- `D:\Cache\go\modules`
 
-| Laufwerk |  Größe | Dateisystem    | Label   | Zweck       |
-| -------- | -----: | -------------- | ------- | ----------- |
-| `D:`     | 100 GB | ReFS Dev Drive | `Dev`   | Entwicklung |
-| `G:`     |   Rest | NTFS           | `Games` | Spiele      |
-
-## Verzeichnisse und Caches
-
-- [x] `D:\Projects`
-- [x] `D:\Build`
-- [x] `D:\Cache\npm`
-- [x] `D:\Cache\pnpm`
-- [x] `D:\Cache\yarn`
-- [x] `D:\Cache\bun`
-- [x] `D:\Cache\go\build`
-- [x] `D:\Cache\go\modules`
-- [x] Defender Dev Drive Performance Mode
-- [x] npm-/pnpm-/Yarn-Cacheziele und Bun-/Go-Umgebungswerte über lokalen State nur bei geändertem Desired State erneut konfigurieren
+- [x] Cache-/Umgebungswerte werden nur bei Desired-State-Drift erneut geschrieben.
 
 ---
 
-# 13. Phase 10 – PowerShell und Codequalität
-
-- [x] PowerShell 7
-- [x] verwaltete C#-Quelldateien als Teil desselben Source-Code-Qualitätsworkflows kompilieren; Compilerwarnungen gelten als Fehler
-- [x] Git-basierter Source-Code-Fingerprint berücksichtigt PowerShell- und C#-Dateien
-- [x] `just check` nach C#-Integration praktisch mit PSScriptAnalyzer und C#-Compilecheck bestätigt
-- [x] PowerShell-Module automatisiert installieren
-- [x] PSScriptAnalyzer
-- [x] BurntToast
-- [x] PSWindowsUpdate
-- [x] fingerprint-gesteuerte strikte Codeprüfung vor der eigentlichen Setup-Logik; unveränderter Code überspringt PSScriptAnalyzer, geänderter Code muss den vollständigen Preflight bestehen
-- [x] Fehler, Warnungen und Hinweise getrennt zählen
-- [x] `just check` als manueller Einstiegspunkt für PSScriptAnalyzer
-- [x] GitHub Actions für statische Prüfung
-- [x] Pester-Tests für kritische Helper
-- [x] Tests für Paket-Versionserkennung
-- [x] Tests für Hardlink-/Junction-Migration
-- [x] Tests für Reboot-Erkennung
-- [ ] Dry-Run / WhatIf
-
----
-
-# 14. Phase 11 – Terminal-Umgebung
+# 11. Terminal, Shell und VS Code
 
 ## Windows Terminal
 
-- [x] PowerShell 7 als Standardprofil
-- [x] JetBrainsMono Nerd Font
-- [x] Catppuccin Mocha
-- [x] Acrylic / Transparenz
-- [x] Profil-Defaults
-- [x] alte Windows-PowerShell-/CMD-Profile bei Bedarf ausblenden
-- [x] `dotfiles/terminal/settings.json` als dauerhafte versionierte Source of Truth
-- [x] strukturierte Erstinstallationswerte in `config/terminal.psd1` statt fest verdrahteter Einstellungen im Modul
-- [x] Catppuccin-Farben für die initiale Konfiguration aus der zentralen `config/theme.psd1` ableiten
-- [x] Terminal-JSON-`$schema` beim Generieren direkt setzen und nicht als konfigurierbaren Wert behandeln
-- [x] initiale `settings.json` nur erzeugen, wenn noch keine versionierte Terminal-Konfiguration vorhanden ist
-- [x] lokalen Initialisierungsmarker `.generated/state/default-apps/terminal.initialized` verwenden
-- [x] eine bereits versionierte `settings.json` bei späteren Bootstrap-Läufen nicht aus den Initialwerten regenerieren oder überschreiben
-- [x] Windows-Terminal-`settings.json` per Symbolic Link einbinden; Hardlink-Inkompatibilität beim Speichern über die Settings-GUI praktisch bestätigt
-- [x] Änderungen über die Terminal-Settings-GUI landen in `dotfiles/terminal/settings.json`
-- [x] GUI-Änderungen bleiben nach vollständigem Neustart von Windows Terminal aktiv
+- [x] PowerShell 7 als Standardprofil.
+- [x] JetBrainsMono Nerd Font, Catppuccin Mocha, Acrylic/Transparenz.
+- [x] `config/terminal.psd1` dient nur der Erstinitialisierung.
+- [x] Nach Initialisierung ist `dotfiles/terminal/settings.json` alleinige versionierte Source of Truth.
+- [x] `settings.json` wird per Symlink eingebunden.
+- [x] GUI-Änderungen landen direkt im Repository-Dotfile.
+- [x] Nach Settings-Änderungen ist ein vollständiger Terminal-Neustart der dokumentierte Workflow.
 
-### Feste Entscheidung
+## PowerShell / CLI
 
-`config/terminal.psd1` ist ausschließlich die deklarative Quelle für die **erstmalige Erzeugung** einer Windows-Terminal-Konfiguration. Die Datei enthält verständlich strukturierte Standardwerte, aber keine Kopie der vollständigen `settings.json`.
+- [x] PowerShell-Profil im Repository und per Hardlink eingebunden.
+- [x] Starship-Konfiguration im Repository und per Hardlink eingebunden.
+- [x] `rg`, `eza`, `fd`, `bat`, `fzf`, `jq`, `zoxide`.
+- [x] Fish-artige PSReadLine-Abbreviations für CLI-, Navigations- und Git-Kommandos.
+- [x] `zoxide init powershell`.
+- [x] Projektspezifische Commands werden nur innerhalb `~/windows-setup` dynamisch geladen und beim Verlassen entfernt.
+- [ ] Weitere CLI-Tools nur anhand eines konkreten Workflows ergänzen.
+- [ ] Weiterer Shell-UX-Feinschliff bei konkretem Bedarf.
+- [ ] Keybindings/Profile nur dokumentieren/versionieren, wenn weitere dauerhafte Anpassungen entstehen.
 
-Das JSON-Schema wird vom Generator direkt gesetzt. Die Catppuccin-Farben werden bei der Ersterzeugung aus `config/theme.psd1` abgeleitet, damit die zentrale Palette maßgeblich bleibt.
+## Visual Studio Code
 
-Nach der Initialisierung ist ausschließlich `dotfiles/terminal/settings.json` die versionierte Source of Truth. Der Bootstrap darf diese Datei bei späteren Läufen nicht wieder aus `config/terminal.psd1` erzeugen oder Benutzeränderungen überschreiben. Der lokale Marker `.generated/state/default-apps/terminal.initialized` kennzeichnet die abgeschlossene Initialisierung.
-
-Für die produktive Terminal-`settings.json` wird bewusst der projektweite Symbolic-Link-Kompatibilitätsfallback verwendet. Ein NTFS-Hardlink wurde praktisch getestet und verworfen, weil Windows Terminal ihn beim Speichern über die Settings-GUI auftrennt. Mit dem Symbolic Link werden Änderungen aus der GUI direkt im Repository-Dotfile gespeichert und können normal committed werden.
-
-Windows Terminal übernimmt geänderte Einstellungen nicht in jedem Fall vollständig im laufenden Prozess. Nach einer Änderung über die Settings-GUI ist deshalb ein vollständiges Beenden und erneutes Starten von Windows Terminal der dokumentierte Workflow.
-
-## PowerShell
-
-- [x] Profil im Repository
-- [x] Profil als Hardlink eingebunden
-
-## CLI-Tools / moderne Shell-Werkzeuge
-
-Ziel ist ein schneller, komfortabler CLI-Workflow ähnlich zur Linux-Arbeitsumgebung. Geeignete moderne CLI-Tools sollen reproduzierbar über die Paketverwaltung installiert und sinnvoll in das PowerShell-Profil integriert werden.
-
-Pflicht / bereits konkret gewünscht:
-
-- [x] `ripgrep` (`rg`) installieren
-- [x] `eza` als modernen Ersatz für klassische Verzeichnisauflistung installieren
-- [x] Fish-artige PowerShell-Abbreviation für `ls` auf `eza --icons --group-directories-first` umstellen
-- [x] `ls`, `ll`, `la` und `lt` als interaktive PSReadLine-Abbreviations mit sinnvollen `eza`-Defaults definieren
-
-Weitere Kandidaten prüfen und bei echtem Nutzen integrieren:
-
-- [x] `fd` als schnellere Dateisuche
-- [x] `bat` als moderner Datei-Viewer
-- [x] `fzf` für fuzzy selection
-- [x] `jq` für JSON-Verarbeitung
-- [x] `zoxide` für schnelles Verzeichnis-Navigieren
-- [ ] weitere geeignete CLI-Tools anhand des tatsächlichen Workflows inventarisieren
-
-Integration:
-
-- [x] Fish-artige PSReadLine-Abbreviations für CLI- und Git-Kommandos im versionierten PowerShell-Profil hinterlegen
-- [x] Abbreviations expandieren interaktiv über PSReadLine und verändern keine globalen Befehle für Skripte
-- [x] Abbreviation-Expansion in interaktiver PowerShell praktisch getestet
-- [x] `zoxide init powershell` im Profil integrieren
-- [x] Fish-`shellAbbrs` für `ls`, `ll`, `la`, `lt`, `cat`, `grep`, `find`, Verzeichnisnavigation und Git-Kommandos nach PowerShell übertragen
-- [x] Abbreviations beim Drücken von Space oder Enter sichtbar expandieren
-- [x] Git-Repository-Root für projektspezifische Commands ermitteln
-- [x] dynamisches Modul `WindowsSetupProjectCommands` nur innerhalb von `~/windows-setup` laden
-- [x] `update` → `just update`
-- [x] `check` → `just check`
-- [x] Projektcommands beim Verlassen des Repositories wieder vollständig entfernen
-- [x] dynamische Projektcommands mit `zoxide`-Verzeichniswechsel praktisch getestet
-- [x] CLI-Installation und Wiederholung über `just update` getestet
-- [x] `just check` nach Profilanpassungen ausführen
-
-## Starship
-
-- [x] Installation
-- [x] `starship.toml`
-- [x] Hardlink
-
-## Offen
-
-- [ ] weiterer UX-Feinschliff
-- [ ] Keybindings/Profiles vollständig dokumentieren, falls weitere Anpassungen dazukommen
-
-# 15. Phase 12 – Visual Studio Code
-
-- [x] Installation
-- [x] Extensions automatisiert installieren
-- [x] Settings im Repository
-- [x] `settings.json` als Hardlink
-- [x] Catppuccin
-- [x] Codex-Integration
-- [x] Setup wiederholbar
-- [ ] Next.js-/TypeScript-Workflow weiter vervollständigen
-- [ ] Go-Workflow vervollständigen
-- [ ] Extension-Liste regelmäßig bereinigen
-- [ ] Keybindings/Profile versionieren, falls erforderlich
+- [x] Installation und Extension-Management.
+- [x] `settings.json` im Repository per Symlink.
+- [x] Catppuccin.
+- [x] Codex-Integration.
+- [x] Wiederholbarer Setup-Pfad.
+- [ ] Next.js-/TypeScript-Workflow vervollständigen.
+- [ ] Go-Workflow vervollständigen.
+- [ ] Extension-Liste regelmäßig bereinigen.
+- [ ] Keybindings/Profile bei tatsächlichem Bedarf versionieren.
 
 ---
 
-# 16. Phase 13 – Browser
+# 12. Browser
 
 ## Google Chrome Beta
 
-- [x] Installation
-- [x] Updates
-- [x] Enterprise Policies
-- [x] Extension Deployment
+- [x] Installation und Updates.
+- [x] Enterprise Policies.
+- [x] Extension Deployment.
 
 ## Zen Browser
 
-- [x] Installation
-- [x] Updates
-- [x] Erweiterungen
-- [x] deutsche Sprache
-- [x] deutsches Wörterbuch
-- [x] Enterprise Policies
-- [x] Session Restore
-- [x] Google als Suchmaschine
-- [x] Telemetrie deaktivieren
-- [x] Firefox Studies deaktivieren
-- [x] Pocket deaktivieren
-- [x] Zen Mods automatisiert installieren
-- [x] Marionette für Mod-Installation
-- [x] Mod-Installation idempotent
-- [x] aktives Zen-Profil über die Installationszuordnung ermitteln
-- [x] vorhandene Mods vor dem Schließen über `zen-themes.json` prüfen
-- [x] nur tatsächlich fehlende Mods an Marionette übergeben
-- [x] Zen bei vollständig vorhandenen Mods geöffnet lassen
-- [x] Zen nur bei erforderlicher Mod-Konfiguration schließen und danach normal neu starten
-- [x] früheres Catppuccin-Mocha/Mauve-Custom-CSS vollständig entfernt
-- [x] Zen wieder auf das native Standard-Theme zurückgeführt und praktisch bestätigt
-- [x] `userChrome.css` vollständig entfernt; keine leere Platzhalterdatei im Repository
-- [x] `userContent.css` vollständig entfernt
-- [x] Catppuccin-Zen-Logo vollständig entfernt
-- [x] hostbezogene Website-Styles für GitHub, ChatGPT, YouTube, Google Search, PayPal und Reddit vollständig entfernt
-- [x] frühere Website-Style-Junction aus dem aktiven Zen-Profil entfernt
-- [x] alter lokaler Catppuccin-State unter `.generated/state/zen/` wird bereinigt
-- [x] `Set-ZenTheme` verwaltet als Desired State ausschließlich die Abwesenheit der früheren repositoryverwalteten Custom-CSS-Artefakte
-- [x] Zen wird bei tatsächlichem Cleanup-Drift kontrolliert neu gestartet; ein wiederholter Lauf ohne Altbestand bleibt störungsarm
+- [x] Installation, Updates, Erweiterungen, deutsche Sprache und Wörterbuch.
+- [x] Enterprise Policies, Session Restore und Google-Suche.
+- [x] Telemetrie, Firefox Studies und Pocket deaktiviert.
+- [x] Zen Mods werden idempotent über Marionette installiert.
+- [x] Aktives Profil wird über die reale Installationszuordnung ermittelt.
+- [x] Zen wird nur geschlossen, wenn tatsächlich Mod-/Cleanup-Drift vorliegt.
+- [x] Früheres Catppuccin-Custom-CSS, Logo und hostbezogene Website-Styles vollständig entfernt.
+- [x] Zen verwendet wieder das native Standard-Theme.
+- [x] `Set-ZenTheme` verwaltet nur noch die Abwesenheit alter repositoryverwalteter Custom-CSS-Artefakte.
 
-### Akzeptanzkriterien für Zen-Mods
+Akzeptanz:
 
-- Ein normaler `just update` schließt Zen nicht, wenn alle konfigurierten Mods bereits vorhanden sind.
-- Fehlt ein Mod, wird nur der fehlende Mod über Marionette installiert.
-- Die lokale Vorprüfung verwendet das tatsächlich aktive Zen-Profil und nicht lediglich den `Default=1`-Eintrag aus `profiles.ini`.
+- Ein normaler `just update` schließt Zen nicht, wenn kein Drift besteht.
+- Fehlende Mods werden gezielt installiert.
+- Die Profilprüfung verwendet das tatsächlich aktive Profil.
+
+## Vivaldi
+
+- [x] Vivaldi bleibt Hauptbrowser.
+- [x] Repositoryverwaltetes Custom-HTML/CSS/JS wurde vollständig verworfen.
+- [x] Vivaldi bleibt im nativen UI-Zustand.
 
 ---
 
-# 17. Phase 14 – Logitech G HUB
+# 13. Logitech G HUB
 
-- [x] Installation
-- [x] Updates
-- [x] `settings.db` im Repository
-- [x] einmalige Initialisierung auf einem neuen System
-- [x] Marker für bereits initialisierte Systeme
-- [x] nach der Erstinitialisierung keine automatische Datenbank-Synchronisierung im normalen Bootstrap
-- [x] `just ghub-backup` für eine bewusste Sicherung ins Repository
-- [x] `just ghub-restore` für eine bewusste Wiederherstellung
-- [x] G HUB für Initialisierung, Backup oder Restore kontrolliert beenden
-- [x] G HUB danach wieder starten
-- [x] Git erkennt bewusst gesicherte Änderungen für spätere manuelle Commits
-- [x] G HUB bei normalen `just update`-Läufen geöffnet lassen
-
-## Feste Entscheidung
-
-`settings.db` wird **nicht** per Hardlink oder Symbolic Link mit dem Repository verbunden.
-
-Grund:
-
-- G HUB verändert die SQLite-Datenbank laufend, auch ohne bewusste Konfigurationsänderung.
-- Ein Dateihash ist deshalb kein sinnvoller Desired-State-Indikator.
-- Die Datenbank wird als bewusster Snapshot behandelt.
-- Der Bootstrap stellt sie auf einem neuen System einmalig wieder her; spätere Sicherungen erfolgen nur explizit.
-
-### Akzeptanzkriterien
-
-- Auf einem bereits initialisierten System darf `just update` G HUB nicht schließen.
-- `just ghub-backup` und `just ghub-restore` dürfen G HUB kontrolliert schließen und anschließend wieder starten.
+- [x] Installation und Updates.
+- [x] `settings.db` wird als bewusster Snapshot im Repository verwaltet.
+- [x] Keine Hardlink-/Symlink-Verknüpfung der laufend veränderten SQLite-Datenbank.
+- [x] Erstinitialisierung auf neuem System über lokalen Marker.
+- [x] Normale Bootstrap-Läufe synchronisieren die Datenbank nicht automatisch.
+- [x] `just ghub-backup` und `just ghub-restore`.
+- [x] G HUB wird nur für Initialisierung, Backup oder Restore kontrolliert beendet und danach wieder gestartet.
 
 ---
 
-# 18. Phase 15 – Native Windows Desktop
+# 14. Launcher und Suche
 
-## Aktueller produktiver Zustand
+## Raycast
 
-- [x] Seelen UI vollständig verworfen
-- [x] FluentFlyout vollständig verworfen
-- [x] Windhawk vollständig verworfen
-- [x] Windows 11 übernimmt Desktop, Taskleiste und native System-OSDs
-- [x] PowerToys FancyZones bleibt als optionale, klar abgegrenzte Window-Management-Erweiterung
-- [x] Windows Snap bleibt aktiviert
-- [x] Fullscreen-/Borderless-Verhalten nach der Bereinigung praktisch bestätigt
-- [x] Alt+Tab und Fokuswechsel mit Spielen praktisch bestätigt
-- [x] normalen Desktop-/Fensterworkflow nach der Bereinigung praktisch bestätigt
-
-## Feste Entscheidung
-
-Keine zusätzliche Desktop-Shell oder rein optisch motivierte Windows-Hook-Schicht wird erneut eingeführt, solange kein konkreter funktionaler Bedarf und ein praktisch belegter Stabilitätsgewinn bestehen.
-
----
-# 19. Phase 16 – ehemaliges masir / Focus Follows Mouse
-
-- [x] masir war implementiert und praktisch getestet
-- [x] masir im Zuge des Seelen-Architekturwechsels bewusst entfernt
-- [x] Focus-follows-mouse ist kein aktuelles Desktop-Ziel mehr
-
----
-
-# 20. Phase 17 – ehemalige Desktop-Bar-Experimente
-
-- [x] Zebar war implementiert und wurde später verworfen
-- [x] Seelen UI war anschließend produktiv und wurde wegen Stabilitätsproblemen ebenfalls verworfen
-- [x] aktuelle Desktop-/Taskleisten-Zuständigkeit liegt ausschließlich bei Windows 11
-- [x] kein separates Desktop-Bar-/Dock-System mehr
-
----
-# 21. Phase 18 – Windows File Explorer
-
-## Aktueller produktiver Zustand
-
-- [x] Files als produktiven Dateimanager verworfen und aus dem Setup entfernt
-- [x] Windows File Explorer wieder als alleinigen produktiven Dateimanager festgelegt
-- [x] keine Explorer-Ersatzsoftware als Voraussetzung des Setups
-- [x] `Win + E` bleibt beim nativen Windows Explorer
-
-## Feste Entscheidung
-
-Ein alternativer Dateimanager wird nur wieder aufgenommen, wenn ein klarer funktionaler Bedarf besteht und der Nutzen den zusätzlichen Integrations- und Stabilitätsaufwand rechtfertigt.
-
----
-# 22. Phase 19 – Native Windows OSD / Shell-Personalisierung
-
-## Aktueller produktiver Zustand
-
-- [x] FluentFlyout verworfen
-- [x] Windhawk verworfen
-- [x] Lock-Key-, Volume-, Media- und sonstige Systemanzeigen werden nicht mehr durch zusätzliche Overlay-/Hook-Software ersetzt
-- [x] keine systemweiten Resource-Redirects mehr
-- [x] Windows-Shell-Personalisierung beschränkt sich auf stabile, dokumentierte Windows-Einstellungen
-- [x] `config/windows.psd1` bleibt Desired State für Taskleisten-/Start-/Windows-Einstellungen
-- [x] Windows übernimmt die native Desktop-, Taskleisten- und OSD-Zuständigkeit
-
----
-
-# 23. Phase 20 – System-OSD
-
-- [x] eigenes Volume-/Mute-OSD verworfen
-- [x] Seelen-OSD verworfen
-- [x] FluentFlyout verworfen
-- [x] Windows übernimmt Volume-, Media- und System-OSD nativ
-- [x] kein zusätzlicher OSD-Prozess oder Scheduled Task
-
----
-# 24. Phase 21 – Launcher / Suche
-
-## Entscheidung
-
-Raycast ersetzt die PowerToys Command Palette als primären Launcher.
-
-Gründe:
-
-- Raycast bietet den gewünschten keyboard-first Workflow näher am Linux-/Fuzzel-Zielbild.
-- `Win + Space` kann direkt als globaler Raycast-Hotkey verwendet werden.
-- Extensions, Themes und relevante Launcher-Einstellungen lassen sich über Raycasts eigenes Export-/Importformat reproduzierbar sichern und wiederherstellen.
-- Die PowerToys Command Palette bleibt deaktiviert und wird nicht erneut als primärer Launcher verfolgt.
-- PowerToys selbst bleibt für die weiterhin genutzten Module wie Advanced Paste, File Locksmith, Find My Mouse und PowerRename installiert.
-- Everything bleibt als eigenständiger Dienst/Index installiert und wird über die Raycast-Extension `everything-search` verwendet.
-- Der frühere Everything-Provider speziell für die PowerToys Command Palette (`lin-ycv.EverythingCmdPal`) wird nicht mehr verwaltet.
-
-## Raycast Installation
-
-- [x] Raycast über den bestehenden generischen `msstore`-Paketworkflow installieren
-- [x] Microsoft-Store-ID `9PFXXSHC64H3` verwenden
-- [x] Paketupdates über `Update = $true` verwalten
-- [x] `winget show --id 9PFXXSHC64H3 --exact --source msstore` praktisch verifiziert
-- [x] Installation über `just update` praktisch erfolgreich getestet
-- [x] wiederholter `just update` prüft Raycast regulär auf Updates
-
-## Launcher-Hotkey und PowerToys-Abgrenzung
-
-- [x] Raycast als primären Launcher verwenden
-- [x] globalen Raycast-Hotkey auf `Win + Space` setzen
-- [x] PowerToys Command Palette deaktivieren (`CmdPal = $false`)
-- [x] PowerToys Run deaktiviert lassen
-- [x] `Alt + Space` nicht mehr als Launcher-Hotkey verwenden
-- [x] PowerToys Command Palette nach Deaktivierung praktisch nicht mehr aktiv
-- [x] PowerToys weiterhin für Advanced Paste, File Locksmith, Find My Mouse und PowerRename verwenden
-
-## Raycast Desired State
-
-Versionierter, generischer Desired State:
-
-```text
-dotfiles/raycast/config.json
-```
-
-Lokale Transportkonfiguration:
-
-```text
-config/raycast.psd1
-```
-
-- [x] `config/raycast.psd1` enthält ein frei änderbares `ExportPassword`
-- [x] `config/raycast.psd1` enthält den frei wählbaren Raycast-Backup-Pfad als `BackupPath`
-- [x] `BackupPath` wird explizit aus der Konfiguration gelesen; der Workflow verlässt sich nicht auf `SpecialFolder::MyDocuments`
-- [x] Umgebungsvariablen wie `%USERPROFILE%` im Backup-Pfad werden unterstützt
-- [x] `ExportPassword` ist bewusst ein generisches lokales Transportpasswort und kein Repository-Secret
-- [x] der versionierte Desired State enthält ausschließlich eine Allowlist reproduzierbarer, nicht sensibler Einstellungen
-- [x] General-Settings nur gezielt übernehmen, darunter `globalHotkey`, Theme, Fensterverhalten, `navigationBindings` und `pageNavigationKeys`
-- [x] vollständige benutzerdefinierte Themes übernehmen
-- [x] Store-Extensions dynamisch anhand ihrer UUID übernehmen
-- [x] Extension-Versionen nicht pinnen bzw. nicht im Desired State versionieren
-- [x] Node-Extension-Settings nur als `id` + `enabled` übernehmen
-- [x] Command-Settings nur für die tatsächlich versionierten Store-Extensions übernehmen
-- [x] interne Raycast-Commands wie Clipboard History nicht in den Desired State übernehmen
-- [x] AI-Daten, Clipboard History, Notes, MCP-Server, Quicklinks, Snippets, User Activity und andere persönliche Laufzeitdaten nicht versionieren
-- [x] bekannte Credential-/Secret-Felder zusätzlich durch den Sanitizer hart ablehnen
-
-## Raycast Export-/Importformat
-
-Die aktuelle Raycast-Windows-Implementierung wurde für den benötigten Konfigurationsworkflow praktisch analysiert und verifiziert.
-
-- [x] äußeres `.rayconfig` ist GZip-komprimiertes JSON
-- [x] Schema-Version 2 verwenden
-- [x] Nutzdaten vor der Verschlüsselung mit GZip komprimieren
-- [x] Schlüssel mit `scrypt(password, salt, 32)` ableiten
-- [x] AES-256-GCM verwenden
-- [x] zufällige 16-Byte-Werte für Salt und IV verwenden
-- [x] `salt`, `iv`, `authTag` und `data` als Hex speichern
-- [x] lokales Importarchiv reproduzierbar aus `dotfiles/raycast/config.json` erzeugen
-- [x] aktuelle lokale `.rayconfig` reproduzierbar entschlüsseln und sanitizen
-- [x] Node.js aus dem System verwenden; Raycasts gebündeltes Node dient als Fallback
-
-## Erstinitialisierung und lokales Archivmodell
-
-Feste Annahme dieses Projekts: Das vollständige Raycast-`.rayconfig`-Archiv liegt lokal. Eine spätere externe Synchronisierung oder Weitergabe dieses Archivs liegt außerhalb des Verantwortungsbereichs dieses Setups.
-
-- [x] Benutzer bei der Erstinitialisierung darauf hinweisen, dass vollständige Raycast-Backups persönliche und sensible Daten enthalten können
-- [x] Benutzer muss das lokale Archivmodell ausdrücklich bestätigen
-- [x] lokalen Initialisierungsmarker unter `.generated/state/default-apps/raycast.initialized` verwenden
-- [x] Marker erst nach erfolgreich bestätigter Initialisierung erzeugen
-- [x] vorhandenes lokales Backup bei bereits eingerichteter Raycast-Installation übernehmen und sanitizen
-- [x] auf einem frischen System ohne lokales Backup einmalig ein lokales `.generated/raycast/raycast-import.rayconfig` erzeugen
-- [x] Benutzer beim initialen Raycast-Import sowie bei der Einrichtung von Daily Backup, Backup Location und Auto-Delete führen
-- [x] `.rayconfig` niemals ins Repository übernehmen
-- [x] nach erfolgreicher Initialisierung bei normalen `just update`-Läufen kein neues Restore-Archiv erzeugen
-- [x] nach erfolgreicher Initialisierung ausschließlich das neueste lokale Backup sanitizen und den Desired State bei relevanter Änderung aktualisieren
-
-## Theme
-
-- [x] Catppuccin Mocha als benutzerdefiniertes Raycast-Theme verwenden
-- [x] vollständigen Theme-Datensatz im Desired State versionieren
-- [x] Dark Appearance mit dem Catppuccin-Mocha-Theme verwenden
-- [x] Theme über Raycasts nativen Import-/Exportweg wiederherstellen
-
-## Extensions
-
-Aktuell im Desired State enthalten:
-
-- [x] Everything Search
-- [x] Visual Studio Code
-- [x] ChatGPT
-- [x] Google Search
-- [x] Shell
-- [x] Zen Browser
-- [x] Lucide Icons Search
-
-Die Extension-Liste ist absichtlich dynamisch. Weitere installierte Store-Extensions, beispielsweise eine spätere GitHub-Extension, werden bei einem späteren erfolgreichen Export automatisch in den generischen Desired State übernommen.
+- [x] Raycast über Microsoft Store `9PFXXSHC64H3`.
+- [x] Primärer Launcher mit `Win + Space`; PowerToys Command Palette und PowerToys Run bleiben deaktiviert.
+- [x] Everything bleibt Suchbackend über die Raycast-Extension.
+- [x] Versionierter, sanitizter Desired State liegt unter `dotfiles/raycast/config.json`.
+- [x] `config/raycast.psd1` enthält Transportpasswort und frei wählbaren lokalen Backup-Pfad.
+- [x] Vollständige `.rayconfig`-Backups bleiben lokal und werden niemals committed.
+- [x] Initialisierung verwendet `.generated/state/default-apps/raycast.initialized`.
+- [x] Nach Initialisierung wird nur das neueste lokale Backup sanitizt; bei unverändertem Zustand keine erneute Benutzerinteraktion oder Restore-Datei.
+- [x] Catppuccin Mocha und Store-Extensions werden über Raycasts nativen Export-/Importweg reproduzierbar verwaltet.
 
 ## Everything
 
-- [x] Everything installieren
-- [x] Everything-Index / Service auf dem aktuellen System funktionsfähig
-- [x] Everything über die Raycast-Extension `everything-search` integrieren
-- [x] CmdPal-spezifischen Everything-Provider aus der Paketverwaltung entfernen
-- [x] schnelle Datei-/Ordnersuche über Raycast + Everything verwenden
-
-## Praktisch bestätigt
-
-- [x] `just check` nach der Raycast-Integration erfolgreich; keine neuen PSScriptAnalyzer-Probleme
-- [x] vollständiger `just update` mit Raycast-Initialisierung erfolgreich
-- [x] lokaler Marker `.generated/state/default-apps/raycast.initialized` erfolgreich erzeugt
-- [x] vollständiges lokales Backup erfolgreich entschlüsselt und als generischer Desired State sanitiziert
-- [x] keine `.rayconfig` und keine Secrets im Repository-Status
-- [x] wiederholter `just update` erfolgreich
-- [x] wiederholter Lauf erkennt `[OK] Raycast wurde bereits initialisiert.`
-- [x] wiederholter Lauf erkennt `[OK] Raycast Desired State unverändert.`
-- [x] bei unverändertem Zustand keine erneute Benutzerinteraktion und kein neues Restore-Archiv
-
-### Akzeptanzkriterien
-
-- `Win + Space` öffnet Raycast als primären Launcher.
-- PowerToys Command Palette bleibt deaktiviert.
-- Everything-Suche ist über Raycast verfügbar.
-- Catppuccin Mocha und die versionierten Raycast-Einstellungen lassen sich auf einem neuen System aus dem Desired State wiederherstellen.
-- vollständige persönliche Raycast-Backups bleiben lokal und werden nicht committed.
-- wiederholte `just update`-Läufe bleiben ohne unnötige Benutzerinteraktion und ohne erneutes Restore-Artefakt idempotent.
-
----
-# 25. Phase 22 – Home Office
-
-Diese Phase ist als eigener Bereich umgesetzt und wird nicht mit allgemeinen Tools oder Development vermischt.
-
-## Ziel
-
-Alle für Firmenzugriff/Home Office benötigten Programme werden reproduzierbar installiert. Die eigentlichen RDP-, VPN-, FTP-/SFTP- und sonstigen Zieldefinitionen liegen nicht im öffentlichen Repository, sondern werden zentral über die Datenbank von Remote Desktop Manager bereitgestellt.
-
-## Paketgruppe
-
-- [x] eigene Paketgruppe `HomeOffice`
-- [x] Home-Office-Paketgruppe im Bootstrap separat aufrufen
-- [x] wiederholte Installation über `just update` erfolgreich getestet
-
-## Remote Desktop Manager
-
-- [x] Remote Desktop Manager installieren
-- [x] Winget-Paket `Devolutions.RemoteDesktopManager`
-- [x] Update-Verhalten über den generischen Paketworkflow getestet
-- [x] RDM als zentrale Quelle für RDP-, VPN-, FTP-/SFTP- und weitere Verbindungsziele verwenden
-- [x] keine Verbindungsziele oder Credentials im öffentlichen Repository speichern
-- [x] vorhandene RDM-Datenbank wird außerhalb dieses Setups verbunden
-
-## FileZilla
-
-- [x] FileZilla Client installieren
-- [x] Winget als Quelle verworfen, da das Paket in der aktuellen Winget-Quelle nicht verfügbar ist
-- [x] FileZilla über Chocolatey installieren
-- [x] Installation über `just update` praktisch getestet
-- [x] wiederholter Lauf führt nur die Chocolatey-Update-Prüfung aus
-- [x] FTP-Nutzung über Remote Desktop Manager getestet
-- [x] FileZilla kann von RDM in einen Tab eingebettet werden, ohne einen verwaisten Tiling-Slot zurückzulassen
-
-## PCVisit Supporter Modul
-
-- [x] PCVisit **Supporter Modul** als Pflichtbestandteil festgelegt
-- [x] normales PCVisit-Kundenmodul ausdrücklich nicht verwenden
-- [x] vorhandene Installation erkennen
-- [x] offizielles Supporter-Setup nur installieren, wenn das Modul fehlt
-- [x] PCVisit-eigene automatische Update-Funktion verwenden
-- [x] keine zusätzliche Versions-/Update-Logik im Bootstrap
-- [x] Installation/Erkennung im Bootstrap praktisch getestet
-
-## OpenVPN und Verbindungsdaten
-
-- [x] OpenVPN ist bereits als benötigter Client installiert und versionsgepinnt
-- [x] keine eigene VPN-Profilverwaltung im Repository erforderlich
-- [x] keine Trennung von Firmen-/Privatprofilen durch dieses Setup erforderlich
-- [x] keine eigene Zertifikatsverwaltung durch dieses Setup erforderlich
-- [x] keine RDM-/FileZilla-Verbindungsdaten im Repository erforderlich
-- [x] Secrets bleiben vollständig außerhalb des öffentlichen Repositories
-
-Begründung:
-
-Remote Desktop Manager verwendet eine externe Datenbank als zentrale Quelle der Verbindungsdefinitionen. Sobald RDM mit dieser Datenbank verbunden ist und die benötigten Clients wie OpenVPN und FileZilla installiert sind, stehen die gepflegten VPN-, FTP-/SFTP- und RDP-Ziele zur Verfügung.
-
-## Weitere Firmen-/Homeoffice-Tools
-
-- [x] Remote Desktop Manager
-- [x] FileZilla
-- [x] PCVisit Supporter Modul
-- [ ] Agfeo Dashboard / Softphone nur ergänzen, falls es für dieses Windows-Setup tatsächlich benötigt wird
-- [ ] sonstige interne Tools nur ergänzen, wenn ein konkreter Bedarf entsteht
-
-## Akzeptanzkriterien
-
-- [x] Remote Desktop Manager ist nach einem Bootstrap-Lauf verfügbar
-- [x] FileZilla ist nach einem Bootstrap-Lauf verfügbar
-- [x] PCVisit Supporter Modul ist vorhanden bzw. wird bei Bedarf installiert
-- [x] OpenVPN ist verfügbar
-- [x] RDM kann FileZilla für FTP-Verbindungen starten und in einen Tab einbetten
-- [x] wiederholter `just update` verursacht keine unerwartete Neuinstallation
-- [x] sensible Verbindungsdaten bleiben außerhalb des Repositories
-
-## E-Mail / Konten-Automatisierung
-
-Ziel ist eine reproduzierbare Mail-Einrichtung, ohne Klartext-Zugangsdaten im Repository abzulegen.
-
-### Secrets
-
-- [ ] verschlüsseltes Secrets-Konzept für Mail-Zugangsdaten entwerfen, vergleichbar mit dem Prinzip von `sops-nix` + `age`
-- [ ] ausschließlich verschlüsselte Daten dürfen versioniert werden; private Entschlüsselungsschlüssel bleiben außerhalb des Repositories
-- [ ] Bootstrap darf Secrets nur für den unmittelbar benötigten Konfigurationsschritt entschlüsseln und keine Klartext-Credentials dauerhaft in `.generated/`, Logs oder Git-Artefakten hinterlassen
-- [ ] OAuth-Tokens und anwendungsspezifische Tokens nur über offiziell unterstützte Client-/Provider-Mechanismen verwalten
-- [ ] Secrets-Architektur vor Implementierung anhand aktueller Windows-/Client-Schnittstellen verifizieren
-
-### Mail-Client: eM Client
-
-Die Mail-Client-Auswahl wurde am 2026-08-18 nach praktischen Tests mit Thunderbird, Outlook Classic, Canary Mail und eM Client abgeschlossen. **eM Client ist der produktive Mail-Client.**
-
-#### Verbindliche Entscheidung
-
-- [x] eM Client über Winget-Paket `eMClient.eMClient` installieren und aktualisieren
-- [x] Exchange/EWS mit dem vorhandenen On-Premises-Exchange praktisch erfolgreich getestet
-- [x] klassische IMAP-/SMTP-Konten praktisch erfolgreich getestet
-- [x] vollständige Account-/Client-Konfiguration über den offiziellen eM-Client-Settings-Export sichern
-- [x] Account-Passwörter werden ausschließlich über den von eM Client selbst erzeugten verschlüsselten Export wiederhergestellt; keine eigene Credential-Erzeugung und kein Reverse Engineering interner eM-Client-Datenbanken oder Assemblies
-- [x] vollständigen Settings-Export zusätzlich mit SOPS verschlüsseln und als `secrets/emclient-settings.sops.xml` versionieren
-- [x] Export-/Import-Passwort verschlüsselt unter `emclient.import_password` in `secrets/mail.sops.json` verwalten
-- [x] Import derselben Konfiguration über SHA-256-State unter `.generated/state/emclient/settings.sha256` idempotent überspringen
-- [x] kompletter Bootstrap mit eM-Client-Backup-/Restore-Integration auf dem aktuellen System fehlerfrei getestet
-
-#### Manueller Backup-Workflow
-
-Für Änderungen an Accounts oder relevanten eM-Client-Einstellungen existiert bewusst ein manueller Snapshot-Einstieg, während Verschlüsselung und Versionierung wieder automatisiert erfolgen:
-
-1. In eM Client einen vollständigen Settings-Export inklusive gespeicherter Account-Passwörter erstellen.
-2. Den Export mit dem definierten eM-Client-Exportpasswort schützen.
-3. Die Datei exakt als `%USERPROFILE%\windows-setup\.generated\emclient\settings.xml` speichern.
-4. Beim nächsten Bootstrap erkennt `Protect-EMClientSettings` diese Datei automatisch.
-5. SOPS verschlüsselt zuerst in eine temporäre Zieldatei.
-6. Nur nach erfolgreicher Verschlüsselung wird `secrets\emclient-settings.sops.xml` atomar ersetzt.
-7. Erst danach wird die Klartextdatei unter `.generated\emclient\settings.xml` gelöscht.
-8. Schlägt SOPS fehl, bleiben sowohl das bisherige verschlüsselte Backup als auch der neue Klartext-Export erhalten.
-
-Damit ist `.generated\emclient\settings.xml` ausschließlich ein lokaler Übergabepunkt für einen bewusst erzeugten neuen Snapshot und niemals ein versioniertes Secret-Artefakt.
-
-#### Restore-Workflow
-
-- [x] `Restore-EMClientSettings` entschlüsselt den SOPS-Export ausschließlich temporär nach `%TEMP%\emclient-settings.xml`
-- [x] das Import-Passwort wird aus SOPS gelesen, aber nicht auf stdout/stderr geschrieben
-- [x] das Passwort wird ausschließlich temporär in die Windows-Zwischenablage gelegt
-- [x] der eM-Client-Settings-Import wird automatisch gestartet
-- [x] Benutzer fügt das Passwort einmal per `Strg+V` in den eM-Client-Passwortdialog ein
-- [x] nach Benutzerbestätigung wird die Zwischenablage geleert
-- [x] Passwortvariablen werden verworfen und die temporäre Klartext-XML wird gelöscht
-- [x] Restore mit zwei entfernten und anschließend vollständig wiederhergestellten Accounts praktisch bestätigt; beide Accounts funktionierten danach ohne erneute Account-Passworteingabe
-
-#### Dokumentierte verworfene Ansätze
-
-**Thunderbird 153 ESR**
-
-- Ein umfangreicher Provisionierungsprototyp für IMAP, Gmail OAuth und Exchange/EWS wurde umgesetzt und getestet.
-- Die dafür entstandene Marionette-/Account-Provisionierungslogik war deutlich komplexer als der gewünschte stabile Restore-Workflow.
-- Thunderbird ist deshalb nicht mehr Bestandteil des Zielbilds; `Thunderbird.ps1`, `Provisioning.ps1` und `Provisioning.State.ps1` werden vollständig entfernt.
-
-**Outlook Classic**
-
-- Outlook Classic wurde über das Office Deployment Tool gezielt als einzig benötigte Microsoft-365-Anwendung installiert.
-- Die automatisierte Account-Provisionierung über Outlooks interne `IOlkAccountManager`-/COM-Schnittstellen und den klassischen Account-Wizard wurde praktisch untersucht.
-- Die relevanten APIs erwiesen sich für den gewünschten stabilen, wartbaren Setup-Pfad als ungeeignet bzw. undokumentiert; UI-Automation des Wizards war ebenfalls nicht zuverlässig.
-- Dieser Ansatz wird nicht erneut verfolgt. `Outlook.ps1`, `config/outlook.psd1` und die Office-Deployment-Tool-Abhängigkeit werden entfernt.
-
-**Canary Mail**
-
-- Canary wurde als möglicher EWS-Client praktisch getestet.
-- Die eingebettete Java-Runtime enthielt zunächst nicht die für den Exchange-Endpunkt benötigte aktuelle Certum-Zertifikatskette; ein separater Java-TLS-Test mit ergänztem Truststore bestätigte anschließend funktionierendes TLS.
-- Danach antwortete Exchange korrekt mit `401` und `WWW-Authenticate: NTLM`; Canary schloss die für diesen Server benötigte Anmeldung dennoch nicht erfolgreich ab.
-- Canary ist deshalb verworfen und erhält keine Setup-/Restore-Integration.
-
-**eM-Client-Credential-Reverse-Engineering**
-
-- Die lokale `accounts.dat` wurde ausschließlich diagnostisch als SQLite-Datenbank betrachtet; eM Client speichert Credentials intern als verschlüsselte Secrets.
-- Ein Nachbau dieser Verschlüsselung wurde bewusst abgebrochen.
-- Verbindliche Regel: keine internen Credential-Formate, privaten APIs oder Assemblies von eM Client reverse-engineeren. Wiederherstellung erfolgt ausschließlich über den offiziellen Settings-Export/-Import.
-
-#### Besonderheit des eM-Client-CLI-Imports
-
-Die dokumentierte Passwortübergabe per `-p PASS` wurde mit eM Client 10.4.5663 praktisch getestet, verhinderte den Passwortdialog jedoch nicht. Deshalb wird das Passwort bewusst nicht als CLI-Argument weitergereicht. Der sichere Fallback ist die einmalige Zwischenablage-Übergabe an den Benutzer. So erscheint das Secret weder im Warp-Terminal-Log noch in der Prozesskommandozeile.
-
-#### Akzeptanzkriterien
-
-- [x] eM Client reproduzierbar über Winget installiert
-- [x] Exchange/EWS praktisch funktionsfähig
-- [x] IMAP/SMTP praktisch funktionsfähig
-- [x] vollständiger Settings-Export inklusive gespeicherter Account-Credentials erfolgreich wiederhergestellt
-- [x] SOPS-Verschlüsselung eines neuen `.generated\emclient\settings.xml`-Snapshots erfolgreich getestet
-- [x] Klartext-Snapshot wird erst nach erfolgreicher Verschlüsselung entfernt
-- [x] verschlüsseltes Backup wird nur nach erfolgreicher Neuerzeugung ersetzt
-- [x] Restore-Passwort erscheint nicht im Bootstrap-/Warp-Log
-- [x] Zwischenablage wird nach dem manuellen Einfügen geleert
-- [x] temporäre entschlüsselte XML wird nach Restore gelöscht
-- [x] wiederholter Bootstrap überspringt unveränderten Import per State-Hash
-- [x] vollständiger Bootstrap nach Integration fehlerfrei ausgeführt
-# 26. Phase 23 – Gaming
-
-## Ziel
-
-Das System soll nach Neuinstallation auch als Gaming-PC möglichst schnell einsatzbereit sein.
-
-## Bereits vorhanden / praktisch bestätigt
-
-- [x] separates `G:`-Games-Laufwerk
-- [x] Gaming-Funktionen im Debloat nicht aggressiv entfernen
-- [x] NVIDIA-Treiber-/App-Workflow
-- [x] eigene Paketgruppe `Gaming`
-- [x] Steam installiert und angemeldet
-- [x] Epic Games Launcher installiert und angemeldet
-- [x] GOG GALAXY installiert und angemeldet
-- [x] EA app installiert und angemeldet
-- [x] Battle.net installiert und angemeldet
-- [x] Ubisoft Connect installiert und angemeldet
-- [x] Battle.net über den generischen Winget-`InstallLocation`-Pfad erfolgreich installiert
-
-## Launcher-Installationspfade / Erstinitialisierung
-
-Der Bootstrap erzwingt Launcher-Installationspfade nicht über undokumentierte interne Konfigurationsdateien. Stattdessen wird die bereits etablierte Strategie für einmalige Benutzerinteraktionen verwendet.
-
-- [x] relevante Gaming-Launcher dynamisch aus `config/packages/` → `Gaming` ableiten
-- [x] Launcher über `GameLibrary` deklarativ einem Eintrag aus `config/storage.psd1` → `GameLibraries` zuordnen
-- [x] interaktive Launcher-Initialisierung erst starten, nachdem Games Drive und sämtliche konfigurierten Game-Library-Verzeichnisse vorhanden und verifiziert sind
-- [x] nur tatsächlich installierte Gaming-Pakete initialisieren
-- [x] Benutzer pro Launcher auffordern, den Launcher einmalig zu öffnen und den angezeigten Standard-Installationspfad zu setzen
-- [x] Bootstrap pro Launcher bis zur ausdrücklichen Bestätigung des gesetzten Pfads warten lassen
-- [x] pro Launcher eigenen Marker unter `.generated/state/gaming-launchers/` verwenden
-- [x] Marker erst nach ausdrücklicher Benutzerbestätigung erzeugen
-- [x] bereits initialisierte Launcher bei späteren `just update`-Läufen ohne Benutzerinteraktion überspringen
-- [x] fehlende Launcher nicht markieren, damit eine spätere Installation weiterhin initialisiert wird
-- [x] keine undokumentierten internen Launcher-Datenbanken oder privaten Konfigurationsformate manipulieren
-- [x] `just check`, erster interaktiver `just update` und wiederholter störungsfreier `just update` praktisch getestet
-
-Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launcher, GOG GALAXY, EA app, Battle.net und Ubisoft Connect. Nach der Benutzerbestätigung wird für jeden Launcher ein eigener lokaler Marker angelegt. Ein zweiter `just update` erkennt die Marker und fragt die Installationspfade nicht erneut ab.
-## Offen
-
-- [x] Steam Library auf `G:\Games\Steam` praktisch einrichten
-- [x] Launcher-spezifische Spielebibliotheken unter `G:\Games\` praktisch einrichten
-- [x] Default-Spielpfade in Steam, Epic, GOG, EA, Battle.net und Ubisoft Connect über offiziell unterstützte Launcher-Einstellungen soweit möglich auf `G:` setzen
-- [x] keine undokumentierten internen Launcher-Datenbanken oder privaten Konfigurationsformate manipulieren
-- [x] Xbox-/Gaming-Komponenten nur behalten, wenn benötigt
-- [x] Game Mode prüfen/konfigurieren
-- [x] Hardware Accelerated GPU Scheduling prüfen
-- [x] VRR/G-Sync-relevante Windows-Einstellungen prüfen
-- [x] HDR-Gaming-Workflow dokumentieren
-  - Samsung Odyssey G93SD: HDR und Auto HDR praktisch als aktiviert bestätigt
-  - Windows HDR Calibration wurde auf dem aktuellen Monitor bereits durchgeführt
-  - HDR bleibt bewusst benutzer-/displayabhängig; keine zusätzliche undokumentierte Registry-Automatisierung
-  - vorhandener Bootstrap-Hinweis auf `Einstellungen > System > Anzeige > HDR` bleibt der reproduzierbare Initialisierungs-/Prüfpfad
-- [x] keine unnötigen "Gaming Tweaks", die Stabilität verschlechtern
-  - Gaming-Optimierung bleibt auf dokumentierte Windows-Funktionen beschränkt
-  - keine pauschalen Service-Deaktivierungen, Scheduler-/Timer-Tweaks oder undokumentierten Registry-Optimierungen
-  - Stabilität, Fullscreen-/Borderless-Verhalten, Alt+Tab und Fokuswechsel haben Vorrang vor theoretischen Benchmark-Gewinnen
-- [x] PowerToys Find My Mouse bei installierten Spielen automatisch deaktivieren
-  - Doppel-STRG bleibt als gewünschte Aktivierungsmethode erhalten
-  - native PowerToys-Option `do_not_activate_on_game_mode` bleibt aktiviert, wurde mit Horizon Zero Dawn Remastered jedoch praktisch als nicht ausreichend bestätigt
-  - keine manuell gepflegte Spieleliste und kein dauerhafter Hintergrundprozess
-  - installierte Spiele werden launcherunabhängig über die deklarativen Game-Libraries unter `G:\Games\` ermittelt
-  - Steam, Epic, GOG, EA, Battle.net und Ubisoft Connect praktisch mit installierten Spielen getestet
-  - gefundene `.exe`-Namen werden dedupliziert in `FindMyMouse` → `excluded_apps` übernommen
-  - Horizon Zero Dawn Remastered praktisch bestätigt: Doppel-STRG aktiviert Find My Mouse im Spiel nicht mehr
-  - wiederholter Bootstrap bei unverändertem Desired State verursacht keinen unnötigen PowerToys-Neustart
-  - eigener `AtLogOn`-Scheduled-Task aktualisiert die Spiele-Exclusions nach der Anmeldung
-  - Login-Refresh schreibt ausschließlich bei Drift direkt die Find-My-Mouse-`settings.json`; PowerToys wird dafür nicht neu gestartet, da die Exclusion-Liste dynamisch eingelesen wird
-  - Scheduled-Task-Refresh praktisch mit unveränderter PowerToys-PID erfolgreich getestet
-
----
-# 27. Phase 24 – Apple / iCloud Integration
-
-- [x] iCloud installieren
-- [x] Apple Passwords als benötigte Funktion berücksichtigen
-- [x] Windows Hello nicht durch Debloat beschädigen
-- [x] Apple-Passwords-Voraussetzungen prüfen
-- [x] iCloud-Konfiguration nur automatisieren, soweit Apple dies stabil unterstützt
-  - Installation bleibt automatisiert; persönliche iCloud-/Apple-Account-Einrichtung bleibt bewusst manuell
-  - keine undokumentierten internen iCloud-Konfigurationsdateien oder privaten Provisioning-Schnittstellen verwenden
-  - Apple Passwords / iCloud-Schlüsselbund werden über Apples offiziell vorgesehenen interaktiven Freigabe- und 2FA-Workflow aktiviert
-- [x] keine Apple-Credentials automatisieren oder speichern
-  - keine Apple-Account-Passwörter, 2FA-Codes, OAuth-/Session-Tokens oder privaten Apple-Credentials im Repository oder unter `.generated/` persistieren
+- [x] Installation und Integration als Suchbackend.
 
 ---
 
-# 28. Phase 25 – Wartung und Scheduled Tasks
+# 15. Gaming
 
-## Wöchentliche Wartung
+- [x] Eigene Gaming-Paketgruppe.
+- [x] Steam, Epic Games Launcher, GOG GALAXY, EA app, Battle.net und Ubisoft Connect installiert und praktisch initialisiert.
+- [x] Launcher werden deklarativ einer `GameLibrary` unter `G:\Games\` zugeordnet.
+- [x] Standard-Spielpfade werden über offiziell unterstützte Launcher-Einstellungen gesetzt; keine Manipulation interner Launcher-Datenbanken.
+- [x] Einmalige Launcher-Initialisierung verwendet Marker unter `.generated/state/gaming-launchers/`.
+- [x] Game Mode, Hardware Accelerated GPU Scheduling, VRR/G-Sync-relevante Windows-Einstellungen und HDR-Workflow geprüft.
+- [x] Keine undokumentierten „Gaming Tweaks“ oder aggressive Service-/Scheduler-/Timer-Optimierungen.
+- [x] PowerToys Find My Mouse verwendet automatisch aus den Game-Libraries ermittelte `.exe`-Namen als `excluded_apps`.
+- [x] Ein `AtLogOn`-Scheduled-Task aktualisiert die Spiele-Exclusions nur bei Drift und ohne PowerToys-Neustart.
+- [x] Horizon Zero Dawn Remastered sowie weitere Launcher/Game-Library-Pfade praktisch bestätigt.
+- [x] Desktop-Stabilität mit Fullscreen/Borderless und Alt+Tab praktisch geprüft.
 
-- [x] Scheduled Task
-- [x] Sonntag 12:00 Uhr
-- [x] kompletter `bootstrap.ps1`
-- [x] interaktiver Benutzerkontext
-- [x] erhöhte Rechte
-- [x] `-NoProfile -ExecutionPolicy Bypass`
-- [x] Repository aktualisieren, wenn Working Tree sauber
-- [x] Pakete prüfen
-- [x] Windows Updates
-- [x] Treiber
-- [x] G HUB auf neuen Systemen einmalig initialisieren
-- [x] bereits initialisiertes G HUB bei normalen Wartungsläufen unangetastet lassen
-- [x] Konfiguration erneut anwenden
-- [x] bereits initialisierte Standard-App-Konfigurationen über `.generated/state/default-apps/` erkennen und überspringen
-- [x] Zen-Mods vor möglichem Browser-Neustart lokal prüfen
-- [x] initialisiertes Raycast ohne erneuten Restore behandeln und aktuellen lokalen Export in den generischen Desired State sanitizen
-- [x] Volume-/Media-OSD bleibt beim nativen Windows-OSD; kein eigener OSD-Prozess oder Scheduled Task
-- [x] Scheduled Tasks vor dem Schreiben gegen ihren tatsächlichen Desired State vergleichen
-- [x] PSScriptAnalyzer nur bei geändertem PowerShell-Code über den gemeinsamen strikten Preflight ausführen
-- [x] parameterloser/stiller Bootstrap für die automatische Wartung; Konsolenausgabe wird für den Hintergrundtask nicht benötigt
-- [x] Rebootstatus
-- [x] Git-Status
-- [x] ungepushte Commits
-- [x] kein automatischer Reboot
+---
 
-## Robustheit externer GitHub-/Content-Abhängigkeiten
+# 16. Apple / iCloud
 
-- [x] temporäre GitHub-Ausfälle dürfen nichtkritische Bootstrap-Schritte nicht abbrechen
-  - vorhandene lokale Installationen, Repositories und Konfigurationen bei externen Ausfällen weiterverwenden, wenn ihr lokaler Zustand gültig ist
-  - Neovim-Remote-Update bei vorhandenem lokalen Submodule mit Warnung überspringen
-  - noch nicht initialisierte optionale GitHub-Abhängigkeiten bei Ausfall überspringen statt den Bootstrap abzubrechen
-  - eigener Repository-`fetch` bleibt nichtfatal; initialer Clone von `windows-setup` bleibt zwingend
-  - keine projektweite pauschale Retry-/Backoff-Schicht einführen; Retry-Verhalten nur dort einsetzen, wo ein konkreter technischer Nutzen besteht
-  - lokale/strukturelle Fehler bleiben echte Fehler
-  - verbleibende externe Abhängigkeiten gezielt praktisch testen, bevor der Gesamtpunkt als `[x]` markiert wird
-  - praktischer Gesamttest mit blockiertem `github.com` und `api.github.com` bei weiterhin vorhandener Internetverbindung erfolgreich
-  - Scoop, Neovim und weitere nichtkritische GitHub-Schritte wurden übersprungen bzw. mit lokalem Stand fortgesetzt; Bootstrap lief vollständig durch
-- [x] vorhandenes Wallpaper-Repository bei temporärem Git-/GitHub-Ausfall ohne Bootstrap-Abbruch weiterverwenden
-  - Remote-Abfrage bei einem normalen Wartungslauf nur einmal versuchen
-  - keine festen 2-/4-Sekunden-Retry-Wartezeiten mehr
-  - bei fehlgeschlagener Remote-Abfrage sofort mit dem vorhandenen gültigen lokalen Stand fortfahren
-  - strukturelle lokale Fehler wie ungültiges Repository, fehlender Wallpaper-Unterordner oder fehlende Bilddateien bleiben echte Fehler
-  - Verhalten mit real fehlgeschlagener Remote-Abfrage und anschließend erfolgreichem Bootstrap praktisch bestätigt
-- [ ] Wallpaper-Verhalten auf einer Neuinstallation ohne vorhandenen lokalen Stand bei fehlgeschlagenem Clone praktisch testen
-  - fehlgeschlagenen Clone als nichtkritischen Schritt mit Warnung überspringen
-  - keinen unvollständigen Zielordner als gültigen lokalen Stand behandeln
+- [x] iCloud installiert und aktualisierbar.
+- [x] Windows-Hello-Voraussetzungen für Apple Passwords geprüft.
+- [x] Windows-Hello-Status wird im Bootstrap diagnostisch ausgegeben.
+
+Weitere Apple-/iCloud-Automatisierung nur über offiziell unterstützte Schnittstellen und ohne Secrets im Repository.
+
+---
+
+# 17. Wartung und Scheduled Tasks
+
+## Weekly Maintenance
+
+- [x] Wöchentlicher Wartungstask verwendet denselben parameterlosen Bootstrap.
+- [x] Scheduled Tasks werden nur bei Drift von Action, Trigger, Principal oder Settings neu registriert.
+- [x] Benutzeridentitäten werden für Vergleiche auf stabile SIDs normalisiert.
+- [x] Kein automatischer Neustart.
+- [x] Externe GitHub-/Content-Ausfälle sind soweit möglich nichtfatal.
+- [ ] Wallpaper-Verhalten auf einer Neuinstallation ohne lokalen Stand bei fehlgeschlagenem Clone praktisch testen.
 
 ## Benachrichtigungen
 
-- [x] BurntToast
-- [x] relevante Reboot-Meldung
-- [x] Repository mit lokalen Änderungen melden
-- [x] ungepushte Commits melden
-- [x] keine Meldung für reine NSIS-Temp-Cleanup-Renames
-- [ ] optional Wartungszusammenfassung auch bei erfolgreichem Lauf
-- [ ] optional Fehlerzusammenfassung, wenn einzelne nichtkritische Schritte fehlschlagen
+- [x] BurntToast verfügbar.
+- [x] Offline-Zustand wird sichtbar gemeldet.
+- [x] Maschinenlesbarer Abschlussstatus vorhanden.
+- [x] Fataler Bootstrap-Fehler wird mit Timestamp unter `.generated/logs/bootstrap-last-error.log` gespeichert.
+- [ ] Zentrale persistente Logging-Strategie für komplette Bootstrap-Läufe.
+- [ ] Warnungen und Fehler vollständig mit Timestamp persistieren.
+- [ ] Log-Dateien mit Datum/Uhrzeit und Ergebnisstatus.
+- [ ] Log-Retention/Bereinigung.
+- [ ] Paket- und Windows-Update-Zusammenfassungen in diese Logging-Strategie integrieren.
+- [ ] Optional erfolgreiche Wartungszusammenfassung.
+- [ ] Optional nichtfatale Fehlerzusammenfassung.
+- [ ] `-Verbose` nur ergänzen, wenn für reale Diagnosefälle erforderlich.
+- [ ] Zusammenfassung der Änderungen eines Laufs nur ergänzen, wenn der Nutzen den Tracking-Aufwand rechtfertigt.
 
 ---
 
-# 29. Phase 26 – Stabilitätsbereinigung
-
-## Architekturentscheidung 2026-08-19
-
-Nach wiederkehrenden Problemen mit Fullscreen, Fokus, Alt+Tab und tiefen UI-Anpassungen wird das macOS-/Liquid-Glass-Gesamtziel beendet.
-
-Entfernt:
-
-- [x] Seelen UI
-- [x] FluentFlyout
-- [x] Windhawk
-- [x] Files
-- [x] Nushell
-- [x] Warp
-- [x] Vivaldi Custom HTML/CSS/JS
-
-Beibehalten:
-
-- [x] native Windows-11-Shell und Windows File Explorer
-- [x] Windows Terminal + PowerShell 7 + Starship
-- [x] PowerToys/FancyZones, weil funktionaler Nutzen unabhängig vom Design besteht
-- [x] Raycast + Everything
-- [x] Vivaldi als Hauptbrowser im nativen UI
-- [x] Zen als Firefox-basierter WebDev-Testbrowser
-
-### Akzeptanzkriterien
-
-- [x] vollständiger `just update-log` nach der Bereinigung erfolgreich
-- [x] `just check` erfolgreich
-- [x] zweiter `just update-log` ohne Drift-/Altbestandfehler erfolgreich
-- [x] Vivaldi-Fullscreen-Video stabil
-- [x] Alt+Tab aus Spiel und Rückkehr ins Spiel stabil
-- [x] normale Fenster bleiben fokussierbar, verschiebbar und vollständig erreichbar
-- [x] Windows Explorer ist wieder Standard für `Win + E`
-- [x] entfernte Software ist auf dem System nicht mehr installiert
-
----
-# 30. Phase 27 – Dokumentation
+# 18. Dokumentation
 
 ## README
 
-Das README soll den **aktuellen produktiven Stand** erklären.
-
-- [x] Installationsweg
-- [x] Bootstrap-Grundidee
-- [x] Execution-Policy-Verhalten
-- [x] Just-Workflow
-- [x] `just update`
-- [x] `just update-warning`
-- [x] `just update-log`
-- [x] `just update-performance`
-- [x] `just check`
-- [x] `just ghub-backup`
-- [x] `just ghub-restore`
-- [x] störungsarme Zen-Mod-Prüfung dokumentiert
-- [x] G-HUB-Initialisierung/Backup/Restore dokumentiert
-- [x] Desktop-Zielbild
-- [x] Windows File Explorer als produktiver Dateimanager dokumentiert
-- [x] NanaZip
-- [x] Raycast als primärer Launcher inklusive Desired-State-/Backup-/Restore-Workflow
-- [x] generischer Standard-App-Initialisierungsworkflow
-- [x] lokale State-Marker unter `.generated/state/default-apps/`
-- [x] Hardlinks/Junctions
-- [x] Windows-Terminal-Desired-State, Initialisierung und Symlink-Fallback dokumentiert
-- [x] Catppuccin
-- [x] Wartung
-- [ ] macOSicons-/Third-Party-Icon-Attribution inklusive tatsächlich verwendeter Icon-Ersteller dokumentieren
-- [ ] nach jeder größeren abgeschlossenen Phase aktualisieren
+- [x] Installation.
+- [x] `just`-Workflow.
+- [x] Paket-/Standard-App-/G-HUB-Workflows soweit benutzerrelevant.
+- [x] Aktueller produktiver Desktop.
+- [ ] Third-Party-Icon-Attribution inklusive tatsächlich verwendeter Ersteller dokumentieren.
+- [ ] Nach größeren Änderungen am Benutzerworkflow aktualisieren.
 
 ## Roadmap
 
-Die Roadmap ist ausführlicher als das README und enthält auch offene Ziele.
+- [x] Source of Truth für Architekturentscheidungen, offenen Stand und Akzeptanzkriterien.
+- [x] Historische Detailprotokolle und doppelte abgeschlossene Checklisten zugunsten des aktuellen Zustands verdichtet.
+- [ ] Bei größeren Architekturentscheidungen aktualisieren.
 
-- [x] aktuelle Architekturentscheidungen
-- [x] erledigte Punkte
-- [x] offene Punkte
-- [x] verworfene Ansätze
-- [x] Home Office
-- [x] Gaming
-- [x] NanaZip
-- [x] Just-Workflow
-- [x] Execution-Policy-Architektur
-- [x] Desktop-Neustart-Architektur
-- [x] Zen-Mod-Precheck
-- [x] G-HUB-Snapshot-Strategie
-- [x] Standard-App-Initialisierungsstrategie
-- [x] NanaZip-Default-App-Workflow
-- [x] Raycast ersetzt PowerToys Command Palette als primären Launcher; Desired-State-/Initialisierungsstrategie dokumentiert
-- [x] Markdown-Ausgaberegel für vollständig kopierbare Dateien
-- [x] klare nächste Prioritäten
-- [ ] bei jeder größeren Designentscheidung aktualisieren
+## Weitere Dokumentation
+
+- [ ] Separate technische Projektdokumentation erstellen; README bleibt kompakte Benutzerübersicht.
 
 ---
 
-## Noch offen
+# 19. Bewusst verworfene Ansätze
 
-- [ ] separate technische Projektdokumentation erstellen; README bleibt bewusst eine kompakte Benutzerübersicht
+Diese Punkte nicht erneut vorschlagen, solange kein neuer konkreter technischer Grund vorliegt:
 
-# 31. Bewusst verworfene oder nicht weiter zu verfolgende Ansätze
-
-Eine KI soll diese Punkte **nicht erneut vorschlagen**, außer es gibt einen neuen technischen Grund.
-
-## Stabilitätsbereinigung 2026-08-19
-
-- [x] Seelen UI verworfen: Fokus-/Fullscreen-/Fensterprobleme und zusätzliche Shell-Komplexität
-- [x] FluentFlyout verworfen: kein ausreichender funktionaler Nutzen für eine zusätzliche OSD-Schicht
-- [x] Windhawk verworfen: systemweite Hook-/Resource-Redirect-Schicht für rein optische Änderungen nicht mehr gewünscht
-- [x] Files verworfen: Windows Explorer reicht als stabiler nativer Dateimanager
-- [x] Nushell verworfen: wird im tatsächlichen Workflow nicht genutzt
-- [x] Warp verworfen: kein ausreichender Vorteil gegenüber Windows Terminal
-- [x] Vivaldi-Custom-HTML/CSS/JS verworfen: Browser-Stabilität und Fullscreen-Verhalten haben Vorrang vor Safari-/Liquid-Glass-Styling
-- [x] macOS-/Liquid-Glass-Gesamtziel verworfen: Windows soll funktional, stabil und wartbar sein statt ein anderes Betriebssystem optisch nachzubauen
-
-- [x] Windows File Explorer vollständig mit Windhawk File Explorer Styler themen
-  - Ergebnis war nicht ausreichend
-  - OneCommander wurde als bessere Lösung gewählt
-- [x] Symbolic Links für verwaltete Dotfile-Dateien
-  - OneCommander zeigte dafür teilweise keine Dateityp-Icons
-  - Hardlinks sind der definierte Standard
-- [x] generierte OneCommander-Icons ins Repository committen
-  - Generator + `.generated/` ist die gewünschte Architektur
-- [x] separate Setup- und Maintenance-Skripte
-  - ein Bootstrap ist bewusst gewünscht
-- [x] Setup-Logik in das `Justfile` verschieben
-  - `Justfile` ist ausschließlich Bedienoberfläche
-  - PowerShell bleibt die Implementierungsebene
-- [x] globale Execution Policy für Benutzer oder System dauerhaft lockern
-  - prozesslokales `ExecutionPolicy Bypass` ist der definierte Weg
-- [x] aggressive pauschale Windows-Service-/Debloat-Tweaks
-  - Stabilität und benötigte Funktionen haben Vorrang
-- [x] automatische Git-Commits/Pushes
-  - Änderungen sollen nur gemeldet werden
-- [x] automatischer Neustart nach Updates
-  - Neustart wird nur gemeldet
-- [x] G-HUB-`settings.db` bei jedem Bootstrap per Hash automatisch synchronisieren
-  - G HUB verändert die SQLite-Datenbank laufend
-  - Hash-Unterschiede bilden keinen sinnvollen Konfigurations-Drift ab
-  - Initialisierung + bewusstes Backup/Restore ist der definierte Weg
-- [x] G-HUB-`settings.db` per Hardlink oder Symbolic Link direkt mit dem Repository verbinden
-  - laufende SQLite-Datenbanken werden als Snapshot behandelt
-  - sichere, bewusste Backup-/Restore-Aktionen haben Vorrang
-- [x] geschützte Windows-`UserChoice`-Einträge direkt per Registry überschreiben
-  - Windows schützt benutzerspezifische Standard-App-Zuordnungen mit zusätzlichen Integritätsmechanismen
-  - keine inoffizielle Hash-Manipulation in diesem Projekt
-  - Benutzerinteraktion über die offizielle Windows-Standard-App-Oberfläche ist der definierte Weg
-- [x] Default-App-XML/GPO als allgemeine Lösung für bestehende lokale Benutzerprofile verwenden
-  - der getestete Workflow hat die bestehende Benutzerzuordnung nicht zuverlässig übernommen
-  - der Bootstrap verwendet stattdessen die interaktive Standard-App-Initialisierung
-- [x] NanaZip-AppX-ProgID fest im Repository hinterlegen
-  - AppX-ProgIDs werden dynamisch aus der tatsächlich installierten Paketregistrierung ermittelt
-- [x] PowerToys Command Palette als primären Launcher weiterverwenden
-  - Raycast wurde als neuer primärer Launcher gewählt
-  - `Win + Space` ist der definierte Raycast-Hotkey
-  - Command Palette und PowerToys Run bleiben deaktiviert
-  - PowerToys bleibt nur für weiterhin benötigte Module installiert
-- [x] vollständige persönliche Raycast-`.rayconfig` ins Repository committen
-  - vollständige Exporte können persönliche und sensible Daten enthalten
-  - im Repository liegt ausschließlich der sanitizte generische Desired State
-  - `.rayconfig` bleibt ein lokales Transport-/Backup-Artefakt
-- [x] eigene Catppuccin-CSS-Overrides für iCloud, Exchange OWA und Intrexx 11 weiterverfolgen
-  - die drei Weboberflächen wurden praktisch mit hostbezogenen `userContent.css`-Regeln getestet
-  - das Ergebnis war unvollständig bzw. nicht zuverlässig genug für einen wartbaren produktiven Desired State
-  - die Styles wurden deshalb wieder entfernt
-  - ein erneuter Versuch erfolgt nur bei einem neuen stabilen technischen Ansatz
-- [x] Windhawk als Lock-Key-OSD erneut einführen
-  - FluentFlyout liefert das gewünschte Verhalten stabiler und mit nativer Animation
-  - eigener FluentFlyout-Fork erlaubt den erforderlichen Bottom-Offset oberhalb des Seelen-Docks
-  - Windhawk und der eigene Windhawk-Mod wurden vollständig aus dem produktiven Setup entfernt
+- Seelen UI als produktive Desktop-Shell.
+- FluentFlyout oder eigenes Volume-/Media-/System-OSD.
+- Windhawk als allgemeine Desktop-/Shell-Anpassungsschicht.
+- Files als produktiver Dateimanager.
+- Nushell oder Warp als produktive Shell-/Terminalbasis.
+- Vivaldi-Custom-HTML/CSS/JS.
+- Repositoryverwaltetes Zen-Custom-CSS / Catppuccin-Webseiten-Styling.
+- Systemweite Resource-Redirects für rein optische Icons.
+- Hardlinks für VS Code oder Windows Terminal `settings.json`.
+- Automatische Manipulation geschützter Windows-`UserChoice`-Dateizuordnungen.
+- Automatische eM-Client-Kontenerzeugung durch Datenbankmanipulation.
+- Automatische G-HUB-Datenbanksynchronisierung bei jedem Bootstrap.
+- Persistente Windows-Update-/Treiber-/Winget-Inventarcaches zwischen Bootstrap-Läufen.
+- Automatisches BIOS-/Firmware-Flashing.
+- Direkter ASUS-`file.idx`-Installationspfad parallel zu Armoury Crate.
+- Teilweiser Dry-Run / WhatIf ohne vollständige `ShouldProcess`-Architektur.
+- Dauerhafte Lockerung der PowerShell Execution Policy.
+- Automatische Bootstrap-Self-Elevation.
+- Automatische Git-Commits/Pushes oder Windows-Neustarts.
 
 ---
 
+# 20. Aktuelle offene Arbeit
 
-## Desktop-Architekturwechsel 2026-08-16
+Priorisierung erfolgt nach Nutzen, Stabilität und Abhängigkeiten. Ereignisabhängige Tests werden erst durchgeführt, wenn der benötigte reale Zustand eintritt.
 
-- [x] komorebi / whkd / masir als produktiven Desktop-Stack verworfen
-- [x] Zebar als produktive Desktop Bar verworfen
-- [x] eigenes Volume-/Mute-OSD verworfen
-- [x] alte Windhawk Taskbar-/Start-/Notification-Styler verworfen
-- [x] Seelen UI als zentrale Desktop-Shell gewählt
-- [x] FancyZones als optionales Window Management gewählt
-- [x] Windhawk auf Lock Keys Notifier reduziert
-- [x] Legacy-Code nach erfolgreichem `just check` und `just update-log` entfernt
-- [x] neues Hauptziel: maximale macOS-26-Nähe ohne Beschädigung der Windows-Integrität
+## Priorität 1 – Logging / Wartungsdiagnose
+
+- [ ] Zentrale persistente Logging-Strategie definieren.
+- [ ] Warnungen/Fehler mit Timestamp und Laufstatus persistieren.
+- [ ] Log-Retention implementieren.
+- [ ] Paket- und Windows-Update-Zusammenfassungen integrieren.
+- [ ] Paketfehler am Laufende gesammelt ausgeben.
+
+## Priorität 2 – Entwicklerworkflow
+
+- [ ] VS-Code-Next.js-/TypeScript-Workflow vervollständigen.
+- [ ] VS-Code-Go-Workflow vervollständigen.
+- [ ] Extension-Liste bereinigen.
+- [ ] npm-/pnpm-/Yarn-Updatepfad bei real verfügbarer neuer Version bestätigen.
+- [ ] Neovim-Remote-Update mit lokalen Änderungen bei realem neuen Remote-Commit bestätigen.
+
+## Priorität 3 – System / Hardware
+
+- [ ] Kompakte Hardware-Zusammenfassung.
+- [ ] Lock-Screen optisch angleichen.
+- [ ] NanaZip-Kontextmenü praktisch prüfen.
+- [ ] Wallpaper-Clone-Ausfall auf Neuinstallation praktisch testen.
+- [ ] ASUS-/Firmware-Ereignisfälle bei realem Auftreten testen.
+- [ ] Monitor-/Peripherie-Firmware nur bei belastbarem Weg automatisieren.
+- [ ] Brightness nur bei einem neuen, praktisch funktionierenden Hardware-/Softwarepfad erneut prüfen; WMI/DDC/VCP waren auf dem aktuellen System nicht brauchbar.
+
+## Bei konkretem Bedarf
+
+- [ ] Weitere Datenschutz-/Telemetry-Einstellungen.
+- [ ] Weitere CLI-Tools / Shell-UX.
+- [ ] Codex-Zusatzkonfiguration.
+- [ ] Agfeo / weitere interne Home-Office-Tools.
+- [ ] Catppuccin für NanaZip nur bei stabiler Unterstützung.
+- [ ] Keybindings/Profile für Terminal/VS Code.
+- [ ] Separate technische Projektdokumentation.
+- [ ] Third-Party-Icon-Attribution vervollständigen.
+
 ---
 
-# 32. Prioritäten / empfohlene nächste Schritte
-
-## Aktuelle Hauptpriorität – Qualität / Robustheit
-
-1. [x] Desktop-Bereinigung praktisch testen
-2. [x] Fullscreen-/Alt+Tab-/Fokus-Probleme nach Entfernung der zusätzlichen UI-Schichten erneut testen
-3. [x] Windows-Snap-/FancyZones-Konfiguration abschließen und praktisch bestätigen
-4. [x] Bootstrap-Performance-Regression lokalisieren, beheben und dokumentieren
-5. [x] lokale Testbasis mit Pester für kritische Helper aufbauen
-   - Pester über den bestehenden PowerShell-Modulworkflow (`Install-PowerShellModules`) verwalten
-   - `tests/` als zentrale lokale Teststruktur verwenden
-   - `just test` als einheitlichen lokalen Test-Einstieg verwenden
-   - initiale Smoke-Tests laden die zentralen Helper und prüfen die Verfügbarkeit kritischer Helper-Funktionen
-   - `just check`, vollständiger `sudo just update-log` und `just test` praktisch erfolgreich
-   - initialer Teststand: 3 Tests, 3 bestanden, 0 fehlgeschlagen
-6. [x] Tests für Paket-Versionserkennung ergänzen
-   - `Get-WingetInstalledVersion` isoliert mit gemocktem `winget` testen
-   - exakte Paket-ID korrekt erkennen
-   - ähnlich benannte Paket-IDs nicht verwechseln
-   - ANSI-Terminalsequenzen vor der Auswertung korrekt entfernen
-   - fehlgeschlagenes `winget list` liefert `$null`
-   - nicht vorhandene Paket-ID liefert `$null`
-   - `just test` praktisch erfolgreich: 8 Tests, 8 bestanden, 0 fehlgeschlagen
-7. [x] Tests für Hardlink-/Junction-Migration ergänzen
-   - Hardlink-Erstellung und Zielerkennung testen
-   - normale Dateien ohne `-ReplaceExistingFile` nicht überschreiben
-   - explizite Migration normaler Dateien auf Hardlinks testen
-   - Hardlink-Idempotenz beim zweiten Lauf testen
-   - Junction-Erstellung und Zielerkennung testen
-   - Junctions mit falschem Ziel auf den gewünschten Zielzustand migrieren
-   - echte Verzeichnisse nicht durch Junctions überschreiben
-   - Junction-Idempotenz beim zweiten Lauf testen
-   - tatsächliche NTFS-/PowerShell-Linkzustände auf dem aktuellen System praktisch verifiziert
-   - `just test` praktisch erfolgreich: 15 Tests, 15 bestanden, 0 fehlgeschlagen
-8. [x] Tests für Reboot-Erkennung ergänzen
-   - Zustand ohne Reboot-Indikatoren testen
-   - CBS `RebootPending` erkennen
-   - Windows Update `RebootRequired` erkennen
-   - relevante `PendingFileRenameOperations` erkennen
-   - reine NSIS-/Installer-Temp-Cleanup-Renames weiterhin ignorieren
-   - gemischte Pending-Rename-Listen korrekt auf relevante Einträge reduzieren
-   - `Test-PendingReboot` als booleschen Wrapper testen
-   - Reboot-Tests vollständig isoliert mit Pester-Mocks gegen Registryzugriffe ausführen
-   - `just test` praktisch erfolgreich: 22 Tests, 22 bestanden, 0 fehlgeschlagen
-9. [x] Logging / maschinenlesbare Abschluss- und Paket-Zusammenfassung weiter ausbauen
-   - erfolgreichen Bootstrap-Lauf zusätzlich als `.generated/logs/bootstrap-last-summary.json` schreiben
-   - versioniertes JSON-Schema über `SchemaVersion = 1` kennzeichnen
-   - Status und ISO-8601-Zeitstempel erfassen
-   - verwaltete Pakete nach Gesamtzahl, Source und Paketgruppe zusammenfassen
-   - Pending-Reboot-, Windows-Update- und Treiber-Rebootstatus erfassen
-   - Repository-Änderungen, geänderte Dateien und ungepushte Commits erfassen
-   - Report ausschließlich unter `.generated/` erzeugen und nicht versionieren
-   - Report-Erzeugung mit Pester auf Paketaggregation und parsebares JSON testen
-   - `just check`, `just test` und vollständiger `sudo just update-log` praktisch erfolgreich
-   - erzeugten Realreport praktisch geprüft: 47 verwaltete Pakete, konsistente Gruppen-/Source-Summen, kein Reboot erforderlich
-10. [x] GitHub Actions erst nach belastbarer lokaler Testbasis ergänzen
-    - CI läuft auf `windows-latest`
-    - bestehende PowerShell-Codechecks werden ohne Fingerprint-Schreibzugriff ausgeführt
-    - Pester-Tests laufen reproduzierbar mit der lokal verwendeten Pester-Version 3.4.0
-    - kein Bootstrap-/System-Setup in CI
-    - Workflow läuft bei Push und Pull Request auf `master`
-    - lokaler `just check` und `just test` vor Aktivierung erfolgreich
-    - realer GitHub-Actions-Push-Lauf auf `master` praktisch erfolgreich bestätigt
-## Kürzlich abgeschlossen – Home Office / Paketmanager
-
-- [x] `HomeOffice`-Paketgruppe angelegt
-- [x] Remote Desktop Manager über Winget integriert und getestet
-- [x] FileZilla über Chocolatey integriert und getestet
-- [x] PCVisit Supporter Modul integriert und getestet
-- [x] RDM-Datenbank als zentrale Quelle für Verbindungsziele festgelegt
-- [x] eigene VPN-/Zertifikats-/Secrets-Verwaltung als nicht erforderlich bewertet
-- [x] Chocolatey als Paketbackend integriert
-- [x] Scoop als Paketbackend integriert
-- [x] Chocolatey- und Scoop-Self-Update integriert
-- [x] Paketmanager-Cleanup integriert
-- [x] RDM-/FileZilla-Embedding praktisch getestet; frühere komorebi-Sonderregel ist mit dem Legacy-Stack entfallen
-- [x] frühere Sticky-Notes-Tiling-Sonderregel ist mit dem komorebi-Stack entfallen
-
-Noch offen aus dem Paketmanager-Umbau:
-
-- [x] Scoop-Bucket-Autobereitstellung mit `versions` + `neovim-nightly` praktisch getestet
-- [x] Retry-Mechanismus für temporäre Download-/Paketmanagerfehler
-- [x] maschinenlesbare Paket-/Update-Zusammenfassung
-
-## Desktop-Stabilität
-
-- [x] zusätzliche Desktop-Shell entfernt
-- [x] zusätzliche OSD-/Hook-/Resource-Redirect-Schichten entfernt
-- [x] Windows File Explorer wieder als produktiven Dateimanager festgelegt
-- [x] Vivaldi-Custom-UI verworfen
-- [x] vollständigen nativen Desktop-Workflow praktisch getestet
-- [x] Fullscreen-/Borderless-Verhalten praktisch getestet
-- [x] Alt+Tab und Fokuswechsel mit mindestens einem Spiel praktisch getestet
-- [x] Vivaldi-Fullscreen-Video praktisch getestet
-- [x] PowerToys `Find My Mouse` bei echten Vollbildanwendungen weiter prüfen, falls nach der Bereinigung noch Probleme bestehen
-## Kürzlich abgeschlossen – CLI Tools / Shell UX
-
-- [x] `ripgrep` (`rg`) installiert
-- [x] `eza` installiert und `ls`-/`ll`-/`la`-/`lt`-Workflow umgesetzt
-- [x] `fd`, `bat`, `fzf`, `jq` und `zoxide` installiert
-- [x] Neovim Nightly über Scoop `versions` integriert
-- [x] Scoop-Zusatz-Bucket `versions` praktisch getestet
-- [x] Fish-artige PowerShell-Abbreviations über PSReadLine umgesetzt
-- [x] `zoxide` in PowerShell integriert
-- [x] Git-Root-basierte Projektcommands umgesetzt
-- [x] Projektcommands beim Verlassen des Repositories wieder entfernt
-- [x] Installation und Wiederholung über `just update` getestet
-- [x] `just check` nach dem Umbau ohne relevante Probleme
-
-## Kürzlich abgeschlossen – Raycast Launcher
-
-1. [x] Raycast über Microsoft Store integrieren
-2. [x] PowerToys Command Palette als primären Launcher ablösen und deaktivieren
-3. [x] `Win + Space` als Raycast-Hotkey verwenden
-4. [x] Catppuccin-Mocha-Theme als Raycast Desired State übernehmen
-5. [x] Everything über die Raycast-Extension integrieren
-6. [x] generischen sanitizten Desired State unter `dotfiles/raycast/config.json` einführen
-7. [x] lokales `.rayconfig`-Backup-/Restore-Format reproduzierbar verarbeiten
-8. [x] einmalige Initialisierung über `.generated/state/default-apps/raycast.initialized` idempotent machen
-9. [x] wiederholten `just update` ohne erneute Benutzerinteraktion und ohne Desired-State-Drift testen
-
-## Priorität 2 – Windows Shell
-
-1. [x] Windhawk Taskbar Styler
-2. [x] Windhawk Start Menu Styler
-3. [x] Windhawk Notification Center Styler
-4. [x] alle bisherigen Windhawk-Einstellungen per CLI reproduzierbar machen
-
-## Priorität 3 – eigenes OSD
-
-1. [x] technische Architektur für Volume/Mute festlegen
-2. [x] Volume/Mute produktiv umsetzen
-3. [x] Catppuccin-Pill und flackerfreies Burst-Verhalten
-4. [x] Bootstrap- und Scheduled-Task-Integration
-5. [x] Windows-OSD-Doppelanzeige vermeiden
-6. [x] echten `AtLogOn`-Start nach Ab-/Anmeldung oder Neustart praktisch bestätigt
-7. [ ] Brightness nur bei neuem, praktisch funktionierendem Hardware-/Softwarepfad erneut prüfen
-
-Lock Keys bleiben beim bereits getesteten Windhawk `Lock Keys Notifier`; ein eigenes Media-OSD ist nicht vorgesehen. Brightness ist auf dem aktuellen System nach WMI-/DDC-/VCP-Test vorerst zurückgestellt.
-
-## Priorität 4 – Gaming
-
-1. [x] Paketgruppe
-2. [x] Steam und weitere benötigte Launcher
-3. [x] Game-Library-Pfade auf `G:`
-4. [x] sinnvolle Windows-Gaming-Einstellungen
-## Priorität 5 – Qualität
-
-1. [x] Pester-Testbasis für kritische Helper
-2. [x] Paket-Versionserkennung testen
-3. [x] Hardlink-/Junction-Migration testen
-4. [x] Reboot-Erkennung testen
-5. [x] Logging und maschinenlesbaren Abschlussreport ausbauen
-6. [x] GitHub Actions auf Basis der lokalen Tests ergänzen
-7. [x] Package-Konfigurationsschema validieren
-   - Pflichtfelder `Id`, `Name`, `Source` und `Update` beim Laden prüfen
-   - nur unterstützte Paketquellen `winget`, `msstore`, `chocolatey` und `scoop` akzeptieren
-   - Scoop-Pakete ohne expliziten `Bucket` ablehnen
-   - `GameLibrary`-Referenzen gegen `config/storage.psd1` prüfen
-   - reale Package-Konfiguration per Pester laden und validieren
-   - `just check` und `just test` praktisch erfolgreich
-   - Teststand nach Erweiterung: 27 Tests, 27 bestanden, 0 fehlgeschlagen
-8. [x] Dry-Run / WhatIf nach den Kern-Tests bewertet
-   - aktuell bewusst nicht implementiert
-   - der Bootstrap orchestriert viele unterschiedliche mutierende Helper; ein belastbarer Dry-Run müsste Paketmanager, Updates, Treiber, Links, Registry, App-Konfiguration, Git und Initialisierungen vollständig abdecken
-   - ein nur teilweise unterstütztes `-WhatIf` würde einen irreführenden Sicherheitszustand erzeugen und wird daher nicht eingeführt
-   - die bestehende Prüfschicht aus `just check`, Pester-Tests und GitHub Actions ist für den aktuellen Projektstand die reproduzierbarere und wartbarere Absicherung
-   - erneute Bewertung nur bei einem konkreten Bedarf für eine vollständige, durchgängige `ShouldProcess`-/`WhatIf`-Architektur
-
-# 33. Regeln für eine KI, die diese Roadmap bearbeitet
+# 21. Regeln für KI-Arbeit
 
 ## Vor jeder Änderung
 
-1. Repository vollständig bzw. die betroffenen Module neu einlesen.
-2. Den **aktuellen Default-Branch und neuesten Commit** prüfen.
-3. Prüfen, ob der gewünschte Punkt bereits teilweise implementiert ist.
-4. Bestehende Helper und Architektur verwenden statt Parallel-Implementierungen zu erzeugen.
-5. Bestehende Designentscheidungen respektieren.
-6. Keine Secrets in das Repository schreiben.
-7. `Justfile` nur als Bedienoberfläche behandeln; Implementierung gehört in PowerShell.
+1. Aktuellen Default-Branch und neuesten Commit prüfen.
+2. Vollständige aktuelle `roadmap.md` lesen.
+3. Betroffene Dateien im aktuellen Repository-Stand lesen.
+4. Prüfen, ob der Punkt bereits teilweise implementiert ist.
+5. Bestehende Helper, Architektur und Workflows wiederverwenden.
+6. Externe APIs, Programme und Formate bei Bedarf anhand aktueller Quellen verifizieren.
+7. Keine Secrets in das Repository schreiben.
+8. Widerspricht eine Benutzeranweisung einer bestehenden Entscheidung, vor der Umsetzung darauf hinweisen.
 
-## Bereitstellung von Repository-Änderungen
+## Änderungen bereitstellen
 
-Wenn eine KI Änderungen an bestehenden Repository-Dateien für den Benutzer vorbereitet:
+1. Niemals direkt in das Benutzer-Repository schreiben, committen, pushen oder einen PR erstellen.
+2. Änderungen an bestehenden Dateien als herunterladbaren `.ps1`-Patch bereitstellen.
+3. Patch aus dem Repository-Root ausführbar machen.
+4. Erwarteten Ausgangszustand prüfen und bei Abweichung verständlich abbrechen.
+5. Patch möglichst idempotent/defensiv gestalten.
+6. Keine globale oder benutzerspezifische Execution Policy verändern.
+7. Standardausführung:
 
-1. Änderungen sollen bevorzugt als **ausführbares PowerShell-Patch-Skript (`.ps1`)** bereitgestellt werden, statt den Benutzer mehrere bestehende Dateien manuell bearbeiten zu lassen.
-2. Das Patch-Skript soll vom Root des `windows-setup`-Repositories aus ausführbar sein.
-3. Das Patch-Skript muss den erwarteten Ausgangszustand prüfen und bei einem unerwarteten Zustand verständlich abbrechen, statt Dateien blind zu verändern.
-4. Patches sollen soweit sinnvoll **idempotent** sein und bei wiederholter Ausführung keine doppelten Einträge oder unerwarteten Änderungen erzeugen.
-5. Betroffene PowerShell-/PSD1-Dateien sollen nach der Änderung technisch validiert werden, sofern dies ohne zusätzliche Benutzerinteraktion möglich ist.
-6. Das Patch-Skript ist grundsätzlich ein Transportmittel für die Änderung und muss nicht selbst in das Repository übernommen werden.
-7. Nach erfolgreichem Patch gelten weiterhin die normalen Projektregeln: gezielt testen, `just check` ausführen, Git-Status prüfen und Roadmap/README bei Bedarf nachziehen.
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File "<Pfad-zum-Patch.ps1>"
+```
 
-## Während der Implementierung
+## Implementierung
 
-1. Änderungen idempotent gestalten.
-2. Bestehende Installationen erkennen.
-3. manuelle Eingriffe nur dort verlangen, wo sie technisch oder rechtlich erforderlich sind.
-4. neue generierte Inhalte unter `.generated/` ablegen.
-5. Dateien standardmäßig per Hardlink und Verzeichnisse per Junction integrieren; Symbolic Links nur als expliziten, dokumentierten Kompatibilitäts-Fallback verwenden, wenn eine Anwendung Hardlinks nachweislich nicht zuverlässig unterstützt.
-6. Fehler verständlich ausgeben.
-7. bestehende Konfiguration nicht ohne Backup überschreiben, wenn sie nicht bereits verwaltet wird.
-8. PowerShell-Code mit PSScriptAnalyzer kompatibel halten.
-9. wiederkehrende manuelle Aktionen bei echtem Nutzen als `just`-Recipe bereitstellen.
-10. keine eigentliche Setup-Logik in Recipes duplizieren.
-11. laufende Anwendungen vor einem Stop/Restart nach Möglichkeit auf tatsächlichen Konfigurations-Drift prüfen.
-12. unveränderte Anwendungen bei wiederholten Bootstrap-Läufen möglichst unangetastet lassen.
-13. geschützte Windows-Standard-App-Zuordnungen nicht durch inoffizielle `UserChoice`-/Hash-Manipulation erzwingen.
-14. erforderliche Standard-App-Benutzerinteraktionen über den generischen Settings-Workflow ausführen.
-15. einmalige interaktive Schritte erst nach erfolgreichem Abschluss mit einem Marker unter `.generated/state/` als erledigt markieren.
-16. bei einem Fallback ohne direkte App-ID die allgemeine Standard-App-Seite öffnen, den Benutzer zur manuellen Suche auffordern und auf das Schließen von Settings warten.
+1. Änderungen klein und gezielt halten.
+2. Bestehende funktionierende Logik nicht ohne technischen Grund ändern.
+3. Desired State und bestehende Installationen erkennen.
+4. Laufende Anwendungen nur bei tatsächlichem Drift stoppen/neustarten.
+5. Generierte Inhalte unter `.generated/`.
+6. Dateien standardmäßig Hardlink, Verzeichnisse Junction; Symlink nur dokumentierter Kompatibilitätsfallback.
+7. Bestehende unmanaged Konfiguration nicht ohne Backup überschreiben.
+8. PowerShell-Code muss PSScriptAnalyzer-kompatibel bleiben.
+9. `Justfile` enthält keine Setup-Logik.
+10. Geschützte Windows-Standard-App-Zuordnungen nur über den generischen interaktiven Settings-Workflow.
+11. Einmalige Interaktionen erst nach Erfolg per State-Marker abschließen.
 
-- [x] `bootstrap.ps1` vergleicht vor der Setup-Logik den Git-basierten PowerShell-Codezustand; nur bei geändertem Code läuft der strikte Preflight, der weiterhin bei Error, Warning oder Information abbricht
-- [x] funktionale Bootstrap-Tests werden mit vollständiger Ausgabe über `just update-log` durchgeführt
-- [x] Performance-Messungen werden ohne reguläre Bootstrap-Ausgabe über `just update-performance` durchgeführt
+## Test-Workflow
 
-## Nach einer Implementierung
+Nach einem Patch:
 
-1. Funktion gezielt testen.
-2. funktionale Bootstrap-Änderungen mit `just update-log` bzw. dem relevanten spezifischen Einstiegspunkt testen; Performance ausschließlich mit `just update-performance` messen.
-3. Sicherstellen, dass für den finalen PowerShell-Codezustand ein erfolgreicher strikter Analyzer-Lauf vorliegt: entweder bewusst über `just check` oder automatisch durch den Bootstrap bei geändertem Codezustand.
-4. Git-Status prüfen.
-5. Roadmap aktualisieren.
-6. README aktualisieren, falls sich der produktive Stand oder Benutzer-Workflow geändert hat.
-7. neue offene Folgearbeiten als eigene Checkboxen dokumentieren.
-
-## Ausgabe vollständiger Markdown-Dateien
-
-1. Wenn der Benutzer eine vollständige Markdown-Datei zur direkten Übernahme verlangt, muss die Ausgabe vollständig kopierbar bleiben.
-2. Enthält die Datei selbst dreifache Markdown-Codeblöcke, ist der gesamte Dateiinhalt in einen äußeren Codeblock mit **mindestens vier Backticks** einzuschließen.
-3. Innere Codeblöcke dürfen nicht durch die äußere Darstellung zerstört oder einzeln aus dem Gesamtinhalt herausgebrochen werden.
-4. Ist die Datei für eine zuverlässige vollständige Chat-Ausgabe zu groß, soll stattdessen eine vollständige Datei als Download erzeugt und angeboten werden.
-5. Bei einem Download muss die erzeugte Datei den vollständigen Inhalt enthalten; keine Abschnitte dürfen wegen Antwortlängenlimits ausgelassen werden.
+1. Patch lokal anwenden.
+2. `just check`.
+3. `just test`, sofern Tests betroffen oder sinnvoll sind.
+4. Funktionale Bootstrap-Änderungen mit `sudo just update-log` testen.
+5. Performance nur mit `sudo just update-performance` messen.
+6. Änderung praktisch testen.
+7. `git status` prüfen.
+8. Erst nach bestätigtem praktischem Test darf ein Punkt `[x]` werden.
+9. Roadmap und bei benutzerrelevanten Workflowänderungen README aktualisieren.
 
 ---
 
-# 34. Definition of Done
+# 22. Definition of Done
 
 Ein Roadmap-Punkt darf nur `[x]` werden, wenn:
 
-- die Funktion implementiert ist,
-- die Änderung die Systemstabilität nicht verschlechtert,
-- bei Desktop-/Fenster-/Grafiknähe Fullscreen, Alt+Tab und Fokus praktisch geprüft wurden,
-- sie auf dem aktuellen System getestet wurde,
-- ein erneuter Lauf keinen unerwarteten Fehler erzeugt,
-- die Umsetzung in den bestehenden Bootstrap integriert ist, sofern sie Teil des automatischen Setups sein soll,
-- Konfigurationsdateien reproduzierbar sind,
-- keine unnötigen manuellen Schritte bestehen,
-- technisch notwendige Benutzerinteraktionen klar geführt, abgewartet und idempotent über lokalen Zustand behandelt werden,
-- keine unnötigen Anwendungsneustarts oder Prozessabbrüche bei unverändertem Zustand bestehen,
-- keine Secrets im Repository gelandet sind,
-- für den finalen PowerShell-Codezustand ein erfolgreicher strikter PSScriptAnalyzer-Lauf vorliegt; dieser darf durch `just check` oder automatisch durch den fingerprint-gesteuerten Bootstrap-Preflight erfolgt sein,
-- Roadmap und bei Bedarf README aktualisiert wurden.
-
-Für neue manuelle Projektaktionen gilt zusätzlich:
-
-- vorhandene `just`-Recipes bevorzugen,
-- neue Recipes nur bei wiederkehrendem Nutzen ergänzen,
-- keine Setup-Logik im `Justfile` implementieren.
+- Implementierung vollständig ist,
+- bestehende Architektur eingehalten wurde,
+- Änderung auf dem aktuellen System praktisch getestet wurde,
+- Wiederholung keinen unerwarteten Fehler erzeugt,
+- erforderliche statische Tests erfolgreich sind,
+- Desktop-nahe Änderungen zusätzlich Fullscreen, Alt+Tab und Fokus berücksichtigen,
+- Konfiguration reproduzierbar ist,
+- keine unnötigen manuellen Schritte oder Anwendungsneustarts entstehen,
+- keine Secrets im Repository landen,
+- Roadmap und bei Bedarf README aktualisiert sind.
 
 ---
 
-# 35. Langfristiges Endergebnis
+# 23. Langfristiges Endergebnis
 
-Nach Abschluss der Roadmap soll ein frisch installiertes Windows 11 nach möglichst wenig manueller Interaktion automatisch zu folgendem Zustand gelangen:
+Ein frisch installiertes Windows 11 soll mit möglichst wenig manueller Interaktion zu einem stabilen, aktuellen und reproduzierbaren Arbeits-, Entwicklungs-, Home-Office- und Gaming-System werden.
 
-- aktuelle Windows-Updates
-- aktuelle benötigte Treiber
-- sauber debloatetes Windows
-- vollständig eingerichtete Entwicklerumgebung
-- Dev Drive + Games Drive
-- Git/VS Code/Windows Terminal/PowerShell/Starship
-- Just als einheitliche manuelle Repository-Bedienoberfläche
-- `just update` für Wartungs-/Setup-Läufe
-- `just check` für statische Prüfung
-- `just ghub-backup` / `just ghub-restore` für bewusste G-HUB-Snapshots
-- Browser
-- iCloud / Apple Passwords Voraussetzungen
+Der dauerhafte Kern bleibt:
+
+- zentraler idempotenter Bootstrap
+- `just` als Bedienoberfläche
+- deklarative Paket- und Windows-Konfiguration
 - native Windows-11-Shell + PowerToys FancyZones
-- Windows File Explorer als produktiver Dateimanager
-- Raycast + Everything als primärer Launcher-/Suchworkflow
-- natives Windows-OSD für Volume/Media
-- NanaZip
-- generischer, interaktiver Standard-App-Initialisierungsworkflow für geschützte Windows-Dateizuordnungen
-- lokale Initialisierungsmarker unter `.generated/state/`
-- Home-Office-Werkzeuge
-- Gaming-Werkzeuge
-- Logitech G HUB
+- Windows File Explorer
+- Raycast + Everything
+- Windows Terminal + PowerShell 7 + Starship
+- Git / VS Code / Neovim / moderne Development-Toolchains
+- Dev Drive + Games Drive
+- Browser, iCloud, Home Office und Gaming
+- kontrollierte Treiber-/Updatepflege
+- G-HUB-Snapshotworkflow
 - wöchentliche Wartung
-- aussagekräftige Benachrichtigungen
-- reproduzierbare, im Repository nachvollziehbare Konfiguration
-- keine unnötigen manuellen Nacharbeiten
-- keine unnötigen Anwendungsneustarts bei unverändertem Zustand
-- keine dauerhafte Aufweichung der globalen PowerShell Execution Policy
+- aussagekräftige Diagnose und Benachrichtigungen
+- keine unnötigen manuellen Nacharbeiten, Neustarts oder Sicherheitsabschwächungen
