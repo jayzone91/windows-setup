@@ -11,5 +11,8 @@
         "yzhang.markdown-all-in-one"
         "ms-dotnettools.csdevkit"
         "github.vscode-github-actions"
+        "rodrigovallades.es7-react-js-snippets"
+        "bradlc.vscode-tailwindcss"
+        "heybourn.headwind"
     )
 }
