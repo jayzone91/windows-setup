@@ -290,6 +290,10 @@ Write-WindowsSetupPerformanceCheckpoint -Name "Windows: Developer"
 $null = Set-WindowsPowerPreferences
 Write-WindowsSetupPerformanceCheckpoint -Name "Windows: Power"
 
+$null = Set-WindowsGameMode `
+    -Config $Windows
+Write-WindowsSetupPerformanceCheckpoint -Name "Windows: Game Mode"
+
 Set-WindowsHDR
 Write-WindowsSetupPerformanceCheckpoint -Name "Windows: HDR"
 

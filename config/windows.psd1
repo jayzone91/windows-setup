@@ -24,6 +24,12 @@
         }
     }
 
+    Gaming       = @{
+        GameMode = @{
+            Enabled = $true
+        }
+    }
+
     StartMenu    = @{
         ShowRecentlyAddedApps = $false
         ShowRecentItems       = $false

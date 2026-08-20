@@ -203,3 +203,50 @@ function Initialize-GamingLauncherInstallPaths {
         ) -ForegroundColor Green
     }
 }
+function Set-WindowsGameMode {
+
+    param(
+        [Parameter(Mandatory)]
+        $Config
+    )
+
+    if (
+        -not $Config.ContainsKey("Gaming") -or
+        -not $Config.Gaming.ContainsKey("GameMode") -or
+        -not $Config.Gaming.GameMode.ContainsKey("Enabled")
+    ) {
+        throw "Windows-Gaming-Konfiguration für GameMode.Enabled fehlt."
+    }
+
+    $path = "HKCU:\Software\Microsoft\GameBar"
+    $desired = if ([bool]$Config.Gaming.GameMode.Enabled) { 1 } else { 0 }
+
+    if (-not (Test-Path -LiteralPath $path)) {
+        New-Item -Path $path -Force | Out-Null
+    }
+
+    $gameBar = Get-ItemProperty `
+        -LiteralPath $path `
+        -ErrorAction Stop
+
+    $current = $gameBar.AutoGameModeEnabled
+
+    if ($current -eq $desired) {
+        Write-Host "[OK] Windows Game Mode entspricht dem Desired State." `
+            -ForegroundColor Green
+        return $false
+    }
+
+    New-ItemProperty `
+        -LiteralPath $path `
+        -Name "AutoGameModeEnabled" `
+        -PropertyType DWord `
+        -Value $desired `
+        -Force |
+    Out-Null
+
+    Write-Host "[OK] Windows Game Mode wurde konfiguriert." `
+        -ForegroundColor Green
+
+    return $true
+}
