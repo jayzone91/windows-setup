@@ -1565,7 +1565,11 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [x] Game Mode prüfen/konfigurieren
 - [x] Hardware Accelerated GPU Scheduling prüfen
 - [x] VRR/G-Sync-relevante Windows-Einstellungen prüfen
-- [ ] HDR-Gaming-Workflow dokumentieren
+- [x] HDR-Gaming-Workflow dokumentieren
+  - Samsung Odyssey G93SD: HDR und Auto HDR praktisch als aktiviert bestätigt
+  - Windows HDR Calibration wurde auf dem aktuellen Monitor bereits durchgeführt
+  - HDR bleibt bewusst benutzer-/displayabhängig; keine zusätzliche undokumentierte Registry-Automatisierung
+  - vorhandener Bootstrap-Hinweis auf `Einstellungen > System > Anzeige > HDR` bleibt der reproduzierbare Initialisierungs-/Prüfpfad
 - [ ] keine unnötigen "Gaming Tweaks", die Stabilität verschlechtern
 
 ---
