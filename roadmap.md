@@ -1582,8 +1582,12 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [x] Apple Passwords als benötigte Funktion berücksichtigen
 - [x] Windows Hello nicht durch Debloat beschädigen
 - [x] Apple-Passwords-Voraussetzungen prüfen
-- [ ] iCloud-Konfiguration nur automatisieren, soweit Apple dies stabil unterstützt
-- [ ] keine Apple-Credentials automatisieren oder speichern
+- [x] iCloud-Konfiguration nur automatisieren, soweit Apple dies stabil unterstützt
+  - Installation bleibt automatisiert; persönliche iCloud-/Apple-Account-Einrichtung bleibt bewusst manuell
+  - keine undokumentierten internen iCloud-Konfigurationsdateien oder privaten Provisioning-Schnittstellen verwenden
+  - Apple Passwords / iCloud-Schlüsselbund werden über Apples offiziell vorgesehenen interaktiven Freigabe- und 2FA-Workflow aktiviert
+- [x] keine Apple-Credentials automatisieren oder speichern
+  - keine Apple-Account-Passwörter, 2FA-Codes, OAuth-/Session-Tokens oder privaten Apple-Credentials im Repository oder unter `.generated/` persistieren
 
 ---
 
