@@ -100,14 +100,47 @@ function Write-WindowsSetupSummary {
         }
     }
 
+    $packageChangeList = @(
+        $PackageChanges |
+        Where-Object { $null -ne $_ }
+    )
+    $packageChangesBySource = [ordered]@{}
+
+    foreach ($source in @("winget", "msstore", "chocolatey", "scoop")) {
+        $sourceChanges = @(
+            $packageChangeList |
+            Where-Object Source -eq $source
+        )
+
+        $packageChangesBySource[$source] = [ordered]@{
+            InstalledCount = @(
+                $sourceChanges |
+                Where-Object Action -eq "Install"
+            ).Count
+            UpdatedCount = @(
+                $sourceChanges |
+                Where-Object Action -eq "Update"
+            ).Count
+        }
+    }
+
     $summary = [ordered]@{
         SchemaVersion = 1
         Timestamp     = (Get-Date).ToString("o")
         Status        = "Success"
         Packages      = [ordered]@{
             Managed = Get-WindowsSetupPackageSummary -Packages $Packages
+            InstalledCount = @(
+                $packageChangeList |
+                Where-Object Action -eq "Install"
+            ).Count
+            UpdatedCount = @(
+                $packageChangeList |
+                Where-Object Action -eq "Update"
+            ).Count
+            BySource = $packageChangesBySource
             Changes = @(
-                foreach ($change in @($PackageChanges)) {
+                foreach ($change in $packageChangeList) {
                     [ordered]@{
                         Action = [string]$change.Action
                         Source = [string]$change.Source

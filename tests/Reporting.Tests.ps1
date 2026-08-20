@@ -71,6 +71,18 @@ Describe "Maschinenlesbarer Abschlussreport" {
                     ChangedFiles = @()
                     UnpushedCommits = 0
                 }) `
+                -PackageChanges @(
+                    [pscustomobject]@{
+                        Action = "Install"
+                        Source = "winget"
+                        Id = "Example.One"
+                    }
+                    [pscustomobject]@{
+                        Action = "Update"
+                        Source = "scoop"
+                        Id = "Example.Tool"
+                    }
+                ) `
                 -RunLogContext ([pscustomobject]@{
                     LogDirectory = Join-Path $tempRoot '.generated\logs\runs'
                     FileStem = 'bootstrap-test'
@@ -84,7 +96,14 @@ Describe "Maschinenlesbarer Abschlussreport" {
 
             $report.SchemaVersion | Should Be 1
             $report.Status | Should Be "Success"
-            $report.Packages.Total | Should Be 1
+            $report.Packages.Managed.Total | Should Be 1
+            $report.Packages.InstalledCount | Should Be 1
+            $report.Packages.UpdatedCount | Should Be 1
+            $report.Packages.BySource.winget.InstalledCount | Should Be 1
+            $report.Packages.BySource.winget.UpdatedCount | Should Be 0
+            $report.Packages.BySource.scoop.InstalledCount | Should Be 0
+            $report.Packages.BySource.scoop.UpdatedCount | Should Be 1
+            $report.Packages.Changes.Count | Should Be 2
             $report.Updates.Windows.InstalledCount | Should Be 1
             $report.Updates.Windows.Installed[0].Title |
                 Should Be "Example Update"
