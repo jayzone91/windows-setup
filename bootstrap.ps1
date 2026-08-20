@@ -127,6 +127,13 @@ $pwsh = (
 ).Source
 
 $Root = $PSScriptRoot
+$loggingModulePath = Join-Path $Root "modules\Logging.ps1"
+
+if (-not (Test-Path -LiteralPath $loggingModulePath -PathType Leaf)) {
+    throw "Logging-Modul nicht gefunden: $loggingModulePath"
+}
+
+. $loggingModulePath
 
 if (-not (Test-WindowsSetupAdministrator)) {
     throw (
@@ -226,6 +233,8 @@ if (-not $Log) {
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
 $lastErrorPath = Get-WindowsSetupLogPath -Root $Root
+$runLogContext = Start-WindowsSetupRunLogging -RepositoryPath $Root
+$runStatus = "Failed"
 
 try {
     . "$Root\bootstrap\index.ps1"
@@ -234,6 +243,8 @@ try {
         -LiteralPath $lastErrorPath `
         -Force `
         -ErrorAction SilentlyContinue
+
+    $runStatus = "Success"
 }
 catch {
     $errorRecord = $_
@@ -265,4 +276,9 @@ catch {
     )
 
     exit 1
+}
+finally {
+    Stop-WindowsSetupRunLogging `
+        -Context $runLogContext `
+        -Status $runStatus
 }
