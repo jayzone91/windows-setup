@@ -26,6 +26,9 @@ Describe 'Persistentes Bootstrap-Logging' {
 
             $context.StartedAt |
                 Should Not BeNullOrEmpty
+
+            $context.FileStem |
+                Should Match '^bootstrap-\d{8}-\d{9}-\d+$'
         }
         finally {
             if (Test-Path -LiteralPath $tempRoot) {
@@ -36,4 +39,41 @@ Describe 'Persistentes Bootstrap-Logging' {
             }
         }
     }
-}
+
+    It 'benennt abgeschlossene Logs mit dem Ergebnisstatus um' {
+        $tempRoot = Join-Path `
+            ([IO.Path]::GetTempPath()) `
+            ('windows-setup-log-' + [guid]::NewGuid().ToString('N'))
+
+        try {
+            $context = New-WindowsSetupRunLogContext `
+                -RepositoryPath $tempRoot
+
+            [IO.File]::WriteAllText(
+                $context.Path,
+                'test',
+                [Text.UTF8Encoding]::new($false)
+            )
+
+            Mock Stop-Transcript {}
+
+            Stop-WindowsSetupRunLogging `
+                -Context $context `
+                -Status 'Success'
+
+            $expectedPath = Join-Path `
+                $context.LogDirectory `
+                ($context.FileStem + '-success.log')
+
+            (Test-Path -LiteralPath $expectedPath -PathType Leaf) |
+                Should Be $true
+        }
+        finally {
+            if (Test-Path -LiteralPath $tempRoot) {
+                Remove-Item `
+                    -LiteralPath $tempRoot `
+                    -Recurse `
+                    -Force
+            }
+        }
+    }}

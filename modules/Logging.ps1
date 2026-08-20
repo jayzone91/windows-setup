@@ -20,8 +20,10 @@ function New-WindowsSetupRunLogContext {
         $PID
 
     return [pscustomobject]@{
-        Path      = Join-Path $logDirectory $fileName
-        StartedAt = $startedAt
+        Path         = Join-Path $logDirectory $fileName
+        LogDirectory = $logDirectory
+        StartedAt    = $startedAt
+        FileStem     = [IO.Path]::GetFileNameWithoutExtension($fileName)
     }
 }
 
@@ -83,5 +85,19 @@ function Stop-WindowsSetupRunLogging {
             'Persistentes Bootstrap-Logging konnte nicht sauber beendet werden: {0}' -f
             $_.Exception.Message
         )
+
+        return
+    }
+
+    $statusSuffix = $Status.ToLowerInvariant()
+    $finalPath = Join-Path `
+        $Context.LogDirectory `
+        ('{0}-{1}.log' -f $Context.FileStem, $statusSuffix)
+
+    if (Test-Path -LiteralPath $Context.Path -PathType Leaf) {
+        Move-Item `
+            -LiteralPath $Context.Path `
+            -Destination $finalPath `
+            -Force
     }
 }
