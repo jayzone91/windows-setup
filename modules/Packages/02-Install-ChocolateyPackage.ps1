@@ -47,6 +47,66 @@ function Invoke-PackageManagerCommandWithRetry {
 }
 
 
+function Get-ChocolateyInstalledVersion {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Id
+    )
+
+    $output = @(
+        & choco list `
+            --exact $Id `
+            --limit-output `
+            --no-color 2>$null
+    )
+
+    if ($LASTEXITCODE -ne 0) {
+        return $null
+    }
+
+    $pattern = '^{0}\|(.+)$' -f [regex]::Escape($Id)
+
+    foreach ($line in $output) {
+        if ([string]$line -match $pattern) {
+            return $Matches[1].Trim()
+        }
+    }
+
+    return $null
+}
+
+
+function Get-ScoopInstalledVersion {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        "PSAvoidUsingPositionalParameters",
+        "",
+        Justification = "Scoop ist eine native CLI und verwendet positionsbasierte Argumente."
+    )]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Id
+    )
+
+    $output = @(
+        & scoop list $Id 2>$null
+    )
+
+    if ($LASTEXITCODE -ne 0) {
+        return $null
+    }
+
+    $pattern = '^\s*{0}\s+(\S+)' -f [regex]::Escape($Id)
+
+    foreach ($line in $output) {
+        if ([string]$line -match $pattern) {
+            return $Matches[1].Trim()
+        }
+    }
+
+    return $null
+}
+
+
 function Install-ChocolateyPackage {
     param(
         [Parameter(Mandatory)]
@@ -75,6 +135,16 @@ function Install-ChocolateyPackage {
             throw "Chocolatey-Installation fehlgeschlagen: $Name"
         }
 
+        Add-PackageRunChange `
+            -Action "Install" `
+            -Source "chocolatey" `
+            -Ids @($Id)
+
+        Add-PackageRunChange `
+            -Action "Install" `
+            -Source "scoop" `
+            -Ids @($Id)
+
         Write-Host "[OK] $Name installiert." `
             -ForegroundColor Green
 
@@ -91,6 +161,8 @@ function Install-ChocolateyPackage {
 
     Write-Host "[UPDATE] Prüfe auf Updates..."
 
+    $versionBefore = Get-ChocolateyInstalledVersion -Id $Id
+
     $exitCode = Invoke-PackageManagerCommandWithRetry `
         -Command "choco" `
         -Arguments @("upgrade", $Id, "--yes", "--no-progress") `
@@ -98,6 +170,19 @@ function Install-ChocolateyPackage {
 
     if ($exitCode -notin @(0, 2, 1641, 3010)) {
         throw "Chocolatey-Update fehlgeschlagen: $Name"
+    }
+
+    $versionAfter = Get-ChocolateyInstalledVersion -Id $Id
+
+    if (
+        -not [string]::IsNullOrWhiteSpace($versionBefore) -and
+        -not [string]::IsNullOrWhiteSpace($versionAfter) -and
+        $versionBefore -ne $versionAfter
+    ) {
+        Add-PackageRunChange `
+            -Action "Update" `
+            -Source "chocolatey" `
+            -Ids @($Id)
     }
 
     Write-Host "[OK] Chocolatey-Update-Prüfung abgeschlossen." `
@@ -166,6 +251,8 @@ function Install-ScoopPackage {
 
     Write-Host "[UPDATE] Prüfe auf Updates..."
 
+    $versionBefore = Get-ScoopInstalledVersion -Id $Id
+
     $exitCode = Invoke-PackageManagerCommandWithRetry `
         -Command "scoop" `
         -Arguments @("update", $Id) `
@@ -173,6 +260,19 @@ function Install-ScoopPackage {
 
     if ($exitCode -ne 0) {
         throw "Scoop-Update fehlgeschlagen: $Name"
+    }
+
+    $versionAfter = Get-ScoopInstalledVersion -Id $Id
+
+    if (
+        -not [string]::IsNullOrWhiteSpace($versionBefore) -and
+        -not [string]::IsNullOrWhiteSpace($versionAfter) -and
+        $versionBefore -ne $versionAfter
+    ) {
+        Add-PackageRunChange `
+            -Action "Update" `
+            -Source "scoop" `
+            -Ids @($Id)
     }
 
     Write-Host "[OK] Scoop-Update-Prüfung abgeschlossen." `

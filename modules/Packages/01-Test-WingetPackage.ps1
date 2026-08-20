@@ -107,17 +107,17 @@ $script:WingetUpgradeQueue = @{
     msstore = [Collections.Generic.List[string]]::new()
 }
 
-$script:WingetRunChanges = [Collections.Generic.List[object]]::new()
+$script:PackageRunChanges = [Collections.Generic.List[object]]::new()
 
 
-function Add-WingetRunChange {
+function Add-PackageRunChange {
     param(
         [Parameter(Mandatory)]
         [ValidateSet("Install", "Update")]
         [string]$Action,
 
         [Parameter(Mandatory)]
-        [ValidateSet("winget", "msstore")]
+        [ValidateSet("winget", "msstore", "chocolatey", "scoop")]
         [string]$Source,
 
         [Parameter(Mandatory)]
@@ -125,7 +125,7 @@ function Add-WingetRunChange {
     )
 
     foreach ($id in $Ids) {
-        $script:WingetRunChanges.Add(
+        $script:PackageRunChanges.Add(
             [pscustomobject]@{
                 Action = $Action
                 Source = $Source
@@ -136,13 +136,13 @@ function Add-WingetRunChange {
 }
 
 
-function Get-WingetRunChanges {
-    return @($script:WingetRunChanges)
+function Get-PackageRunChanges {
+    return @($script:PackageRunChanges)
 }
 
 
 function Reset-WingetPackageQueues {
-    $script:WingetRunChanges.Clear()
+    $script:PackageRunChanges.Clear()
 
     foreach ($source in @("winget", "msstore")) {
         $script:WingetInstallQueue[$source].Clear()
@@ -220,6 +220,11 @@ function Install-WingetPackage {
 
             Write-Host "[OK] $Name installiert." `
                 -ForegroundColor Green
+
+            Add-PackageRunChange `
+                -Action "Install" `
+                -Source $Source `
+                -Ids @($Id)
 
             if ($null -ne $script:WingetInstalledPackageCache[$Source]) {
                 [void]$script:WingetInstalledPackageCache[$Source].Add($Id)
@@ -345,7 +350,7 @@ function Invoke-WingetQueuedChanges {
 
         switch ($installExitCode) {
             0 {
-                Add-WingetRunChange `
+                Add-PackageRunChange `
                     -Action "Install" `
                     -Source $source `
                     -Ids $installIds
@@ -431,7 +436,7 @@ function Invoke-WingetQueuedChanges {
                 )
 
                 if ($changedIds.Count -gt 0) {
-                    Add-WingetRunChange `
+                    Add-PackageRunChange `
                         -Action "Update" `
                         -Source $source `
                         -Ids $changedIds
@@ -565,6 +570,11 @@ function Install-WingetPinnedVersion {
             $Version
         )
     }
+
+    Add-PackageRunChange `
+        -Action "Update" `
+        -Source $Source `
+        -Ids @($Id)
 
     Write-Host (
         "[OK] {0} Version {1} installiert." `
