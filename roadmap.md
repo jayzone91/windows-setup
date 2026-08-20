@@ -103,6 +103,12 @@ Entfernt und nicht Teil des produktiven Zielbilds: Seelen UI, FluentFlyout, Wind
 - [x] Globale Benutzer-/System-Execution-Policy wird nicht verändert
 - [x] Execution-Policy-Fix auf dem aktuellen Windows-System erfolgreich getestet
 - [x] laufende Anwendungen werden bei wiederholten Läufen nur geschlossen, wenn eine tatsächliche Änderung dies erfordert
+- [x] Bootstrap prüft vor der eigentlichen Arbeit die allgemeine Internetverbindung
+  - bei fehlender Verbindung erfolgt nach 5 Sekunden genau ein erneuter Verbindungsversuch
+  - bleibt das System offline, wird eine BurntToast-Desktop-Benachrichtigung angezeigt und der Lauf ohne Änderungen mit ExitCode `0` beendet
+  - der Offline-Zustand gilt beim manuellen und automatischen Wartungslauf als sauberer No-Op und nicht als Bootstrap-Fehler
+  - externe Einzeldienste wie GitHub bleiben davon getrennt; ist das Internet grundsätzlich verfügbar, greifen weiterhin die vorhandenen dienstspezifischen Fallbacks
+  - Offline-No-Op, ExitCode `0` und sichtbare Desktop-Benachrichtigung auf dem aktuellen System praktisch getestet
 
 ## Just / manueller Workflow
 

@@ -107,14 +107,24 @@ function Update-NeovimConfiguration {
     )
 
     if ($LASTEXITCODE -ne 0) {
+        $message = "Neovim-Fetch fehlgeschlagen."
+
         if ($gitFetchOutput.Count -gt 0) {
-            Write-Warning (
-                "Neovim-Fetch fehlgeschlagen: {0}" -f
-                ($gitFetchOutput -join " ")
-            )
+            $message += " {0}" -f ($gitFetchOutput -join " ")
         }
 
-        throw "Neovim-Submodule konnte origin/main nicht abrufen."
+        Write-Warning (
+            $message +
+            " Der vorhandene lokale Stand wird weiterverwendet."
+        )
+
+        $nvimConfigPath = Join-Path $env:LOCALAPPDATA "nvim"
+
+        Set-DirectoryJunction `
+            -Path $nvimConfigPath `
+            -Target $submodulePath
+
+        return
     }
 
     if ($script:WindowsSetupOutputMode -eq "Log") {

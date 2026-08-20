@@ -57,6 +57,48 @@ function Test-WindowsSetupAdministrator {
     )
 }
 
+function Test-WindowsSetupInternetConnection {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [int] $Attempts = 2,
+        [int] $RetryDelaySeconds = 5
+    )
+
+    $uri = "http://www.msftconnecttest.com/connecttest.txt"
+
+    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+        try {
+            $response = Invoke-WebRequest `
+                -Uri $uri `
+                -TimeoutSec 5 `
+                -UseBasicParsing `
+                -ErrorAction Stop
+
+            if (
+                $response.StatusCode -eq 200 -and
+                $response.Content.Trim() -eq "Microsoft Connect Test"
+            ) {
+                return $true
+            }
+        }
+        catch {
+            $null = $_
+        }
+
+        if ($attempt -lt $Attempts) {
+            Write-Warning (
+                "Keine Internetverbindung erkannt. " +
+                "Neuer Versuch in $RetryDelaySeconds Sekunden."
+            )
+
+            Start-Sleep -Seconds $RetryDelaySeconds
+        }
+    }
+
+    return $false
+}
+
 function Get-WindowsSetupLogPath {
     param(
         [Parameter(Mandatory)]
@@ -93,6 +135,19 @@ if (-not (Test-WindowsSetupAdministrator)) {
         "'sudo just update-warning', 'sudo just update-log' oder " +
         "'sudo just update-performance' starten."
     )
+}
+
+if (-not (Test-WindowsSetupInternetConnection)) {
+    . "$Root\modules\Notifications.ps1"
+
+    Send-WindowsSetupOfflineNotification
+
+    Write-Warning (
+        "Keine Internetverbindung verfügbar. " +
+        "Bootstrap wird ohne Änderungen beendet."
+    )
+
+    exit 0
 }
 
 if (-not $InternalRun) {

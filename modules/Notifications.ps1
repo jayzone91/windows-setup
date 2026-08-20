@@ -277,3 +277,23 @@ function Register-WindowsSetupProtocol {
         "[OK] Windows Setup URI-Protokoll registriert."
     ) -ForegroundColor Green
 }
+function Send-WindowsSetupOfflineNotification {
+    if (-not (Get-Module -ListAvailable -Name BurntToast)) {
+        Write-Warning (
+            "BurntToast ist nicht installiert. " +
+            "Offline-Benachrichtigung wird übersprungen."
+        )
+
+        return
+    }
+
+    Import-Module BurntToast -ErrorAction Stop
+
+    New-BurntToastNotification `
+        -Text @(
+            "Windows Setup"
+            "Keine Internetverbindung verfügbar. Wartung wurde übersprungen."
+        )
+
+    Write-Host "[NOTIFY] Keine Internetverbindung verfügbar."
+}
