@@ -577,7 +577,7 @@ Weitere Apple-/iCloud-Automatisierung nur über offiziell unterstützte Schnitts
 - [x] Offline-Zustand wird sichtbar gemeldet.
 - [x] Maschinenlesbarer Abschlussstatus vorhanden.
 - [x] Fataler Bootstrap-Fehler wird mit Timestamp unter `.generated/logs/bootstrap-last-error.log` gespeichert.
-- [ ] Zentrale persistente Logging-Strategie für komplette Bootstrap-Läufe.
+- [x] Zentrale persistente Logging-Strategie für komplette Bootstrap-Läufe über eindeutige Transcript-Dateien unter `.generated/logs/runs/`.
 - [ ] Warnungen und Fehler vollständig mit Timestamp persistieren.
 - [ ] Log-Dateien mit Datum/Uhrzeit und Ergebnisstatus.
 - [ ] Log-Retention/Bereinigung.
@@ -644,7 +644,7 @@ Priorisierung erfolgt nach Nutzen, Stabilität und Abhängigkeiten. Ereignisabh�
 
 ## Priorität 1 – Logging / Wartungsdiagnose
 
-- [ ] Zentrale persistente Logging-Strategie definieren.
+- [x] Zentrale persistente Logging-Strategie für komplette Bootstrap-Läufe definieren und praktisch bestätigen.
 - [ ] Warnungen/Fehler mit Timestamp und Laufstatus persistieren.
 - [ ] Log-Retention implementieren.
 - [ ] Paket- und Windows-Update-Zusammenfassungen integrieren.
