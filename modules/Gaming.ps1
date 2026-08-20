@@ -203,6 +203,111 @@ function Initialize-GamingLauncherInstallPaths {
         ) -ForegroundColor Green
     }
 }
+function Get-InstalledGameExecutable {
+
+    param(
+        [Parameter(Mandatory)]
+        $StorageConfig
+    )
+
+    if (
+        -not $StorageConfig.ContainsKey("GameLibraries") -or
+        $null -eq $StorageConfig.GameLibraries
+    ) {
+        throw "Storage-Konfiguration enthält keine GameLibraries."
+    }
+
+    $runningProcessNames = [Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::OrdinalIgnoreCase
+    )
+
+    foreach ($process in @(Get-Process -ErrorAction SilentlyContinue)) {
+        [void]$runningProcessNames.Add([string]$process.ProcessName)
+    }
+
+    $results = @()
+
+    foreach (
+        $entry in @(
+            $StorageConfig.GameLibraries.GetEnumerator() |
+            Where-Object {
+                [string]$_.Key -ne "Root"
+            } |
+            Sort-Object Key
+        )
+    ) {
+        $launcher = [string]$entry.Key
+        $libraryPath = [string]$entry.Value
+
+        if (
+            [string]::IsNullOrWhiteSpace($libraryPath) -or
+            -not (Test-Path -LiteralPath $libraryPath -PathType Container)
+        ) {
+            continue
+        }
+
+        $scanRoot = $libraryPath
+
+        if ($launcher -eq "Steam") {
+            $steamCommonPath = Join-Path $libraryPath "steamapps\common"
+
+            if (Test-Path -LiteralPath $steamCommonPath -PathType Container) {
+                $scanRoot = $steamCommonPath
+            }
+        }
+
+        $scanRootFull = [IO.Path]::GetFullPath($scanRoot)
+
+        foreach (
+            $executable in @(
+                Get-ChildItem `
+                    -LiteralPath $scanRootFull `
+                    -Filter "*.exe" `
+                    -File `
+                    -Recurse `
+                    -ErrorAction SilentlyContinue
+            )
+        ) {
+            $relativePath = [IO.Path]::GetRelativePath(
+                $scanRootFull,
+                $executable.FullName
+            )
+
+            $pathParts = @(
+                $relativePath -split '[\\/]'
+            )
+
+            $game = if ($pathParts.Count -gt 1) {
+                $pathParts[0]
+            }
+            else {
+                "(LibraryRoot)"
+            }
+
+            $results += [pscustomobject]@{
+                Launcher    = $launcher
+                Game        = $game
+                Executable  = $executable.Name
+                ProcessName = $executable.BaseName
+                Running     = $runningProcessNames.Contains(
+                    $executable.BaseName
+                )
+                Path        = $executable.FullName
+            }
+        }
+    }
+
+    return @(
+        $results |
+        Sort-Object `
+            @{ Expression = "Running"; Descending = $true },
+            Launcher,
+            Game,
+            Executable,
+            Path
+    )
+}
+
 function Set-WindowsGameMode {
 
     param(

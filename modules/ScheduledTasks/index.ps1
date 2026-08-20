@@ -1,6 +1,7 @@
 $parts = @(
     "01-ConvertTo-WindowsTaskUserIdentity.ps1"
     "02-Register-WindowsSetupScheduledTask.ps1"
+    "03-Register-FindMyMouseGameExclusionsScheduledTask.ps1"
 )
 
 foreach ($part in $parts) {

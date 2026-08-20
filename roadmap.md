@@ -1585,6 +1585,18 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
   - Gaming-Optimierung bleibt auf dokumentierte Windows-Funktionen beschränkt
   - keine pauschalen Service-Deaktivierungen, Scheduler-/Timer-Tweaks oder undokumentierten Registry-Optimierungen
   - Stabilität, Fullscreen-/Borderless-Verhalten, Alt+Tab und Fokuswechsel haben Vorrang vor theoretischen Benchmark-Gewinnen
+- [x] PowerToys Find My Mouse bei installierten Spielen automatisch deaktivieren
+  - Doppel-STRG bleibt als gewünschte Aktivierungsmethode erhalten
+  - native PowerToys-Option `do_not_activate_on_game_mode` bleibt aktiviert, wurde mit Horizon Zero Dawn Remastered jedoch praktisch als nicht ausreichend bestätigt
+  - keine manuell gepflegte Spieleliste und kein dauerhafter Hintergrundprozess
+  - installierte Spiele werden launcherunabhängig über die deklarativen Game-Libraries unter `G:\Games\` ermittelt
+  - Steam, Epic, GOG, EA, Battle.net und Ubisoft Connect praktisch mit installierten Spielen getestet
+  - gefundene `.exe`-Namen werden dedupliziert in `FindMyMouse` → `excluded_apps` übernommen
+  - Horizon Zero Dawn Remastered praktisch bestätigt: Doppel-STRG aktiviert Find My Mouse im Spiel nicht mehr
+  - wiederholter Bootstrap bei unverändertem Desired State verursacht keinen unnötigen PowerToys-Neustart
+  - eigener `AtLogOn`-Scheduled-Task aktualisiert die Spiele-Exclusions nach der Anmeldung
+  - Login-Refresh schreibt ausschließlich bei Drift direkt die Find-My-Mouse-`settings.json`; PowerToys wird dafür nicht neu gestartet, da die Exclusion-Liste dynamisch eingelesen wird
+  - Scheduled-Task-Refresh praktisch mit unveränderter PowerToys-PID erfolgreich getestet
 
 ---
 # 27. Phase 24 – Apple / iCloud Integration

@@ -38,3 +38,6 @@ ghub-backup:
 # Gesicherte Logitech-G-HUB-Konfiguration bewusst wiederherstellen
 ghub-restore:
     pwsh -NoProfile -ExecutionPolicy Bypass -Command ". ./modules/index.ps1; Restore-LogitechGHubConfiguration -RepositoryPath './config/lghub'"
+# Installierte Spiele und gefundene EXE-Kandidaten anzeigen
+games-discover:
+    pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/Discover-InstalledGames.ps1

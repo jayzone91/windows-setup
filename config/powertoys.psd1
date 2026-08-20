@@ -154,6 +154,7 @@
         # 0 = zweimal linke STRG-Taste drücken
         ActivationMethod        = 0
         DoNotActivateOnGameMode = $true
+        ExcludedApps            = @()
     }
 
     PowerRename = @{

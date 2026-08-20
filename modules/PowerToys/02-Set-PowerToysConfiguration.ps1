@@ -3,7 +3,9 @@ function Set-PowerToysConfiguration {
         [Parameter(Mandatory)]
         [hashtable]$Config,
         [Parameter(Mandatory)]
-        [string]$RepositoryPath
+        [string]$RepositoryPath,
+
+        [string[]]$FindMyMouseExcludedApps = @()
     )
     Write-Host ""
     Write-Host "========================================"
@@ -211,6 +213,34 @@ function Set-PowerToysConfiguration {
     ) {
         $findMyMouse.properties.do_not_activate_on_game_mode.value =
             [bool]$Config.FindMyMouse.DoNotActivateOnGameMode
+        $findMyMouseChanged = $true
+    }
+    $excludedApps = [Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::OrdinalIgnoreCase
+    )
+
+    foreach ($app in @($Config.FindMyMouse.ExcludedApps)) {
+        if (-not [string]::IsNullOrWhiteSpace([string]$app)) {
+            [void]$excludedApps.Add(([string]$app).Trim())
+        }
+    }
+
+    foreach ($app in @($FindMyMouseExcludedApps)) {
+        if (-not [string]::IsNullOrWhiteSpace([string]$app)) {
+            [void]$excludedApps.Add(([string]$app).Trim())
+        }
+    }
+
+    $desiredExcludedApps = (
+        @($excludedApps) |
+        Sort-Object
+    ) -join [Environment]::NewLine
+
+    if (
+        [string]$findMyMouse.properties.excluded_apps.value -ne
+        $desiredExcludedApps
+    ) {
+        $findMyMouse.properties.excluded_apps.value = $desiredExcludedApps
         $findMyMouseChanged = $true
     }
     # --------------------------------------------------------

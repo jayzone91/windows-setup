@@ -224,9 +224,16 @@ Update-SessionPath
 Initialize-WindowsSetupAgeIdentity `
     -RepositoryPath $Root
 
+$installedGameExecutables = @(
+    Get-InstalledGameExecutable `
+        -StorageConfig $Storage |
+    Select-Object -ExpandProperty Executable -Unique
+)
+
 Set-PowerToysConfiguration `
     -Config $PowerToys `
-    -RepositoryPath $Root
+    -RepositoryPath $Root `
+    -FindMyMouseExcludedApps $installedGameExecutables
 Initialize-RaycastConfiguration `
     -Config $Raycast `
     -RepositoryPath $Root
@@ -415,6 +422,9 @@ Write-WindowsSetupPerformanceCheckpoint -Name "Windows Updates"
 
 $null = Register-WindowsSetupScheduledTask `
     -BootstrapPath "$Root\bootstrap.ps1"
+
+$null = Register-FindMyMouseGameExclusionsScheduledTask `
+    -RepositoryPath $Root
 
 # ------------------------------------------------------------
 # Abschließende Tests
