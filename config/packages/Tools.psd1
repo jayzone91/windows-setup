@@ -88,5 +88,12 @@
             Source = "msstore"
             Update = $true
         }
+
+        @{
+            Name   = "Gimp"
+            Id     = "GIMP.GIMP"
+            Source = "winget"
+            Update = $true
+        }
     )
 }
