@@ -273,7 +273,7 @@ Begründung:
 - [ ] Log-Dateien mit Datum/Uhrzeit und Ergebnisstatus
 - [ ] optionaler `-Verbose`-Modus für detailliertere Diagnose
 - [ ] optionaler `-DryRun` / `-WhatIf`-Modus
-- [ ] ein maschinenlesbarer Abschlussstatus des Bootstrap-Laufs
+- [x] ein maschinenlesbarer Abschlussstatus des Bootstrap-Laufs
 - [ ] optional eine Zusammenfassung der Änderungen eines Durchlaufs
 
 ### Akzeptanzkriterien
@@ -545,7 +545,7 @@ Der NanaZip-Workflow ist absichtlich generisch aufgebaut und soll für weitere P
   - nach dem letzten fehlgeschlagenen Versuch bleibt der Fehler fatal
   - Verhalten mit Pester für Soforterfolg, Retry-Erfolg, finalen Fehler und mehrere erfolgreiche ExitCodes abgedeckt
   - vollständiger `sudo just update-log` nach Einführung des Retry-Mechanismus erfolgreich
-- [ ] bessere maschinenlesbare Update-Zusammenfassung
+- [x] bessere maschinenlesbare Update-Zusammenfassung
 - [ ] Paket-Fehler am Ende gesammelt ausgeben statt nur während des Laufs
 - [ ] optionale zentrale Paket-Logs
 - [x] Scoop-Bucket-Autobereitstellung mit `versions` + `neovim-nightly` praktisch getestet
@@ -1908,7 +1908,7 @@ Noch offen aus dem Paketmanager-Umbau:
 
 - [x] Scoop-Bucket-Autobereitstellung mit `versions` + `neovim-nightly` praktisch getestet
 - [x] Retry-Mechanismus für temporäre Download-/Paketmanagerfehler
-- [ ] maschinenlesbare Paket-/Update-Zusammenfassung
+- [x] maschinenlesbare Paket-/Update-Zusammenfassung
 
 ## Desktop-Stabilität
 
