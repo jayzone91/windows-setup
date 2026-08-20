@@ -107,8 +107,43 @@ $script:WingetUpgradeQueue = @{
     msstore = [Collections.Generic.List[string]]::new()
 }
 
+$script:WingetRunChanges = [Collections.Generic.List[object]]::new()
+
+
+function Add-WingetRunChange {
+    param(
+        [Parameter(Mandatory)]
+        [ValidateSet("Install", "Update")]
+        [string]$Action,
+
+        [Parameter(Mandatory)]
+        [ValidateSet("winget", "msstore")]
+        [string]$Source,
+
+        [Parameter(Mandatory)]
+        [string[]]$Ids
+    )
+
+    foreach ($id in $Ids) {
+        $script:WingetRunChanges.Add(
+            [pscustomobject]@{
+                Action = $Action
+                Source = $Source
+                Id     = $id
+            }
+        )
+    }
+}
+
+
+function Get-WingetRunChanges {
+    return @($script:WingetRunChanges)
+}
+
 
 function Reset-WingetPackageQueues {
+    $script:WingetRunChanges.Clear()
+
     foreach ($source in @("winget", "msstore")) {
         $script:WingetInstallQueue[$source].Clear()
         $script:WingetUpgradeQueue[$source].Clear()
@@ -310,6 +345,11 @@ function Invoke-WingetQueuedChanges {
 
         switch ($installExitCode) {
             0 {
+                Add-WingetRunChange `
+                    -Action "Install" `
+                    -Source $source `
+                    -Ids $installIds
+
                 Write-Host "[OK] Winget-Installationsbatch abgeschlossen." `
                     -ForegroundColor Green
             }
@@ -347,6 +387,14 @@ function Invoke-WingetQueuedChanges {
                 -f $upgradeIds.Count, $source
         )
 
+        $versionsBefore = @{}
+
+        foreach ($id in $upgradeIds) {
+            $versionsBefore[$id] = Get-WingetInstalledVersion `
+                -Id $id `
+                -Source $source
+        }
+
         $upgradeArguments = @("upgrade") +
             $upgradeIds +
             @(
@@ -365,6 +413,30 @@ function Invoke-WingetQueuedChanges {
 
         switch ($upgradeExitCode) {
             0 {
+                $changedIds = @(
+                    foreach ($id in $upgradeIds) {
+                        $before = $versionsBefore[$id]
+                        $after = Get-WingetInstalledVersion `
+                            -Id $id `
+                            -Source $source
+
+                        if (
+                            -not [string]::IsNullOrWhiteSpace($before) -and
+                            -not [string]::IsNullOrWhiteSpace($after) -and
+                            $before -ne $after
+                        ) {
+                            $id
+                        }
+                    }
+                )
+
+                if ($changedIds.Count -gt 0) {
+                    Add-WingetRunChange `
+                        -Action "Update" `
+                        -Source $source `
+                        -Ids $changedIds
+                }
+
                 Write-Host "[OK] Winget-Updatebatch abgeschlossen." `
                     -ForegroundColor Green
             }

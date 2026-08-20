@@ -71,6 +71,8 @@ function Write-WindowsSetupSummary {
         [Parameter(Mandatory)]
         $RepositoryStatus,
 
+        $PackageChanges,
+
         $RunLogContext
     )
 
@@ -102,7 +104,18 @@ function Write-WindowsSetupSummary {
         SchemaVersion = 1
         Timestamp     = (Get-Date).ToString("o")
         Status        = "Success"
-        Packages      = Get-WindowsSetupPackageSummary -Packages $Packages
+        Packages      = [ordered]@{
+            Managed = Get-WindowsSetupPackageSummary -Packages $Packages
+            Changes = @(
+                foreach ($change in @($PackageChanges)) {
+                    [ordered]@{
+                        Action = [string]$change.Action
+                        Source = [string]$change.Source
+                        Id     = [string]$change.Id
+                    }
+                }
+            )
+        }
         Updates       = [ordered]@{
             Windows = [ordered]@{
                 InstalledCount = @(
