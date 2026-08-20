@@ -70,6 +70,10 @@ Describe "Maschinenlesbarer Abschlussreport" {
                     HasChanges = $false
                     ChangedFiles = @()
                     UnpushedCommits = 0
+                }) `
+                -RunLogContext ([pscustomobject]@{
+                    LogDirectory = Join-Path $tempRoot '.generated\logs\runs'
+                    FileStem = 'bootstrap-test'
                 })
 
             (Test-Path -LiteralPath $path -PathType Leaf) |
@@ -87,6 +91,19 @@ Describe "Maschinenlesbarer Abschlussreport" {
             $report.Updates.Windows.RebootRequired | Should Be $false
             $report.Reboot.Required | Should Be $false
             $report.Repository.HasChanges | Should Be $false
+
+            $runSummaryPath = Join-Path `
+                $tempRoot `
+                '.generated\logs\runs\bootstrap-test-summary.json'
+
+            (Test-Path -LiteralPath $runSummaryPath -PathType Leaf) |
+                Should Be $true
+
+            $runReport = Get-Content -LiteralPath $runSummaryPath -Raw |
+                ConvertFrom-Json
+
+            $runReport.Updates.Windows.InstalledCount |
+                Should Be 1
         }
         finally {
             if (Test-Path -LiteralPath $tempRoot) {

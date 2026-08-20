@@ -69,7 +69,9 @@ function Write-WindowsSetupSummary {
         $PendingRebootStatus,
 
         [Parameter(Mandatory)]
-        $RepositoryStatus
+        $RepositoryStatus,
+
+        $RunLogContext
     )
 
     $logDirectory = Join-Path $RepositoryPath ".generated\logs"
@@ -85,6 +87,16 @@ function Write-WindowsSetupSummary {
     $summaryPath = Join-Path `
         $logDirectory `
         "bootstrap-last-summary.json"
+
+    if ($null -ne $RunLogContext) {
+        if (-not (Test-Path -LiteralPath $RunLogContext.LogDirectory -PathType Container)) {
+            New-Item `
+                -ItemType Directory `
+                -Path $RunLogContext.LogDirectory `
+                -Force |
+            Out-Null
+        }
+    }
 
     $summary = [ordered]@{
         SchemaVersion = 1
@@ -129,6 +141,23 @@ function Write-WindowsSetupSummary {
         $json,
         [Text.UTF8Encoding]::new($false)
     )
+
+    if ($null -ne $RunLogContext) {
+        $runSummaryPath = Join-Path `
+            $RunLogContext.LogDirectory `
+            ('{0}-summary.json' -f $RunLogContext.FileStem)
+
+        [IO.File]::WriteAllText(
+            $runSummaryPath,
+            $json,
+            [Text.UTF8Encoding]::new($false)
+        )
+
+        Write-Host (
+            "[REPORT] Run-Abschlussreport: {0}" -f
+            $runSummaryPath
+        )
+    }
 
     Write-Host (
         "[REPORT] Maschinenlesbarer Abschlussreport: {0}" -f

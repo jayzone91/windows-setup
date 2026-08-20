@@ -34,7 +34,8 @@ Write-WindowsSetupSummary `
     -WindowsUpdateStatus $script:windowsUpdateStatus `
     -DriverRebootRequired $script:DriverRebootRequired `
     -PendingRebootStatus $rebootStatus `
-    -RepositoryStatus $repositoryStatus
+    -RepositoryStatus $repositoryStatus `
+    -RunLogContext $runLogContext
 
 Send-WindowsSetupNotifications `
     -WindowsUpdateRebootRequired $script:windowsUpdateStatus.RebootRequired `
