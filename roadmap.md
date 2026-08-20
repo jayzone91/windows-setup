@@ -1561,7 +1561,7 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 - [x] Launcher-spezifische Spielebibliotheken unter `G:\Games\` praktisch einrichten
 - [x] Default-Spielpfade in Steam, Epic, GOG, EA, Battle.net und Ubisoft Connect über offiziell unterstützte Launcher-Einstellungen soweit möglich auf `G:` setzen
 - [x] keine undokumentierten internen Launcher-Datenbanken oder privaten Konfigurationsformate manipulieren
-- [ ] Xbox-/Gaming-Komponenten nur behalten, wenn benötigt
+- [x] Xbox-/Gaming-Komponenten nur behalten, wenn benötigt
 - [x] Game Mode prüfen/konfigurieren
 - [x] Hardware Accelerated GPU Scheduling prüfen
 - [x] VRR/G-Sync-relevante Windows-Einstellungen prüfen
