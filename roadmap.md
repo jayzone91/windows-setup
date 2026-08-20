@@ -1633,7 +1633,7 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
 
 ## Robustheit externer GitHub-/Content-Abhängigkeiten
 
-- [ ] temporäre GitHub-Ausfälle dürfen nichtkritische Bootstrap-Schritte nicht abbrechen
+- [x] temporäre GitHub-Ausfälle dürfen nichtkritische Bootstrap-Schritte nicht abbrechen
   - vorhandene lokale Installationen, Repositories und Konfigurationen bei externen Ausfällen weiterverwenden, wenn ihr lokaler Zustand gültig ist
   - Neovim-Remote-Update bei vorhandenem lokalen Submodule mit Warnung überspringen
   - noch nicht initialisierte optionale GitHub-Abhängigkeiten bei Ausfall überspringen statt den Bootstrap abzubrechen
@@ -1641,6 +1641,8 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
   - keine projektweite pauschale Retry-/Backoff-Schicht einführen; Retry-Verhalten nur dort einsetzen, wo ein konkreter technischer Nutzen besteht
   - lokale/strukturelle Fehler bleiben echte Fehler
   - verbleibende externe Abhängigkeiten gezielt praktisch testen, bevor der Gesamtpunkt als `[x]` markiert wird
+  - praktischer Gesamttest mit blockiertem `github.com` und `api.github.com` bei weiterhin vorhandener Internetverbindung erfolgreich
+  - Scoop, Neovim und weitere nichtkritische GitHub-Schritte wurden übersprungen bzw. mit lokalem Stand fortgesetzt; Bootstrap lief vollständig durch
 - [x] vorhandenes Wallpaper-Repository bei temporärem Git-/GitHub-Ausfall ohne Bootstrap-Abbruch weiterverwenden
   - Remote-Abfrage bei einem normalen Wartungslauf nur einmal versuchen
   - keine festen 2-/4-Sekunden-Retry-Wartezeiten mehr
