@@ -1570,7 +1570,10 @@ Praktisch bestätigt wurde der vollständige Ablauf mit Steam, Epic Games Launch
   - Windows HDR Calibration wurde auf dem aktuellen Monitor bereits durchgeführt
   - HDR bleibt bewusst benutzer-/displayabhängig; keine zusätzliche undokumentierte Registry-Automatisierung
   - vorhandener Bootstrap-Hinweis auf `Einstellungen > System > Anzeige > HDR` bleibt der reproduzierbare Initialisierungs-/Prüfpfad
-- [ ] keine unnötigen "Gaming Tweaks", die Stabilität verschlechtern
+- [x] keine unnötigen "Gaming Tweaks", die Stabilität verschlechtern
+  - Gaming-Optimierung bleibt auf dokumentierte Windows-Funktionen beschränkt
+  - keine pauschalen Service-Deaktivierungen, Scheduler-/Timer-Tweaks oder undokumentierten Registry-Optimierungen
+  - Stabilität, Fullscreen-/Borderless-Verhalten, Alt+Tab und Fokuswechsel haben Vorrang vor theoretischen Benchmark-Gewinnen
 
 ---
 # 27. Phase 24 – Apple / iCloud Integration
@@ -1975,7 +1978,7 @@ Lock Keys bleiben beim bereits getesteten Windhawk `Lock Keys Notifier`; ein eig
 1. [x] Paketgruppe
 2. [x] Steam und weitere benötigte Launcher
 3. [x] Game-Library-Pfade auf `G:`
-4. [ ] sinnvolle Windows-Gaming-Einstellungen
+4. [x] sinnvolle Windows-Gaming-Einstellungen
 ## Priorität 5 – Qualität
 
 1. [x] Pester-Testbasis für kritische Helper
