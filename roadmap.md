@@ -325,7 +325,7 @@ Aktueller offener Performance-Befund nach dem großen Strukturrefactor:
 
 Die `93,24 Sekunden` sind **keine neue akzeptierte Baseline**, sondern eine zu untersuchende Regression von `34,88 Sekunden` bzw. rund `59,8 %` gegenüber dem zuletzt bestätigten Stand von `58,36 Sekunden`.
 
-- [ ] Performance-Regression nach dem Strukturrefactor mit phasenweiser Messung lokalisieren und auf Basis realer Laufzeitdaten optimieren
+- [x] Performance-Regression nach dem Strukturrefactor mit phasenweiser Messung lokalisieren und auf Basis realer Laufzeitdaten optimieren
 
 Damit wurde die gemessene Laufzeit gegenüber dem ursprünglichen Stand von 221,67 Sekunden um rund **73,7 %** reduziert. Gegenüber dem 70,73-Sekunden-Zwischenstand reduziert die zweite Runde die Laufzeit nochmals um rund **17,5 %**.
 
@@ -943,11 +943,11 @@ Eine zusätzliche interne SSD automatisch und sicher für Entwicklung und Games 
 - [x] fingerprint-gesteuerte strikte Codeprüfung vor der eigentlichen Setup-Logik; unveränderter Code überspringt PSScriptAnalyzer, geänderter Code muss den vollständigen Preflight bestehen
 - [x] Fehler, Warnungen und Hinweise getrennt zählen
 - [x] `just check` als manueller Einstiegspunkt für PSScriptAnalyzer
-- [ ] GitHub Actions für statische Prüfung
-- [ ] Pester-Tests für kritische Helper
-- [ ] Tests für Paket-Versionserkennung
-- [ ] Tests für Hardlink-/Junction-Migration
-- [ ] Tests für Reboot-Erkennung
+- [x] GitHub Actions für statische Prüfung
+- [x] Pester-Tests für kritische Helper
+- [x] Tests für Paket-Versionserkennung
+- [x] Tests für Hardlink-/Junction-Migration
+- [x] Tests für Reboot-Erkennung
 - [ ] Dry-Run / WhatIf
 
 ---
@@ -1025,7 +1025,7 @@ Integration:
 - [x] Projektcommands beim Verlassen des Repositories wieder vollständig entfernen
 - [x] dynamische Projektcommands mit `zoxide`-Verzeichniswechsel praktisch getestet
 - [x] CLI-Installation und Wiederholung über `just update` getestet
-- [ ] `just check` nach Profilanpassungen ausführen
+- [x] `just check` nach Profilanpassungen ausführen
 
 ## Starship
 
@@ -1956,7 +1956,7 @@ Noch offen aus dem Paketmanager-Umbau:
 - [x] Fullscreen-/Borderless-Verhalten praktisch getestet
 - [x] Alt+Tab und Fokuswechsel mit mindestens einem Spiel praktisch getestet
 - [x] Vivaldi-Fullscreen-Video praktisch getestet
-- [ ] PowerToys `Find My Mouse` bei echten Vollbildanwendungen weiter prüfen, falls nach der Bereinigung noch Probleme bestehen
+- [x] PowerToys `Find My Mouse` bei echten Vollbildanwendungen weiter prüfen, falls nach der Bereinigung noch Probleme bestehen
 ## Kürzlich abgeschlossen – CLI Tools / Shell UX
 
 - [x] `ripgrep` (`rg`) installiert
