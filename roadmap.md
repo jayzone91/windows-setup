@@ -579,7 +579,7 @@ Weitere Apple-/iCloud-Automatisierung nur über offiziell unterstützte Schnitts
 - [x] Fataler Bootstrap-Fehler wird mit Timestamp unter `.generated/logs/bootstrap-last-error.log` gespeichert.
 - [x] Zentrale persistente Logging-Strategie für komplette Bootstrap-Läufe über eindeutige Transcript-Dateien unter `.generated/logs/runs/`.
 - [ ] Warnungen und Fehler vollständig mit Timestamp persistieren.
-- [ ] Log-Dateien mit Datum/Uhrzeit und Ergebnisstatus.
+- [x] Log-Dateien mit Datum/Uhrzeit und Ergebnisstatus.
 - [ ] Log-Retention/Bereinigung.
 - [ ] Paket- und Windows-Update-Zusammenfassungen in diese Logging-Strategie integrieren.
 - [ ] Optional erfolgreiche Wartungszusammenfassung.

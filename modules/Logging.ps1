@@ -27,6 +27,31 @@ function New-WindowsSetupRunLogContext {
     }
 }
 
+function Remove-WindowsSetupExpiredRunLogs {
+    param(
+        [Parameter(Mandatory)]
+        [string]$LogDirectory,
+
+        [ValidateRange(1, 3650)]
+        [int]$RetentionDays = 30
+    )
+
+    if (-not (Test-Path -LiteralPath $LogDirectory -PathType Container)) {
+        return
+    }
+
+    $cutoff = (Get-Date).AddDays(-$RetentionDays)
+
+    Get-ChildItem `
+        -LiteralPath $LogDirectory `
+        -File `
+        -Filter 'bootstrap-*.log' |
+    Where-Object {
+        $_.LastWriteTime -lt $cutoff
+    } |
+    Remove-Item -Force
+}
+
 function Start-WindowsSetupRunLogging {
     param(
         [Parameter(Mandatory)]
@@ -35,6 +60,9 @@ function Start-WindowsSetupRunLogging {
 
     $context = New-WindowsSetupRunLogContext `
         -RepositoryPath $RepositoryPath
+
+    Remove-WindowsSetupExpiredRunLogs `
+        -LogDirectory $context.LogDirectory
 
     try {
         Start-Transcript `
