@@ -108,3 +108,4 @@ Für Bonuspunkte: Die Patches sollen beim ersten mal Funktionieren, plane deine 
 
 
 https://github.com/microsoft/coreutils
+nvim folder link funktioniert nicht!!!
