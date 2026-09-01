@@ -95,3 +95,16 @@ just update
 Arbeite selbstständig nach den Regeln der Roadmap weiter.
 
 Für Bonuspunkte: Die Patches sollen beim ersten mal Funktionieren, plane deine Patches genau.
+
+
+
+
+
+
+
+
+
+
+
+
+https://github.com/microsoft/coreutils
